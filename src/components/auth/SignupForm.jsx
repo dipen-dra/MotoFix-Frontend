@@ -1,4 +1,5 @@
 import React from 'react';
+import { UserIcon } from './UserIcon';
 import { EmailIcon } from './EmailIcon';
 import { LockIcon } from './LockIcon';
 
@@ -9,17 +10,21 @@ const styles = {
   inputIcon: "absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400",
 };
 
-export const LoginForm = ({ onSwitch }) => {
+export const SignupForm = ({ onSwitch }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log("Login form submitted");
+        console.log("Signup form submitted");
     };
 
     return (
         <div className="p-8 md:p-12">
-            <h2 className="text-4xl font-bold text-gray-800 dark:text-white text-center mb-4">Welcome Back!</h2>
-            <p className="text-gray-600 dark:text-gray-400 text-center mb-8">Login to schedule your bike service.</p>
+            <h2 className="text-4xl font-bold text-gray-800 dark:text-white text-center mb-4">Create Account</h2>
+            <p className="text-gray-600 dark:text-gray-400 text-center mb-8">Get started with MotoFix today!</p>
             <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="relative">
+                    <div className={styles.inputIcon}><UserIcon /></div>
+                    <input type="text" placeholder="Full Name" className={styles.input} required />
+                </div>
                 <div className="relative">
                     <div className={styles.inputIcon}><EmailIcon /></div>
                     <input type="email" placeholder="Email Address" className={styles.input} required />
@@ -28,18 +33,13 @@ export const LoginForm = ({ onSwitch }) => {
                     <div className={styles.inputIcon}><LockIcon /></div>
                     <input type="password" placeholder="Password" className={styles.input} required />
                 </div>
-                 <div className="flex items-center justify-between">
-                    <a href="#" className="text-sm font-medium text-blue-600 hover:text-blue-500">
-                        Forgot your password?
-                    </a>
-                </div>
                 <div>
-                    <button type="submit" className={styles.button}>Sign In</button>
+                    <button type="submit" className={styles.button}>Create Account</button>
                 </div>
             </form>
             <p className="text-center text-gray-600 dark:text-gray-400 mt-8">
-                Don't have an account?{' '}
-                <button onClick={onSwitch} className={styles.link}>Sign up now</button>
+                Already have an account?{' '}
+                <button onClick={onSwitch} className={styles.link}>Sign in</button>
             </p>
         </div>
     );
