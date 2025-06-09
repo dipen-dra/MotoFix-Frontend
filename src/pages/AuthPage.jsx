@@ -1,12 +1,93 @@
+// import React, { useState, useEffect } from 'react';
+// import { LoginForm } from '../components/auth/LoginForm';
+// import { SignupForm } from '../components/auth/SignupForm';
+
+// const cardStyle = "bg-white dark:bg-gray-800 shadow-2xl rounded-2xl overflow-hidden";
+
+// export const AuthPage = () => {
+//     const [isLogin, setIsLogin] = useState(true);
+
+//     useEffect(() => {
+//         const handleHashChange = () => {
+//             setIsLogin(window.location.hash !== '#/signup');
+//         };
+//         window.addEventListener('hashchange', handleHashChange);
+//         handleHashChange(); // Check on initial load
+//         return () => window.removeEventListener('hashchange', handleHashChange);
+//     }, []);
+
+//     return (
+//         <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+//             <div className="max-w-4xl w-full grid md:grid-cols-2 items-center gap-0">
+//                 <div className="hidden md:block">
+//                      <img 
+//                         src="https://pplx-res.cloudinary.com/image/upload/v1749478483/gpt4o_images/oziuai3wafnxufaqcfei.png" 
+//                         alt="Motorbike workshop" 
+//                         className="w-full h-full object-cover rounded-l-2xl"
+//                         onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/600x800/374151/ffffff?text=MotoFix'; }}
+//                     />
+//                 </div>
+//                 <div className={cardStyle + " md:rounded-l-none rounded-r-2xl"}>
+//                     {isLogin ? <LoginForm onSwitch={() => { window.location.hash = '#/signup'; }} /> : <SignupForm onSwitch={() => { window.location.hash = '#/login'; }} />}
+//                 </div>
+//             </div>
+//         </div>
+//     );
+// };
+
+
+// import React, { useState, useEffect } from 'react';
+// import { LoginForm } from '../components/auth/LoginForm';
+// import { SignupForm } from '../components/auth/SignupForm';
+
+// const cardStyle = "bg-white dark:bg-gray-800 shadow-2xl rounded-2xl overflow-hidden";
+
+// export const AuthPage = () => {
+//     const [isLogin, setIsLogin] = useState(true);
+
+//     useEffect(() => {
+//         const handleHashChange = () => {
+//             setIsLogin(window.location.hash !== '#/signup');
+//         };
+//         window.addEventListener('hashchange', handleHashChange);
+//         handleHashChange(); // Check on initial load
+//         return () => window.removeEventListener('hashchange', handleHashChange);
+//     }, []);
+
+//     return (
+//         <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+//             <div className="max-w-4xl w-full grid md:grid-cols-2 items-center gap-0 h-[600px]">
+//                 <div className="hidden md:block h-full">
+//                     <img
+//                         src="https://pplx-res.cloudinary.com/image/upload/v1749478483/gpt4o_images/oziuai3wafnxufaqcfei.png"
+//                         alt="Motorbike workshop"
+//                         className="w-full h-full object-cover rounded-l-2xl"
+//                         onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/600x800/374151/ffffff?text=MotoFix'; }}
+//                     />
+//                 </div>
+//                 <div className={`${cardStyle} md:rounded-l-none rounded-r-2xl h-full flex items-center`}>
+//                     <div className="w-full">
+//                         {isLogin ? <LoginForm onSwitch={() => { window.location.hash = '#/signup'; }} /> : <SignupForm onSwitch={() => { window.location.hash = '#/login'; }} />}
+//                     </div>
+//                 </div>
+//             </div>
+//         </div>
+//     );
+// };
+
+
 import React, { useState, useEffect } from 'react';
 import { LoginForm } from '../components/auth/LoginForm';
 import { SignupForm } from '../components/auth/SignupForm';
 
-const cardStyle = "bg-white dark:bg-gray-800 shadow-2xl rounded-2xl overflow-hidden";
+// Main App component that handles the authentication page layout
+// It switches between login and signup forms based on the URL hash.
 
-export const AuthPage = () => {
+
+export default function App() {
     const [isLogin, setIsLogin] = useState(true);
 
+    // This effect handles switching between login and signup based on the URL hash.
     useEffect(() => {
         const handleHashChange = () => {
             setIsLogin(window.location.hash !== '#/signup');
@@ -17,20 +98,31 @@ export const AuthPage = () => {
     }, []);
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl w-full grid md:grid-cols-2 items-center gap-0">
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 font-sans p-4 antialiased">
+            {/* The main card container */}
+            <div className="max-w-4xl w-full grid md:grid-cols-2 items-stretch rounded-2xl overflow-hidden shadow-2xl">
+                
+                {/* Image Section: This will now have the same height as the form */}
                 <div className="hidden md:block">
                      <img 
-                        src="https://i.pinimg.com/736x/94/3c/ab/943cab838d74c0ae940d2a239b82e3f6.jpg" 
-                        alt="Motorbike workshop" 
-                        className="w-full h-full object-cover rounded-l-2xl"
-                        onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/600x800/374151/ffffff?text=MotoFix'; }}
+                        src="https://pplx-res.cloudinary.com/image/upload/v1749478483/gpt4o_images/oziuai3wafnxufaqcfei.png"
+                        alt="A classic motorbike in a workshop" 
+                        className="w-full h-full object-cover"
+                        onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/600x800/1f2937/ffffff?text=MotoFix'; }}
                     />
                 </div>
-                <div className={cardStyle + " md:rounded-l-none rounded-r-2xl"}>
-                    {isLogin ? <LoginForm onSwitch={() => { window.location.hash = '#/signup'; }} /> : <SignupForm onSwitch={() => { window.location.hash = '#/login'; }} />}
+
+                {/* Form Section: Stretches to match image height and centers its content */}
+                <div className="bg-white dark:bg-gray-800 p-8 sm:p-12 flex flex-col justify-center">
+                    {isLogin 
+                        ? <LoginForm onSwitch={() => { window.location.hash = '#/signup'; }} /> 
+                        : <SignupForm onSwitch={() => { window.location.hash = '#/login'; }} />
+                    }
                 </div>
+                
             </div>
         </div>
     );
 };
+
+export { App as AuthPage };

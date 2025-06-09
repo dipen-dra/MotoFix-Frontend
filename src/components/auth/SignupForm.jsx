@@ -1,46 +1,58 @@
 import React from 'react';
-import { UserIcon } from './UserIcon';
-import { EmailIcon } from './EmailIcon';
-import { LockIcon } from './LockIcon';
+import { UserIcon, EmailIcon, PhoneIcon, LockIcon } from '../../assets/icons';
+import { FormInputWithLabel } from './FormInputWithLabel';
 
-const styles = {
-  input: "w-full pl-12 pr-4 py-3 bg-gray-100 dark:bg-gray-700 border-2 border-transparent rounded-lg focus:border-blue-500 focus:outline-none transition duration-300",
-  button: "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105",
-  link: "text-blue-500 hover:text-blue-400 font-semibold transition duration-300",
-  inputIcon: "absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400",
-};
+// export const SignupForm = ({ onSwitch }) => {
+//     const handleSubmit = (e) => e.preventDefault();
+//     return (
+//         <div className="flex flex-col gap-3 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg">
+//              <div className="text-center">
+//                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Create an Account</h1>
+//                 <p className="text-gray-500 dark:text-gray-400 mt-2">Join us and get your bike serviced!</p>
+//             </div>
+//             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+//                 <FormInputWithLabel id="name" label="Full Name" type="text" placeholder="Enter your full name" icon={<UserIcon />} />
+//                 <FormInputWithLabel id="email" label="Email" type="email" placeholder="Enter your email" icon={<EmailIcon />} />
+//                 <FormInputWithLabel id="phone" label="Phone Number" type="tel" placeholder="Enter your phone number" icon={<PhoneIcon />} />
+//                 <FormInputWithLabel id="password" label="Password" type="password" placeholder="Enter your password" icon={<LockIcon />} />
+//                 <button type="submit" className="mt-4 bg-gray-900 dark:bg-blue-600 border-none text-white text-base font-medium rounded-lg h-12 w-full cursor-pointer hover:bg-gray-800 dark:hover:bg-blue-700 transition-colors">
+//                     Create Account
+//                 </button>
+//             </form>
+//             <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+//                 Already have an account?
+//                 <button onClick={onSwitch} className="font-semibold text-blue-600 hover:text-blue-500 ml-1">Sign In</button>
+//             </p>
+//         </div>
+//     );
+// };
 
-export const SignupForm = ({ onSwitch }) => {
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log("Signup form submitted");
-    };
 
+const SignupForm = ({ onSwitch }) => {
+    const handleSubmit = (e) => e.preventDefault();
     return (
-        <div className="p-8 md:p-12">
-            <h2 className="text-4xl font-bold text-gray-800 dark:text-white text-center mb-4">Create Account</h2>
-            <p className="text-gray-600 dark:text-gray-400 text-center mb-8">Get started with MotoFix today!</p>
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="relative">
-                    <div className={styles.inputIcon}><UserIcon /></div>
-                    <input type="text" placeholder="Full Name" className={styles.input} required />
-                </div>
-                <div className="relative">
-                    <div className={styles.inputIcon}><EmailIcon /></div>
-                    <input type="email" placeholder="Email Address" className={styles.input} required />
-                </div>
-                <div className="relative">
-                    <div className={styles.inputIcon}><LockIcon /></div>
-                    <input type="password" placeholder="Password" className={styles.input} required />
-                </div>
-                <div>
-                    <button type="submit" className={styles.button}>Create Account</button>
-                </div>
+        <>
+            <div className="text-center">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Create an Account</h1>
+                <p className="text-gray-500 dark:text-gray-400 mt-2">Join us and start your journey.</p>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
+                <FormInputWithLabel id="fullName" label="Full Name" type="text" placeholder="John Doe" icon={<UserIcon />} />
+                <FormInputWithLabel id="signup-email" label="Email Address" type="email" placeholder="you@example.com" icon={<EmailIcon />} />
+                <FormInputWithLabel id="signup-password" label="Password" type="password" placeholder="Create a strong password" icon={<LockIcon />} />
+
+                <button type="submit" className="mt-4 bg-gray-900 dark:bg-blue-600 border-transparent text-white text-base font-medium rounded-lg h-12 w-full hover:bg-gray-800 dark:hover:bg-blue-700 transition-colors duration-200">
+                    Create Account
+                </button>
             </form>
-            <p className="text-center text-gray-600 dark:text-gray-400 mt-8">
-                Already have an account?{' '}
-                <button onClick={onSwitch} className={styles.link}>Sign in</button>
+            
+            <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
+                Already have an account?
+                <button onClick={onSwitch} className="font-semibold text-blue-600 hover:text-blue-500 ml-1 bg-transparent border-none p-0 cursor-pointer">Sign In</button>
             </p>
-        </div>
+        </>
     );
 };
+
+export { SignupForm };

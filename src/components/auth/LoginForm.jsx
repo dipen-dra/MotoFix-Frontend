@@ -1,46 +1,60 @@
 import React from 'react';
-import { EmailIcon } from './EmailIcon';
-import { LockIcon } from './LockIcon';
+import { EmailIcon, LockIcon } from '../../assets/icons';
+import { FormInputWithLabel } from './FormInputWithLabel';
 
-const styles = {
-  input: "w-full pl-12 pr-4 py-3 bg-gray-100 dark:bg-gray-700 border-2 border-transparent rounded-lg focus:border-blue-500 focus:outline-none transition duration-300",
-  button: "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105",
-  link: "text-blue-500 hover:text-blue-400 font-semibold transition duration-300",
-  inputIcon: "absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400",
-};
+// export const LoginForm = ({ onSwitch }) => {
+//     const handleSubmit = (e) => e.preventDefault();
+//     return (
+//         <div className="flex flex-col gap-3 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg">
+//             <div className="text-center">
+//                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome Back</h1>
+//                 <p className="text-gray-500 dark:text-gray-400 mt-2">Login to access your account</p>
+//             </div>
+//             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+//                 <FormInputWithLabel id="email" label="Email" type="email" placeholder="Enter your email" icon={<EmailIcon />} />
+//                 <FormInputWithLabel id="password" label="Password" type="password" placeholder="Enter your password" icon={<LockIcon />} />
+//                 <div className="flex justify-end text-sm">
+//                     <a href="#" className="font-semibold text-blue-600 hover:text-blue-500">Forgot Password?</a>
+//                 </div>
+//                 <button type="submit" className="mt-4 bg-gray-900 dark:bg-blue-600 border-none text-white text-base font-medium rounded-lg h-12 w-full cursor-pointer hover:bg-gray-800 dark:hover:bg-blue-700 transition-colors">
+//                     Sign In
+//                 </button>
+//             </form>
+//             <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+//                 Don't have an account?
+//                 <button onClick={onSwitch} className="font-semibold text-blue-600 hover:text-blue-500 ml-1">Sign Up</button>
+//             </p>
+//         </div>
+//     );
+// };
 
-export const LoginForm = ({ onSwitch }) => {
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log("Login form submitted");
-    };
-
+const LoginForm = ({ onSwitch }) => {
+    const handleSubmit = (e) => e.preventDefault();
     return (
-        <div className="p-8 md:p-12">
-            <h2 className="text-4xl font-bold text-gray-800 dark:text-white text-center mb-4">Welcome Back!</h2>
-            <p className="text-gray-600 dark:text-gray-400 text-center mb-8">Login to schedule your bike service.</p>
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="relative">
-                    <div className={styles.inputIcon}><EmailIcon /></div>
-                    <input type="email" placeholder="Email Address" className={styles.input} required />
+        <>
+            <div className="text-center">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome Back</h1>
+                <p className="text-gray-500 dark:text-gray-400 mt-2">Sign in to continue to your account.</p>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
+                <FormInputWithLabel id="email" label="Email" type="email" placeholder="you@example.com" icon={<EmailIcon />} />
+                <FormInputWithLabel id="password" label="Password" type="password" placeholder="••••••••" icon={<LockIcon />} />
+                
+                <div className="flex justify-end text-sm">
+                    <a href="#" className="font-semibold text-blue-600 hover:text-blue-500">Forgot Password?</a>
                 </div>
-                <div className="relative">
-                    <div className={styles.inputIcon}><LockIcon /></div>
-                    <input type="password" placeholder="Password" className={styles.input} required />
-                </div>
-                 <div className="flex items-center justify-between">
-                    <a href="#" className="text-sm font-medium text-blue-600 hover:text-blue-500">
-                        Forgot your password?
-                    </a>
-                </div>
-                <div>
-                    <button type="submit" className={styles.button}>Sign In</button>
-                </div>
+                
+                <button type="submit" className="mt-4 bg-gray-900 dark:bg-blue-600 border-transparent text-white text-base font-medium rounded-lg h-12 w-full hover:bg-gray-800 dark:hover:bg-blue-700 transition-colors duration-200">
+                    Sign In
+                </button>
             </form>
-            <p className="text-center text-gray-600 dark:text-gray-400 mt-8">
-                Don't have an account?{' '}
-                <button onClick={onSwitch} className={styles.link}>Sign up now</button>
+            
+            <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
+                Don't have an account?
+                <button onClick={onSwitch} className="font-semibold text-blue-600 hover:text-blue-500 ml-1 bg-transparent border-none p-0 cursor-pointer">Sign Up</button>
             </p>
-        </div>
+        </>
     );
 };
+export { LoginForm };
