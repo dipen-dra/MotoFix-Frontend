@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { HomePage } from '../pages/HomePage';
 import { AuthPage } from '../pages/AuthPage';
+import { ToastContainer } from 'react-toastify'; // Import ToastContainer
+import 'react-toastify/dist/ReactToastify.css'; // Import the CSS
 
 export const AppRouter = () => {
   const [route, setRoute] = useState(window.location.hash);
@@ -11,7 +13,6 @@ export const AppRouter = () => {
     };
 
     window.addEventListener('hashchange', handleHashChange);
-    // Set initial route if hash is empty
     if (!window.location.hash) {
         window.location.hash = '#/';
     }
@@ -31,16 +32,24 @@ export const AppRouter = () => {
       break;
   }
   
-  return <CurrentPage />;
+  return (
+    <>
+      <CurrentPage />
+      {/* Add the ToastContainer here. You can configure it as you like. */}
+      <ToastContainer
+        position="bottom-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
+    </>
+  );
 };
 
 export default AppRouter;
-
-// This component listens for hash changes and updates the current page accordingly.
-// It defaults to the HomePage if no hash is present or if the hash is not recognized.
-// The AuthPage is displayed for login and signup routes.
-// This allows for a simple client-side routing mechanism using URL hashes.
-// The HomePage and AuthPage components are imported from their respective pages.
-// The AppRouter component is used in the main application layout to handle routing.
-// The HomePage and AuthPage components are imported from their respective pages.
-// The AppRouter component is used in the main application layout to handle routing.

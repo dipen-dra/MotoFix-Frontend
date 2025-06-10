@@ -343,7 +343,7 @@ export const Footer = () => {
         </div>
         {/* Spacing for the copyright section reduced */}
         <div className="mt-8 border-t border-gray-200 pt-6">
-            <p className="text-base text-black xl:text-center">&copy; 2024 MotoFix. All rights reserved.</p>
+            <p className="text-base text-black xl:text-center">&copy; 2025 MotoFix. All rights reserved.</p>
         </div>
       </div>
     </footer>
