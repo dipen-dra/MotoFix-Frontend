@@ -169,7 +169,7 @@ export const LoginForm = ({ onSwitch }) => {
             const data = await loginUserApi(formData);
             
             // Show a success toast before redirecting
-            toast.success('Login successful! Redirecting...');
+            toast.success('Login successful!');
 
             localStorage.setItem('token', data.token);
             
