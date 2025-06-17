@@ -162,6 +162,203 @@
 // export default LoginForm;
 
 
+// import React, { useState } from 'react';
+// import { EmailIcon, LockIcon } from '../../assets/icons';
+// import { FormInputWithLabel } from './FormInputWithLabel';
+// import { toast } from 'react-toastify';
+// import { loginUserApi } from '../../api/authApi';
+
+// export const LoginForm = ({ onSwitch }) => {
+//     const [formData, setFormData] = useState({
+//         email: '',
+//         password: '',
+//     });
+//     const [loading, setLoading] = useState(false);
+
+//     const handleChange = (e) => {
+//         setFormData({ ...formData, [e.target.id]: e.target.value });
+//     };
+
+//     const handleSubmit = async (e) => {
+//         e.preventDefault();
+
+//         if (!formData.email || !formData.password) {
+//             toast.error('Please enter both email and password.');
+//             return;
+//         }
+
+//         setLoading(true);
+//         try {
+//             const data = await loginUserApi(formData);
+            
+//             toast.success('Login successful!');
+//             localStorage.setItem('token', data.token);
+            
+//             setTimeout(() => {
+//                 window.location.href = '/'; 
+//             }, 1500);
+
+//         } catch (err) {
+//             // --- MODIFICATION START ---
+//             // Check if the error has a response from the server
+//             if (err.response && err.response.data && err.response.data.message) {
+//                 // Use the specific error message from your API response
+//                 toast.error(err.response.data.message);
+//             } else {
+//                 // Handle network errors or other unexpected issues
+//                 toast.error('An unexpected error occurred. Please try again.');
+//             }
+//             // --- MODIFICATION END ---
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
+
+//     return (
+//         <>
+//             <div className="text-center">
+//                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome Back</h1>
+//                 <p className="text-gray-500 dark:text-gray-400 mt-2">Sign in to continue to your account.</p>
+//             </div>
+            
+//             <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
+//                 <FormInputWithLabel id="email" label="Email" type="email" placeholder="you@example.com" icon={<EmailIcon />} value={formData.email} onChange={handleChange} />
+//                 <FormInputWithLabel id="password" label="Password" type="password" placeholder="••••••••" icon={<LockIcon />} value={formData.password} onChange={handleChange} />
+                
+//                 <div className="flex justify-end text-sm">
+//                     <a href="#/forgot-password" className="font-semibold text-blue-600 hover:text-blue-500">Forgot Password?</a>
+//                 </div>
+                
+//                 <button type="submit" disabled={loading} className="mt-4 bg-gray-900 dark:bg-blue-600 border-transparent text-white text-base font-medium rounded-lg h-12 w-full hover:bg-gray-800 dark:hover:bg-blue-700 transition-colors duration-200 disabled:bg-gray-400">
+//                     {loading ? 'Signing In...' : 'Sign In'}
+//                 </button>
+//             </form>
+            
+//             <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
+//                 Don't have an account?
+//                 <button onClick={onSwitch} className="font-semibold text-blue-600 hover:text-blue-500 ml-1 bg-transparent border-none p-0 cursor-pointer">Sign Up</button>
+//             </p>
+//         </>
+//     );
+// };
+
+// export default LoginForm;
+
+
+
+// import React, { useState } from 'react';
+// import { EmailIcon, LockIcon } from '../../assets/icons';
+// import { FormInputWithLabel } from './FormInputWithLabel';
+// import { toast } from 'react-toastify';
+// import { loginUserApi } from '../../api/authApi';
+
+// export const LoginForm = ({ onSwitch }) => {
+//   const [formData, setFormData] = useState({
+//     email: '',
+//     password: '',
+//   });
+//   const [loading, setLoading] = useState(false);
+
+//   const handleChange = (e) => {
+//     setFormData({ ...formData, [e.target.id]: e.target.value });
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+
+//     if (!formData.email || !formData.password) {
+//       toast.error('Please enter both email and password.');
+//       return;
+//     }
+
+//     setLoading(true);
+//     try {
+//       const data = await loginUserApi(formData);
+
+//       toast.success('Login successful!');
+//       localStorage.setItem('token', data.token);
+
+//       // Check user role and redirect accordingly
+//       const userRole = data.data.role; // Adjust based on your API response structure
+//       setTimeout(() => {
+//         if (userRole === 'admin') {
+//           window.location.href = '#/dashboard'; // Redirect to admin dashboard
+//         } else {
+//           window.location.href = '#/'; // Redirect to homepage for non-admin users
+//         }
+//       }, 1500);
+
+//     } catch (err) {
+//       if (err.response && err.response.data && err.response.data.message) {
+//         toast.error(err.response.data.message);
+//       } else {
+//         toast.error('An unexpected error occurred. Please try again.');
+//       }
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   return (
+//     <>
+//       <div className="text-center">
+//         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome Back</h1>
+//         <p className="text-gray-500 dark:text-gray-400 mt-2">Sign in to continue to your account.</p>
+//       </div>
+
+//       <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
+//         <FormInputWithLabel
+//           id="email"
+//           label="Email"
+//           type="email"
+//           placeholder="you@example.com"
+//           icon={<EmailIcon />}
+//           value={formData.email}
+//           onChange={handleChange}
+//         />
+//         <FormInputWithLabel
+//           id="password"
+//           label="Password"
+//           type="password"
+//           placeholder="••••••••"
+//           icon={<LockIcon />}
+//           value={formData.password}
+//           onChange={handleChange}
+//         />
+
+//         <div className="flex justify-end text-sm">
+//           <a href="#/forgot-password" className="font-semibold text-blue-600 hover:text-blue-500">
+//             Forgot Password?
+//           </a>
+//         </div>
+
+//         <button
+//           type="submit"
+//           disabled={loading}
+//           className="mt-4 bg-gray-900 dark:bg-blue-600 border-transparent text-white text-base font-medium rounded-lg h-12 w-full hover:bg-gray-800 dark:hover:bg-blue-700 transition-colors duration-200 disabled:bg-gray-400"
+//         >
+//           {loading ? 'Signing In...' : 'Sign In'}
+//         </button>
+//       </form>
+
+//       <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
+//         Don't have an account?
+//         <button
+//           onClick={onSwitch}
+//           className="font-semibold text-blue-600 hover:text-blue-500 ml-1 bg-transparent border-none p-0 cursor-pointer"
+//         >
+//           Sign Up
+//         </button>
+//       </p>
+//     </>
+//   );
+// };
+
+// export default LoginForm;
+
+
+// src/components/auth/LoginForm.jsx
+
 import React, { useState } from 'react';
 import { EmailIcon, LockIcon } from '../../assets/icons';
 import { FormInputWithLabel } from './FormInputWithLabel';
@@ -188,27 +385,30 @@ export const LoginForm = ({ onSwitch }) => {
         }
 
         setLoading(true);
+
+        // Admin credential check
+        if (formData.email === 'dipendrajr999@gmail.com' && formData.password === 'admin123') {
+            toast.success('Admin login successful! Redirecting...');
+            localStorage.setItem('token', 'admin-fake-token'); // For demonstration
+            localStorage.setItem('userRole', 'admin');
+            setTimeout(() => {
+                window.location.hash = '#/admin/dashboard';
+            }, 1500);
+            setLoading(false);
+            return;
+        }
+
+        // Regular user login
         try {
             const data = await loginUserApi(formData);
-            
             toast.success('Login successful!');
             localStorage.setItem('token', data.token);
-            
+            localStorage.setItem('userRole', 'user');
             setTimeout(() => {
-                window.location.href = '/'; 
+                window.location.hash = '#/'; // Redirect to home page
             }, 1500);
-
         } catch (err) {
-            // --- MODIFICATION START ---
-            // Check if the error has a response from the server
-            if (err.response && err.response.data && err.response.data.message) {
-                // Use the specific error message from your API response
-                toast.error(err.response.data.message);
-            } else {
-                // Handle network errors or other unexpected issues
-                toast.error('An unexpected error occurred. Please try again.');
-            }
-            // --- MODIFICATION END ---
+            toast.error(err.message || "Login failed. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -220,20 +420,20 @@ export const LoginForm = ({ onSwitch }) => {
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome Back</h1>
                 <p className="text-gray-500 dark:text-gray-400 mt-2">Sign in to continue to your account.</p>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
                 <FormInputWithLabel id="email" label="Email" type="email" placeholder="you@example.com" icon={<EmailIcon />} value={formData.email} onChange={handleChange} />
                 <FormInputWithLabel id="password" label="Password" type="password" placeholder="••••••••" icon={<LockIcon />} value={formData.password} onChange={handleChange} />
-                
+
                 <div className="flex justify-end text-sm">
                     <a href="#/forgot-password" className="font-semibold text-blue-600 hover:text-blue-500">Forgot Password?</a>
                 </div>
-                
+
                 <button type="submit" disabled={loading} className="mt-4 bg-gray-900 dark:bg-blue-600 border-transparent text-white text-base font-medium rounded-lg h-12 w-full hover:bg-gray-800 dark:hover:bg-blue-700 transition-colors duration-200 disabled:bg-gray-400">
                     {loading ? 'Signing In...' : 'Sign In'}
                 </button>
             </form>
-            
+
             <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
                 Don't have an account?
                 <button onClick={onSwitch} className="font-semibold text-blue-600 hover:text-blue-500 ml-1 bg-transparent border-none p-0 cursor-pointer">Sign Up</button>
