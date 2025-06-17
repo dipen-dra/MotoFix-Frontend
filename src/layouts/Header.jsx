@@ -1,160 +1,434 @@
-// // Header.jsx
-// import React, { useState } from 'react';
-// import { MotoFixLogo } from '../assets/MotoFixLogo';
 
-// const navbarStyle = "bg-white shadow-md sticky top-0 z-50";
+// import { useState } from 'react';
+// import { useLocation, useNavigate } from 'react-router-dom';
+// import { MotoFixLogo } from '../assets/MotoFixLogo';
 
 // export const Header = () => {
 //   const [isMenuOpen, setIsMenuOpen] = useState(false);
+//   const navigate = useNavigate();
+//   const location = useLocation();
+//   const navbarStyle = "bg-white shadow-md sticky top-0 z-50";
+
+
+//   const isLoginPage = location.pathname === '/login';
+//   const isSignupView = location.pathname === '/login' && location.hash === '#/signup';
+
+//   const commonLinkClass = "px-4 py-1.5 text-base font-medium border border-blue-600 rounded-md transition";
+//   const activeLinkClass = "bg-gray-300 text-gray-400 border-gray-300 cursor-not-allowed";
+//   const enabledLinkClass = "text-blue-600 hover:bg-blue-600 hover:text-white";
+
+//   const handleLoginClick = () => {
+//     if (!isLoginPage || isSignupView) {
+//       navigate('/login#/login');
+//       window.location.reload(); // Scroll to top when navigating to login
+//     }
+//   };
+
+//   const handleSignupClick = () => {
+//     if (!isLoginPage || !isSignupView) {
+//       navigate('/login#/signup');
+//       window.location.reload(); // Scroll to top when navigating to signup
+//     }
+//   };
 
 //   return (
 //     <nav className={navbarStyle}>
 //       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 //         <div className="flex items-center justify-between h-20">
 
-//           {/* Left: Logo pushed more left */}
-//           <div className="flex-shrink-0 mr-auto">
-//             <a href="#/">
-//               <MotoFixLogo />
-//             </a>
+//           {/* Logo */}
+//           <div className="flex-shrink-0 mr-auto cursor-pointer" onClick={() => navigate("/")}>
+//             <MotoFixLogo />
 //           </div>
 
-//           {/* Center: Nav Links with slightly bigger font and less spacing */}
+//           {/* Center nav */}
 //           <div className="hidden md:flex flex-1 justify-center space-x-6">
-//             <a href="#/" className="text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">Home</a>
-//             <a href="#" className="text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">Services</a>
-//             <a href="#" className="text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">About Us</a>
-//             <a href="#" className="text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">Contact</a>
+//             <button onClick={() => navigate("/")} className="text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">Home</button>
+//             <button onClick={() => navigate("/#service")} className="text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">Services</button>
+//             <button onClick={() => navigate("/#about")} className="text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">About Us</button>
+//             <button onClick={() => navigate("/#contact")} className="text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">Contact</button>
 //           </div>
 
-//           {/* Right: Slim & elegant Login / Signup with hover changes */}
+//           {/* Right: Login/Signup */}
 //           <div className="hidden md:flex items-center space-x-3 ml-auto">
-//             <a
-//               href="#/login"
-//               className="px-4 py-1.5 text-base font-medium border border-blue-600 text-blue-600 rounded-md hover:bg-blue-600 hover:text-white transition"
+//             <button
+//               disabled={isLoginPage && !isSignupView}
+//               onClick={handleLoginClick}
+//               className={`${commonLinkClass} ${(isLoginPage && !isSignupView) ? activeLinkClass : enabledLinkClass}`}
 //             >
 //               Login
-//             </a>
-//             <a
-//               href="#/signup"
-//               className="px-4 py-1.5 text-base font-medium border border-blue-600 text-blue-600 rounded-md hover:bg-blue-600 hover:text-white transition"
+//             </button>
+//             <button
+//               disabled={isSignupView}
+//               onClick={handleSignupClick}
+//               className={`${commonLinkClass} ${isSignupView ? activeLinkClass : enabledLinkClass}`}
 //             >
 //               Register
-//             </a>
+//             </button>
 //           </div>
 
-//           {/* Mobile Menu Toggle */}
+//           {/* Mobile menu toggle */}
 //           <div className="flex md:hidden">
 //             <button
 //               onClick={() => setIsMenuOpen(!isMenuOpen)}
-//               type="button"
 //               className="bg-gray-100 p-2 rounded-md text-black hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-white"
 //             >
 //               <span className="sr-only">Toggle menu</span>
-//               {!isMenuOpen ? (
-//                 <svg
-//                   className="h-6 w-6"
-//                   xmlns="http://www.w3.org/2000/svg"
-//                   fill="none"
-//                   viewBox="0 0 24 24"
-//                   stroke="currentColor"
-//                 >
-//                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-//                 </svg>
-//               ) : (
-//                 <svg
-//                   className="h-6 w-6"
-//                   xmlns="http://www.w3.org/2000/svg"
-//                   fill="none"
-//                   viewBox="0 0 24 24"
-//                   stroke="currentColor"
-//                 >
-//                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-//                 </svg>
-//               )}
+//               <svg className="h-6 w-6" viewBox="0 0 24 24" stroke="currentColor" fill="none">
+//                 <path
+//                   strokeLinecap="round"
+//                   strokeLinejoin="round"
+//                   strokeWidth="2"
+//                   d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
+//                 />
+//               </svg>
 //             </button>
 //           </div>
 //         </div>
 //       </div>
 
-//       {/* Mobile Menu */}
+//       {/* Mobile menu */}
 //       <div className={`${isMenuOpen ? 'block' : 'hidden'} md:hidden`}>
 //         <div className="px-4 pt-2 pb-3 space-y-1">
-//           <a href="#/" className="block text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">Home</a>
-//           <a href="#" className="block text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">Services</a>
-//           <a href="#" className="block text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">About Us</a>
-//           <a href="#" className="block text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">Contact</a>
-//           <a href="#/login" className="block border border-blue-600 text-blue-600 px-3 py-2 rounded-md text-lg font-medium hover:bg-blue-600 hover:text-white transition">Login</a>
-//           <a href="#/signup" className="block bg-blue-600 text-white px-3 py-2 rounded-md text-lg font-medium hover:bg-blue-700 transition">Sign Up</a>
+//           <button onClick={() => navigate("/")} className="block w-full text-left text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">Home</button>
+//           <button onClick={() => navigate("/#service")} className="block w-full text-left text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">Services</button>
+//           <button onClick={() => navigate("/#about")} className="block w-full text-left text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">About Us</button>
+//           <button onClick={() => navigate("/#contact")} className="block w-full text-left text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">Contact</button>
+//           <button
+//             disabled={isLoginPage && !isSignupView}
+//             onClick={handleLoginClick}
+//             className={`block w-full text-left px-3 py-2 rounded-md text-lg font-medium transition ${(isLoginPage && !isSignupView) ? 'bg-gray-300 text-gray-400 cursor-not-allowed' : 'border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white'}`}
+//           >
+//             Login
+//           </button>
+//           <button
+//             disabled={isSignupView}
+//             onClick={handleSignupClick}
+//             className={`block w-full text-left px-3 py-2 rounded-md text-lg font-medium transition ${isSignupView ? 'bg-gray-300 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+//           >
+//             Sign Up
+//           </button>
+//         </div>
+//       </div>
+//     </nav>
+//   );
+// };
+// export default Header;
+
+
+
+// import { useState } from 'react';
+// import { useLocation, useNavigate } from 'react-router-dom';
+// import { MotoFixLogo } from '../assets/MotoFixLogo';
+
+// export const Header = () => {
+//   const [isMenuOpen, setIsMenuOpen] = useState(false);
+//   const navigate = useNavigate();
+//   const location = useLocation();
+//   const navbarStyle = "bg-white shadow-md sticky top-0 z-50";
+
+//   const isLoginPage = location.pathname === '/login';
+//   const isSignupView = location.pathname === '/login' && location.hash === '#/signup';
+
+//   const commonLinkClass = "px-4 py-1.5 text-base font-medium border border-blue-600 rounded-md transition";
+//   const activeLinkClass = "bg-gray-300 text-gray-400 border-gray-300 cursor-not-allowed";
+//   const enabledLinkClass = "text-blue-600 hover:bg-blue-600 hover:text-white";
+
+//   // Function to handle navigation and smooth scrolling
+//   const handleNavigation = (path, sectionId) => {
+//     if (location.pathname !== '/') {
+//       // If not on the homepage, navigate to the homepage and scroll to the section
+//       navigate(`/${sectionId ? `#${sectionId}` : ''}`);
+//       // Use setTimeout to ensure the page has loaded before scrolling
+//       setTimeout(() => {
+//         if (sectionId) {
+//           const element = document.getElementById(sectionId);
+//           if (element) {
+//             element.scrollIntoView({ behavior: 'smooth' });
+//           }
+//         } else {
+//           window.scrollTo({ top: 0, behavior: 'smooth' });
+//         }
+//       }, 100); // Small delay to ensure DOM is ready
+//     } else {
+//       // If already on the homepage, just scroll to the section
+//       if (sectionId) {
+//         const element = document.getElementById(sectionId);
+//         if (element) {
+//           element.scrollIntoView({ behavior: 'smooth' });
+//         }
+//       } else {
+//         window.scrollTo({ top: 0, behavior: 'smooth' });
+//       }
+//     }
+//   };
+
+//   const handleLoginClick = () => {
+//     if (!isLoginPage || isSignupView) {
+//       navigate('/login#/login');
+//       window.location.reload(); // Scroll to top when navigating to login
+//     }
+//   };
+
+//   const handleSignupClick = () => {
+//     if (!isLoginPage || !isSignupView) {
+//       navigate('/login#/signup');
+//       window.location.reload(); // Scroll to top when navigating to signup
+//     }
+//   };
+
+//   return (
+//     <nav className={navbarStyle}>
+//       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+//         <div className="flex items-center justify-between h-20">
+//           {/* Logo */}
+//           <div className="flex-shrink-0 mr-auto cursor-pointer" onClick={() => handleNavigation('/', 'home')}>
+//             <MotoFixLogo />
+//           </div>
+
+//           {/* Center nav */}
+//           <div className="hidden md:flex flex-1 justify-center space-x-6">
+//             <button
+//               onClick={() => handleNavigation('/', 'home')}
+//               className="text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold"
+//             >
+//               Home
+//             </button>
+//             <button
+//               onClick={() => handleNavigation('/', 'service')}
+//               className="text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold"
+//             >
+//               Services
+//             </button>
+//             <button
+//               onClick={() => handleNavigation('/', 'why-choose-us')}
+//               className="text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold"
+//             >
+//               About Us
+//             </button>
+//             <button
+//               onClick={() => handleNavigation('/', 'about')}
+//               className="text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold"
+//             >
+//               Contact
+//             </button>
+//           </div>
+
+//           {/* Right: Login/Signup */}
+//           <div className="hidden md:flex items-center space-x-3 ml-auto">
+//             <button
+//               disabled={isLoginPage && !isSignupView}
+//               onClick={handleLoginClick}
+//               className={`${commonLinkClass} ${(isLoginPage && !isSignupView) ? activeLinkClass : enabledLinkClass}`}
+//             >
+//               Login
+//             </button>
+//             <button
+//               disabled={isSignupView}
+//               onClick={handleSignupClick}
+//               className={`${commonLinkClass} ${isSignupView ? activeLinkClass : enabledLinkClass}`}
+//             >
+//               Register
+//             </button>
+//           </div>
+
+//           {/* Mobile menu toggle */}
+//           <div className="flex md:hidden">
+//             <button
+//               onClick={() => setIsMenuOpen(!isMenuOpen)}
+//               className="bg-gray-100 p-2 rounded-md text-black hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-white"
+//             >
+//               <span className="sr-only">Toggle menu</span>
+//               <svg className="h-6 w-6" viewBox="0 0 24 24" stroke="currentColor" fill="none">
+//                 <path
+//                   strokeLinecap="round"
+//                   strokeLinejoin="round"
+//                   strokeWidth="2"
+//                   d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
+//                 />
+//               </svg>
+//             </button>
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* Mobile menu */}
+//       <div className={`${isMenuOpen ? 'block' : 'hidden'} md:hidden`}>
+//         <div className="px-4 pt-2 pb-3 space-y-1">
+//           <button
+//             onClick={() => handleNavigation('/', 'home')}
+//             className="block w-full text-left text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold"
+//           >
+//             Home
+//           </button>
+//           <button
+//             onClick={() => handleNavigation('/', 'service')}
+//             className="block w-full text-left text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold"
+//           >
+//             Services
+//           </button>
+//           <button
+//             onClick={() => handleNavigation('/', 'why-choose-us')}
+//             className="block w-full text-left text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold"
+//           >
+//             About Us
+//           </button>
+//           <button
+//             onClick={() => handleNavigation('/', 'about')}
+//             className="block w-full text-left text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold"
+//           >
+//             Contact
+//           </button>
+//           <button
+//             disabled={isLoginPage && !isSignupView}
+//             onClick={handleLoginClick}
+//             className={`block w-full text-left px-3 py-2 rounded-md text-lg font-medium transition ${
+//               isLoginPage && !isSignupView
+//                 ? 'bg-gray-300 text-gray-400 cursor-not-allowed'
+//                 : 'border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white'
+//             }`}
+//           >
+//             Login
+//           </button>
+//           <button
+//             disabled={isSignupView}
+//             onClick={handleSignupClick}
+//             className={`block w-full text-left px-3 py-2 rounded-md text-lg font-medium transition ${
+//               isSignupView ? 'bg-gray-300 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
+//             }`}
+//           >
+//             Sign Up
+//           </button>
 //         </div>
 //       </div>
 //     </nav>
 //   );
 // };
 
+// export default Header;
 
 
-import React, { useState, useEffect } from 'react';
+
+import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { MotoFixLogo } from '../assets/MotoFixLogo';
-
-const navbarStyle = "bg-white shadow-md sticky top-0 z-50";
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [hash, setHash] = useState(window.location.hash);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const navbarStyle = "bg-white shadow-md sticky top-0 z-50";
 
-  useEffect(() => {
-    const handleHashChange = () => {
-      setHash(window.location.hash);
-    };
-
-    window.addEventListener("hashchange", handleHashChange);
-    return () => window.removeEventListener("hashchange", handleHashChange);
-  }, []);
-
-  const isLoginPage = hash === '#/login';
-  const isSignupPage = hash === '#/signup';
+  const isLoginPage = location.pathname === '/login';
+  const isSignupView = location.pathname === '/login' && location.hash === '#/signup';
 
   const commonLinkClass = "px-4 py-1.5 text-base font-medium border border-blue-600 rounded-md transition";
   const activeLinkClass = "bg-gray-300 text-gray-400 border-gray-300 cursor-not-allowed";
   const enabledLinkClass = "text-blue-600 hover:bg-blue-600 hover:text-white";
 
+  // Function to handle navigation and smooth scrolling
+  const handleNavigation = (sectionId) => {
+    const targetPath = sectionId ? `/#${sectionId}` : '/';
+    
+    if (location.pathname !== '/' || location.hash !== `#${sectionId}`) {
+      // Navigate to the homepage with the section hash
+      navigate(targetPath);
+    }
+    
+    // Scroll to the section
+    setTimeout(() => {
+      if (sectionId) {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 100); // Small delay to ensure DOM is ready
+  };
+
+  // Handle initial load or hash-based navigation
+  useEffect(() => {
+    const sectionId = location.hash ? location.hash.replace('#', '') : 'home';
+    if (location.pathname === '/') {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      } else if (!location.hash) {
+        // Default to scrolling to top (home section) on /
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  }, [location]);
+
+  const handleLoginClick = () => {
+    if (!isLoginPage || isSignupView) {
+      navigate('/login#/login');
+      window.location.reload(); // Scroll to top when navigating to login
+    }
+  };
+
+  const handleSignupClick = () => {
+    if (!isLoginPage || !isSignupView) {
+      navigate('/login#/signup');
+      window.location.reload(); // Scroll to top when navigating to signup
+    }
+  };
+
   return (
     <nav className={navbarStyle}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          
           {/* Logo */}
-          <div className="flex-shrink-0 mr-auto">
-            <a href="#/">
-              <MotoFixLogo />
-            </a>
+          <div className="flex-shrink-0 mr-auto cursor-pointer" onClick={() => handleNavigation('home')}>
+            <MotoFixLogo />
           </div>
 
           {/* Center nav */}
           <div className="hidden md:flex flex-1 justify-center space-x-6">
-            <a href="#/" className="text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">Home</a>
-            <a href="#" className="text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">Services</a>
-            <a href="#" className="text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">About Us</a>
-            <a href="#" className="text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">Contact</a>
+            <button
+              onClick={() => handleNavigation('home')}
+              className="text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold"
+            >
+              Home
+            </button>
+            <button
+              onClick={() => handleNavigation('service')}
+              className="text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold"
+            >
+              Services
+            </button>
+            <button
+              onClick={() => handleNavigation('why-choose-us')}
+              className="text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold"
+            >
+              About Us
+            </button>
+            <button
+              onClick={() => handleNavigation('about')}
+              className="text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold"
+            >
+              Contact
+            </button>
           </div>
 
           {/* Right: Login/Signup */}
           <div className="hidden md:flex items-center space-x-3 ml-auto">
-            <a
-              href={isLoginPage ? undefined : "#/login"}
-              className={`${commonLinkClass} ${isLoginPage ? activeLinkClass : enabledLinkClass}`}
-              onClick={e => isLoginPage && e.preventDefault()}
+            <button
+              disabled={isLoginPage && !isSignupView}
+              onClick={handleLoginClick}
+              className={`${commonLinkClass} ${(isLoginPage && !isSignupView) ? activeLinkClass : enabledLinkClass}`}
             >
               Login
-            </a>
-            <a
-              href={isSignupPage ? undefined : "#/signup"}
-              className={`${commonLinkClass} ${isSignupPage ? activeLinkClass : enabledLinkClass}`}
-              onClick={e => isSignupPage && e.preventDefault()}
+            </button>
+            <button
+              disabled={isSignupView}
+              onClick={handleSignupClick}
+              className={`${commonLinkClass} ${isSignupView ? activeLinkClass : enabledLinkClass}`}
             >
               Register
-            </a>
+            </button>
           </div>
 
           {/* Mobile menu toggle */}
@@ -164,15 +438,14 @@ export const Header = () => {
               className="bg-gray-100 p-2 rounded-md text-black hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-white"
             >
               <span className="sr-only">Toggle menu</span>
-              {isMenuOpen ? (
-                <svg className="h-6 w-6" viewBox="0 0 24 24" stroke="currentColor" fill="none">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg className="h-6 w-6" viewBox="0 0 24 24" stroke="currentColor" fill="none">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
+              <svg className="h-6 w-6" viewBox="0 0 24 24" stroke="currentColor" fill="none">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
+                />
+              </svg>
             </button>
           </div>
         </div>
@@ -181,30 +454,54 @@ export const Header = () => {
       {/* Mobile menu */}
       <div className={`${isMenuOpen ? 'block' : 'hidden'} md:hidden`}>
         <div className="px-4 pt-2 pb-3 space-y-1">
-          <a href="#/" className="block text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">Home</a>
-          <a href="#" className="block text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">Services</a>
-          <a href="#" className="block text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">About Us</a>
-          <a href="#" className="block text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold">Contact</a>
-          <a
-            href={isLoginPage ? undefined : "#/login"}
-            className={`block px-3 py-2 rounded-md text-lg font-medium transition ${isLoginPage ? 'bg-gray-300 text-gray-400 cursor-not-allowed' : 'border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white'}`}
-            onClick={e => isLoginPage && e.preventDefault()}
+          <button
+            onClick={() => handleNavigation('home')}
+            className="block w-full text-left text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold"
+          >
+            Home
+          </button>
+          <button
+            onClick={() => handleNavigation('service')}
+            className="block w-full text-left text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold"
+          >
+            Services
+          </button>
+          <button
+            onClick={() => handleNavigation('why-choose-us')}
+            className="block w-full text-left text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold"
+          >
+            About Us
+          </button>
+          <button
+            onClick={() => handleNavigation('about')}
+            className="block w-full text-left text-black hover:bg-gray-200 px-3 py-2 rounded-md text-lg font-semibold"
+          >
+            Contact
+          </button>
+          <button
+            disabled={isLoginPage && !isSignupView}
+            onClick={handleLoginClick}
+            className={`block w-full text-left px-3 py-2 rounded-md text-lg font-medium transition ${
+              isLoginPage && !isSignupView
+                ? 'bg-gray-300 text-gray-400 cursor-not-allowed'
+                : 'border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white'
+            }`}
           >
             Login
-          </a>
-          <a
-            href={isSignupPage ? undefined : "#/signup"}
-            className={`block px-3 py-2 rounded-md text-lg font-medium transition ${isSignupPage ? 'bg-gray-300 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
-            onClick={e => isSignupPage && e.preventDefault()}
+          </button>
+          <button
+            disabled={isSignupView}
+            onClick={handleSignupClick}
+            className={`block w-full text-left px-3 py-2 rounded-md text-lg font-medium transition ${
+              isSignupView ? 'bg-gray-300 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
+            }`}
           >
             Sign Up
-          </a>
+          </button>
         </div>
       </div>
     </nav>
   );
 };
-export default Header;
-// This code defines a responsive header component for a web application.
-// It includes a logo, navigation links, and login/signup buttons that adapt based on the current page.
 
+export default Header;
