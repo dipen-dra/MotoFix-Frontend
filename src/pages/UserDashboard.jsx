@@ -6,50 +6,44 @@ import { LayoutDashboard, CalendarDays, User, LogOut, Menu, X, Sun, Moon, PlusCi
 // API HELPER FUNCTIONS (USER-FACING)
 //-///////////////////////////////////////////////////////////////////////////
 
-const API_BASE_URL_USER = "http://localhost:5050/api/user"; // USER backend URL
+const API_BASE_URL_USER = "http://localhost:5050/api/user";
 
-/**
- * A helper function to fetch data from the user-facing API.
- * @param {string} endpoint - The API endpoint to call (e.g., '/profile')
- * @param {object} options - Options for the fetch call (method, body, etc.)
- * @returns {Promise<any>} - The JSON response from the API
- */
 const apiFetchUser = async (endpoint, options = {}) => {
-    const headers = {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`, // Assumes same token system
-        ...options.headers
-    };
+    const headers = {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        ...options.headers
+    };
 
-    if (!(options.body instanceof FormData)) {
-        headers['Content-Type'] = 'application/json';
-    }
+    if (!(options.body instanceof FormData)) {
+        headers['Content-Type'] = 'application/json';
+    }
 
-    const response = await fetch(`${API_BASE_URL_USER}${endpoint}`, { ...options, headers });
+    const response = await fetch(`${API_BASE_URL_USER}${endpoint}`, { ...options, headers });
 
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'An API error occurred.');
-    }
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'An API error occurred.');
+    }
     
     const contentType = response.headers.get("content-type");
-    if (contentType && contentType.indexOf("application/json") !== -1) {
-        return response.json();
-    }
-    return;
+    if (contentType && contentType.indexOf("application/json") !== -1) {
+        return response.json();
+    }
+    return;
 };
 
 //-///////////////////////////////////////////////////////////////////////////
-// REUSABLE UI COMPONENTS (Can be shared with Admin Dashboard)
+// REUSABLE UI COMPONENTS
 //-///////////////////////////////////////////////////////////////////////////
 
 const getStatusColor = (status) => {
-    switch (status) {
-        case 'Completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-        case 'In Progress': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-        case 'Pending': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-        case 'Cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-        default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
-    }
+    switch (status) {
+        case 'Completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+        case 'In Progress': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+        case 'Pending': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+        case 'Cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+        default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+    }
 };
 
 const Card = ({ children, className = '' }) => (<div className={`bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 transition-all duration-300 ${className}`}>{children}</div>);
@@ -100,7 +94,8 @@ const UserDashboardPage = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const { data } = await apiFetchUser('/dashboard-summary');
+                const response = await apiFetchUser('/dashboard-summary');
+                const data = response.data;
                 setStats({
                     upcomingBookings: data.upcomingBookings,
                     completedServices: data.completedServices
@@ -185,20 +180,21 @@ const UserBookingsPage = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        const fetchBookings = async () => {
+            setIsLoading(true);
+            try {
+                const response = await apiFetchUser('/bookings');
+                setBookings(response.data || []); 
+            } catch (error) {
+                console.error('Failed to fetch bookings:', error.message);
+                setBookings([]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
         fetchBookings();
     }, []);
-
-    const fetchBookings = async () => {
-        setIsLoading(true);
-        try {
-            const { data } = await apiFetchUser('/bookings');
-            setBookings(data);
-        } catch (error) {
-            console.error('Failed to fetch bookings', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
 
     return (
         <div className="space-y-6">
@@ -208,7 +204,7 @@ const UserBookingsPage = () => {
             </div>
             <Card>
                 <div className="overflow-x-auto">
-                    {isLoading ? (<p>Loading bookings...</p>) : bookings.length > 0 ? (
+                    {isLoading ? (<div className="text-center p-12 text-gray-500 dark:text-gray-400">Loading bookings...</div>) : bookings.length > 0 ? (
                         <table className="w-full text-left">
                             <thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700">
                                 <tr>
@@ -217,7 +213,7 @@ const UserBookingsPage = () => {
                             </thead>
                             <tbody>
                                 {bookings.map(booking => (
-                                    <tr key={booking._id} className="border-b dark:border-gray-700">
+                                    <tr key={booking._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
                                         <td className="p-3 font-medium text-gray-900 dark:text-white">{booking.serviceType}</td>
                                         <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel}</td>
                                         <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
@@ -249,9 +245,8 @@ const NewBookingPage = () => {
     useEffect(() => {
         const fetchServices = async () => {
             try {
-                // This assumes an endpoint `/api/services` that returns all available services
-                const { data } = await apiFetchUser('/services'); 
-                setServices(data);
+                const response = await apiFetchUser('/services'); 
+                setServices(response.data || []);
             } catch (err) {
                 console.error("Failed to fetch services:", err);
                 setError("Could not load available services. Please try again later.");
@@ -281,7 +276,6 @@ const NewBookingPage = () => {
             });
             setSuccess("Your booking has been successfully submitted! We will contact you shortly.");
             setFormData({ serviceId: '', bikeModel: '', date: '', notes: '' });
-            // Optionally redirect after a few seconds
             setTimeout(() => {
                 window.location.hash = '#/user/bookings';
             }, 3000);
@@ -331,8 +325,8 @@ const UserProfilePage = () => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const { data } = await apiFetchUser('/profile');
-                setProfile(data);
+                const response = await apiFetchUser('/profile');
+                setProfile(response.data);
             } catch (error) {
                 console.error("Failed to fetch profile", error);
             }
@@ -350,11 +344,11 @@ const UserProfilePage = () => {
         }
 
         try {
-            const { data } = await apiFetchUser('/profile', {
+            const response = await apiFetchUser('/profile', {
                 method: 'PUT',
                 body: formData
             });
-            setProfile(data);
+            setProfile(response.data);
             setIsEditing(false);
         } catch (error) {
             console.error('Failed to update profile', error);
@@ -413,13 +407,13 @@ const UserProfilePage = () => {
 //-///////////////////////////////////////////////////////////////////////////
 
 const UserNavLink = ({ page, icon: Icon, children, activePage, onLinkClick }) => {
-    const isActive = activePage === page;
-    return (
-        <a href={`#/user/${page}`} onClick={onLinkClick} className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-200 ${isActive ? 'bg-blue-600 text-white font-semibold shadow-lg' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
-            <Icon size={22} />
-            <span className="text-md">{children}</span>
-        </a>
-    );
+    const isActive = activePage === page;
+    return (
+        <a href={`#/user/${page}`} onClick={onLinkClick} className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-200 ${isActive ? 'bg-blue-600 text-white font-semibold shadow-lg' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
+            <Icon size={22} />
+            <span className="text-md">{children}</span>
+        </a>
+    );
 };
 
 const UserSidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClose }) => (
@@ -446,96 +440,98 @@ const UserSidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClos
 );
 
 const UserDashboard = () => {
-    const [activePage, setActivePage] = useState(() => window.location.hash.replace('#/user/', '') || 'dashboard');
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [isLogoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+    const [activePage, setActivePage] = useState(() => window.location.hash.replace('#/user/', '') || 'dashboard');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isLogoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState({ fullName: 'Guest', email: '' });
-    const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('userTheme') === 'dark');
+    const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('userTheme') === 'dark');
 
-    useEffect(() => {
+    useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const { data } = await apiFetchUser('/profile');
-                setCurrentUser(data);
+                const response = await apiFetchUser('/profile');
+                setCurrentUser(response.data || { fullName: 'Guest', email: '' });
             } catch (error) {
                 console.error("Failed to fetch current user", error);
-                // Handle auth errors, e.g., redirect to login
+                if (error.message.includes('Unauthorized')) {
+                    handleLogoutConfirm();
+                }
             }
         };
         fetchProfile();
-        document.documentElement.classList.toggle('dark', isDarkMode);
-        localStorage.setItem('userTheme', isDarkMode ? 'dark' : 'light');
-    }, [isDarkMode]);
+        document.documentElement.classList.toggle('dark', isDarkMode);
+        localStorage.setItem('userTheme', isDarkMode ? 'dark' : 'light');
+    }, [isDarkMode]);
 
-    useEffect(() => {
-        const handleHashChange = () => {
-            const page = window.location.hash.replace('#/user/', '') || 'dashboard';
+    useEffect(() => {
+        const handleHashChange = () => {
+            const page = window.location.hash.replace('#/user/', '') || 'dashboard';
             setActivePage(page);
-        };
-        window.addEventListener('hashchange', handleHashChange);
-        handleHashChange(); // Initial load
-        return () => window.removeEventListener('hashchange', handleHashChange);
-    }, []);
+        };
+        window.addEventListener('hashchange', handleHashChange);
+        handleHashChange();
+        return () => window.removeEventListener('hashchange', handleHashChange);
+    }, []);
 
-    const handleLogoutConfirm = () => {
-        localStorage.clear();
-        window.location.href = '/login'; // Redirect to login page
-    };
+    const handleLogoutConfirm = () => {
+        localStorage.clear();
+        window.location.href = '/login';
+    };
 
-    const renderPage = () => {
-        switch (activePage) {
-            case 'dashboard': return <UserDashboardPage />;
-            case 'bookings': return <UserBookingsPage />;
+    const renderPage = () => {
+        switch (activePage) {
+            case 'dashboard': return <UserDashboardPage />;
+            case 'bookings': return <UserBookingsPage />;
             case 'new-booking': return <NewBookingPage />;
-            case 'profile': return <UserProfilePage />;
-            default:
+            case 'profile': return <UserProfilePage />;
+            default:
                 window.location.hash = '#/user/dashboard';
                 return <UserDashboardPage />;
-        }
-    };
+        }
+    };
     
     const handleImageError = (e) => { e.target.src = `https://placehold.co/40x40/e2e8f0/4a5568?text=${currentUser.fullName ? currentUser.fullName.charAt(0) : 'U'}`; };
     const profilePictureSrc = currentUser.profilePicture ? `http://localhost:5050/${currentUser.profilePicture}` : `https://placehold.co/40x40/e2e8f0/4a5568?text=${currentUser.fullName ? currentUser.fullName.charAt(0) : 'U'}`;
 
-    return (
-        <div className={`flex h-screen bg-gray-100 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100`}>
-            {/* Mobile Sidebar */}
-            <div className={`fixed inset-0 z-40 flex lg:hidden transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                <div className="w-72 bg-white dark:bg-gray-800 shadow-lg flex flex-col">
-                    <UserSidebarContent activePage={activePage} onLinkClick={() => setIsSidebarOpen(false)} onLogoutClick={() => { setIsSidebarOpen(false); setLogoutConfirmOpen(true); }} onMenuClose={() => setIsSidebarOpen(false)} />
-                </div>
-                <div className="flex-1 bg-black bg-opacity-50" onClick={() => setIsSidebarOpen(false)}></div>
-            </div>
-            {/* Desktop Sidebar */}
-            <aside className="w-72 bg-white dark:bg-gray-800 shadow-md hidden lg:flex flex-col flex-shrink-0">
-                <UserSidebarContent activePage={activePage} onLinkClick={() => {}} onLogoutClick={() => setLogoutConfirmOpen(true)} />
-            </aside>
+    return (
+        <div className={`flex h-screen bg-gray-100 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100`}>
+            {/* Sidebar */}
+            <div className={`fixed inset-0 z-40 flex lg:hidden transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                <div className="w-72 bg-white dark:bg-gray-800 shadow-lg flex flex-col">
+                    <UserSidebarContent activePage={activePage} onLinkClick={() => setIsSidebarOpen(false)} onLogoutClick={() => { setIsSidebarOpen(false); setLogoutConfirmOpen(true); }} onMenuClose={() => setIsSidebarOpen(false)} />
+                </div>
+                <div className="flex-1 bg-black bg-opacity-50" onClick={() => setIsSidebarOpen(false)}></div>
+            </div>
+            <aside className="w-72 bg-white dark:bg-gray-800 shadow-md hidden lg:flex flex-col flex-shrink-0">
+                <UserSidebarContent activePage={activePage} onLinkClick={() => {}} onLogoutClick={() => setLogoutConfirmOpen(true)} />
+            </aside>
 
-            <div className="flex-1 flex flex-col overflow-hidden">
-                <header className="bg-white dark:bg-gray-800 shadow-sm p-4 flex justify-between items-center">
-                    <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-gray-600 dark:text-gray-300"><Menu size={28} /></button>
-                    <div className="hidden lg:block" /> {/* Spacer */}
-                    <div className="flex items-center gap-4">
-                        <button onClick={() => setIsDarkMode(!isDarkMode)} className="text-gray-600 dark:text-gray-300 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-                        </button>
-                        <div className="flex items-center gap-3">
-                            <img key={profilePictureSrc} src={profilePictureSrc} alt="User" className="w-10 h-10 rounded-full object-cover" onError={handleImageError} />
-                            <div>
-                                <p className="font-semibold text-sm">{currentUser.fullName}</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Customer</p>
-                            </div>
-                        </div>
-                    </div>
-                </header>
-                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 md:p-8">
-                    {renderPage()}
-                </main>
-            </div>
+            {/* Main Content */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+                <header className="bg-white dark:bg-gray-800 shadow-sm p-4 flex justify-between items-center">
+                    <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-gray-600 dark:text-gray-300"><Menu size={28} /></button>
+                    <div className="hidden lg:block" />
+                    <div className="flex items-center gap-4">
+                        <button onClick={() => setIsDarkMode(!isDarkMode)} className="text-gray-600 dark:text-gray-300 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+                        </button>
+                        <div className="flex items-center gap-3">
+                            <img key={profilePictureSrc} src={profilePictureSrc} alt="User" className="w-10 h-10 rounded-full object-cover" onError={handleImageError} />
+                            <div>
+                                <p className="font-semibold text-sm">{currentUser.fullName}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Customer</p>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 md:p-8">
+                    {renderPage()}
+                </main>
+            </div>
 
-            <ConfirmationModal isOpen={isLogoutConfirmOpen} onClose={() => setLogoutConfirmOpen(false)} onConfirm={handleLogoutConfirm} title="Confirm Logout" message="Are you sure you want to logout?" confirmText="Logout" confirmButtonVariant="danger" Icon={LogOut} />
-        </div>
-    );
+            <ConfirmationModal isOpen={isLogoutConfirmOpen} onClose={() => setLogoutConfirmOpen(false)} onConfirm={handleLogoutConfirm} title="Confirm Logout" message="Are you sure you want to logout?" confirmText="Logout" confirmButtonVariant="danger" Icon={LogOut} />
+        </div>
+    );
 };
 
 export default UserDashboard;
