@@ -1111,7 +1111,7 @@ export const HomePage = () => {
         {
             title: 'Tire Care & Replacement',
             description: 'We offer professional tire inspection, puncture repair, and replacement services to ensure your safety and a smooth ride.',
-            imageUrl: 'https://api.deepai.org/job-view-file/736e46a2-a1d4-4e3a-b3da-32b33994f594/outputs/output.jpg'
+            imageUrl: 'https://pplx-res.cloudinary.com/image/upload/v1749870126/gpt4o_images/rdzir9c1zjxzacax23a3.png'
         },
         {
             title: 'Brake System Service',
@@ -1121,7 +1121,7 @@ export const HomePage = () => {
         {
             title: 'Suspension Tuning',
             description: 'Optimize your ride comfort and handling with our expert suspension tuning service, tailored to your riding style.',
-            imageUrl: 'https://api.deepai.org/job-view-file/51f089a6-9900-4354-902c-c4b395f28a92/outputs/output.jpg'
+            imageUrl: 'https://pplx-res.cloudinary.com/image/upload/v1749870248/gpt4o_images/tc4cstuz8iefxbn4mhlh.png'
         },
         {
             title: 'Full Body Detailing',
