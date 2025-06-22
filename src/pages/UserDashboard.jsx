@@ -156,7 +156,7 @@
 //                                         <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel}</td>
 //                                         <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
 //                                         <td className="p-3"><StatusBadge status={booking.status} /></td>
-//                                         <td className="p-3 text-right font-medium text-gray-900 dark:text-white">₹{booking.totalCost}</td>
+//                                         <td className="p-3 text-right font-medium text-gray-900 dark:text-white">रु{booking.totalCost}</td>
 //                                     </tr>
 //                                 ))}
 //                             </tbody>
@@ -218,7 +218,7 @@
 //                                         <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel}</td>
 //                                         <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
 //                                         <td className="p-3"><StatusBadge status={booking.status} /></td>
-//                                         <td className="p-3 text-right font-semibold">₹{booking.totalCost}</td>
+//                                         <td className="p-3 text-right font-semibold">रु{booking.totalCost}</td>
 //                                     </tr>
 //                                 ))}
 //                             </tbody>
@@ -294,7 +294,7 @@
 //                         <select id="serviceId" name="serviceId" value={formData.serviceId} onChange={handleChange} required className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white">
 //                             <option value="" disabled>-- Choose a service --</option>
 //                             {services.map(service => (
-//                                 <option key={service._id} value={service._id}>{service.name} (Approx. ₹{service.price})</option>
+//                                 <option key={service._id} value={service._id}>{service.name} (Approx. रु{service.price})</option>
 //                             ))}
 //                         </select>
 //                     </div>
@@ -697,7 +697,7 @@ const UserDashboardPage = () => {
                                         <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel}</td>
                                         <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
                                         <td className="p-3"><StatusBadge status={booking.status} /></td>
-                                        <td className="p-3 text-right font-medium text-gray-900 dark:text-white">₹{booking.totalCost}</td>
+                                        <td className="p-3 text-right font-medium text-gray-900 dark:text-white">रु{booking.totalCost}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -760,7 +760,7 @@ const UserBookingsPage = () => {
                                         <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel}</td>
                                         <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
                                         <td className="p-3"><StatusBadge status={booking.status} /></td>
-                                        <td className="p-3 text-right font-semibold">₹{booking.totalCost}</td>
+                                        <td className="p-3 text-right font-semibold">रु{booking.totalCost}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -832,7 +832,7 @@ const NewBookingPage = () => {
                         <select id="serviceId" name="serviceId" value={formData.serviceId} onChange={handleChange} required className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white">
                             <option value="" disabled>-- Choose a service --</option>
                             {services.map(service => (
-                                <option key={service._id} value={service._id}>{service.name} (Approx. ₹{service.price})</option>
+                                <option key={service._id} value={service._id}>{service.name} (Approx. रु{service.price})</option>
                             ))}
                         </select>
                     </div>
