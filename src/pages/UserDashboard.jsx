@@ -383,6 +383,7 @@ const UserProfilePage = () => {
                         )}
                         <h2 className="text-2xl font-semibold mt-4 text-gray-800 dark:text-white">{profile.fullName}</h2>
                         <p className="text-gray-500 dark:text-gray-400">{profile.email}</p>
+                        <p className="text-gray-500 dark:text-gray-400">{profile.phone}</p>
                     </div>
                     <div className="lg:col-span-2 space-y-4">
                         <Input id="fullName" label="Full Name" name="fullName" value={profile.fullName || ''} onChange={(e) => setProfile({...profile, fullName: e.target.value})} disabled={!isEditing} />
@@ -400,6 +401,94 @@ const UserProfilePage = () => {
         </div>
     );
 };
+
+// const UserProfilePage = () => {
+//     const [profile, setProfile] = useState({ fullName: '', email: '', phone: '' });
+//     const [isEditing, setIsEditing] = useState(false);
+//     const fileInputRef = useRef(null);
+
+//     useEffect(() => {
+//         const fetchProfile = async () => {
+//             try {
+//                 const response = await apiFetchUser('/profile');
+//                 setProfile(response.data);
+//             } catch (error) {
+//                 console.error("Failed to fetch profile", error);
+//                 toast.error(error.message || "Failed to fetch profile.");
+//             }
+//         };
+//         fetchProfile();
+//     }, []);
+
+//     const handleSave = async () => {
+//         const formData = new FormData();
+//         formData.append('fullName', profile.fullName);
+//         formData.append('email', profile.email);
+//         formData.append('phone', profile.phone);
+//         if (profile.newProfilePicture) {
+//             formData.append('profilePicture', profile.newProfilePicture);
+//         }
+
+//         try {
+//             const response = await apiFetchUser('/profile', {
+//                 method: 'PUT',
+//                 body: formData
+//             });
+//             setProfile(response.data);
+//             setIsEditing(false);
+//             toast.success('Profile updated successfully!');
+//         } catch (error) {
+//             console.error('Failed to update profile', error);
+//             toast.error(error.message || 'Failed to update profile.');
+//         }
+//     };
+    
+//     const handleFileChange = (e) => {
+//         const file = e.target.files[0];
+//         if (file) {
+//             setProfile(p => ({ ...p, profilePictureUrl: URL.createObjectURL(file), newProfilePicture: file }));
+//         }
+//     };
+    
+//     const handleImageError = (e) => { e.target.src = `https://placehold.co/128x128/e2e8f0/4a5568?text=${profile.fullName ? profile.fullName.charAt(0) : 'U'}`; };
+//     const profilePictureSrc = profile.profilePictureUrl || (profile.profilePicture ? `http://localhost:5050/${profile.profilePicture}` : `https://placehold.co/128x128/e2e8f0/4a5568?text=${profile.fullName ? profile.fullName.charAt(0) : 'U'}`);
+
+
+//     return (
+//         <div className="space-y-6">
+//             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">My Profile</h1>
+//             <Card>
+//                 <div className="flex justify-end mb-4">
+//                      {!isEditing && <Button onClick={() => setIsEditing(true)}><Edit size={16}/> Edit Profile</Button>}
+//                 </div>
+//                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+//                     <div className="lg:col-span-1 flex flex-col items-center text-center">
+//                         <img key={profilePictureSrc} src={profilePictureSrc} alt="Profile" className="w-32 h-32 rounded-full object-cover mb-4 ring-4 ring-blue-500/50" onError={handleImageError}/>
+//                         {isEditing && (
+//                             <>
+//                                 <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+//                                 <Button variant="secondary" onClick={() => fileInputRef.current.click()}><Camera size={16}/> Change Picture</Button>
+//                             </>
+//                         )}
+//                         <h2 className="text-2xl font-semibold mt-4 text-gray-800 dark:text-white">{profile.fullName}</h2>
+//                         <p className="text-gray-500 dark:text-gray-400">{profile.email}</p>
+//                     </div>
+//                     <div className="lg:col-span-2 space-y-4">
+//                         <Input id="fullName" label="Full Name" name="fullName" value={profile.fullName || ''} onChange={(e) => setProfile({...profile, fullName: e.target.value})} disabled={!isEditing} />
+//                         <Input id="email" label="Email Address" name="email" type="email" value={profile.email || ''} onChange={(e) => setProfile({...profile, email: e.target.value})} disabled={!isEditing} />
+//                         <Input id="phone" label="Phone Number" name="phone" value={profile.phone || ''} onChange={(e) => setProfile({...profile, phone: e.target.value})} disabled={!isEditing} />
+//                         {isEditing && (
+//                             <div className="flex justify-end gap-3 pt-4">
+//                                 <Button variant="secondary" onClick={() => setIsEditing(false)}>Cancel</Button>
+//                                 <Button onClick={handleSave}>Save Changes</Button>
+//                             </div>
+//                         )}
+//                     </div>
+//                 </div>
+//             </Card>
+//         </div>
+//     );
+// };
 
 //-///////////////////////////////////////////////////////////////////////////
 // SIDEBAR & MAIN LAYOUT COMPONENT
