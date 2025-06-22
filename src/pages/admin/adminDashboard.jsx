@@ -287,7 +287,7 @@ const BookingDetailsPage = ({ bookingId }) => {
                         <div className="space-y-2 mt-4 text-gray-600 dark:text-gray-400">
                             <p><strong>Name:</strong> {booking.customer?.fullName || 'N/A'}</p>
                             <p><strong>Email:</strong> {booking.customer?.email || 'N/A'}</p>
-                            <p><strong>Phone:</strong> {booking.customer?.phoneNumber || 'N/A'}</p>
+                            <p><strong>Phone:</strong> {booking.customer?.phone || 'N/A'}</p>
                         </div>
                     </div>
                     <div>
