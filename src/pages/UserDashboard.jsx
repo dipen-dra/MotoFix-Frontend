@@ -415,28 +415,41 @@ const UserNavLink = ({ page, icon: Icon, children, activePage, onLinkClick }) =>
     );
 };
 
-const UserSidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClose }) => (
-    <>
-        <div className="p-4 flex items-center justify-between">
-             <div className="flex items-center gap-3">
-                <img src="/motofix-removebg-preview.png" alt="MotoFix Logo" className="h-20 w-auto" />
+const UserSidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClose }) => {
+    const handleLogoClick = () => {
+        window.location.href = 'http://localhost:5173/dashboard#/user/dashboard';
+        if (onMenuClose) onMenuClose(); // Close mobile menu if open
+    };
+
+    return (
+        <>
+            <div className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <img 
+                        src="/motofix-removebg-preview.png" 
+                        alt="MotoFix Logo" 
+                        className="h-20 w-auto cursor-pointer hover:opacity-80 transition-opacity duration-200" 
+                        onClick={handleLogoClick}
+                        title="Go to Dashboard"
+                    />
+                </div>
+                {onMenuClose && <button onClick={onMenuClose} className="lg:hidden text-gray-500 dark:text-gray-400"><X size={24} /></button>}
             </div>
-            {onMenuClose && <button onClick={onMenuClose} className="lg:hidden text-gray-500 dark:text-gray-400"><X size={24} /></button>}
-        </div>
-        <nav className="flex-1 px-4 py-6 space-y-2">
-            <UserNavLink page="dashboard" icon={LayoutDashboard} activePage={activePage} onLinkClick={onLinkClick}>Dashboard</UserNavLink>
-            <UserNavLink page="bookings" icon={CalendarDays} activePage={activePage} onLinkClick={onLinkClick}>My Bookings</UserNavLink>
-            <UserNavLink page="new-booking" icon={PlusCircle} activePage={activePage} onLinkClick={onLinkClick}>New Booking</UserNavLink>
-            <UserNavLink page="profile" icon={User} activePage={activePage} onLinkClick={onLinkClick}>Profile</UserNavLink>
-        </nav>
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-            <button onClick={onLogoutClick} className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">
-                <LogOut size={22} />
-                <span className="text-md">Logout</span>
-            </button>
-        </div>
-    </>
-);
+            <nav className="flex-1 px-4 py-6 space-y-2">
+                <UserNavLink page="dashboard" icon={LayoutDashboard} activePage={activePage} onLinkClick={onLinkClick}>Dashboard</UserNavLink>
+                <UserNavLink page="bookings" icon={CalendarDays} activePage={activePage} onLinkClick={onLinkClick}>My Bookings</UserNavLink>
+                <UserNavLink page="new-booking" icon={PlusCircle} activePage={activePage} onLinkClick={onLinkClick}>New Booking</UserNavLink>
+                <UserNavLink page="profile" icon={User} activePage={activePage} onLinkClick={onLinkClick}>Profile</UserNavLink>
+            </nav>
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                <button onClick={onLogoutClick} className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">
+                    <LogOut size={22} />
+                    <span className="text-md">Logout</span>
+                </button>
+            </div>
+        </>
+    );
+};
 
 const UserDashboard = () => {
     const [activePage, setActivePage] = useState(() => window.location.hash.replace('#/user/', '') || 'dashboard');
@@ -488,7 +501,6 @@ const UserDashboard = () => {
                 return <UserDashboardPage />;
         }
     };
-    
     const handleImageError = (e) => { e.target.src = `https://placehold.co/40x40/e2e8f0/4a5568?text=${currentUser.fullName ? currentUser.fullName.charAt(0) : 'U'}`; };
     const profilePictureSrc = currentUser.profilePicture ? `http://localhost:5050/${currentUser.profilePicture}` : `https://placehold.co/40x40/e2e8f0/4a5568?text=${currentUser.fullName ? currentUser.fullName.charAt(0) : 'U'}`;
 
