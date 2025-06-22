@@ -157,7 +157,6 @@ const DashboardPage = () => {
         </div>
     );
 };
-
 const BookingsPage = () => {
     const [bookings, setBookings] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -200,12 +199,18 @@ const BookingsPage = () => {
         finally { setConfirmOpen(false); setItemToDelete(null); }
     };
 
+    // THIS FUNCTION IS NOW CORRECT because the backend route is fixed.
     const handleSave = async (formData) => {
         if (!editingBooking) return;
         try {
-            const response = await apiFetch(`/bookings/${editingBooking._id}`, { method: 'PUT', body: JSON.stringify(formData) });
+            // This URL now matches our fixed backend route
+            const response = await apiFetch(`/bookings/${editingBooking._id}`, { 
+                method: 'PUT', 
+                body: JSON.stringify(formData) 
+            });
+            // The backend now returns the fully populated booking, so this works
             setBookings(bookings.map(b => b._id === editingBooking._id ? response.data : b));
-            toast.success('Booking updated successfully!');
+            toast.success(response.message || 'Booking updated successfully!');
             closeModal();
         } catch (error) {
             console.error('Failed to save booking', error);
@@ -215,6 +220,8 @@ const BookingsPage = () => {
 
     const closeModal = () => { setIsModalOpen(false); setEditingBooking(null); };
 
+    // ... rest of the BookingsPage component JSX ...
+    // ... no changes needed there.
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Bookings Management</h1>
@@ -244,6 +251,93 @@ const BookingsPage = () => {
         </div>
     );
 };
+
+// const BookingsPage = () => {
+//     const [bookings, setBookings] = useState([]);
+//     const [searchTerm, setSearchTerm] = useState('');
+//     const [isModalOpen, setIsModalOpen] = useState(false);
+//     const [editingBooking, setEditingBooking] = useState(null);
+//     const [isConfirmOpen, setConfirmOpen] = useState(false);
+//     const [itemToDelete, setItemToDelete] = useState(null);
+
+//     const fetchBookings = async () => {
+//         try {
+//             const response = await apiFetch('/bookings');
+//             setBookings(response.data || []);
+//         } catch (error) {
+//             console.error('Failed to fetch bookings', error.message);
+//             toast.error(error.message || 'Failed to fetch bookings.');
+//             setBookings([]);
+//         }
+//     };
+
+//     useEffect(() => { fetchBookings(); }, []);
+
+//     const filteredBookings = bookings.filter(b =>
+//         (b.customer?.fullName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+//         (b.serviceType?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+//     );
+
+//     const handleEdit = (booking) => { setEditingBooking(booking); setIsModalOpen(true); };
+//     const handleDeleteClick = (id) => { setItemToDelete(id); setConfirmOpen(true); };
+
+//     const confirmDelete = async () => {
+//         if (!itemToDelete) return;
+//         try {
+//             await apiFetch(`/bookings/${itemToDelete}`, { method: 'DELETE' });
+//             setBookings(bookings.filter(b => b._id !== itemToDelete));
+//             toast.success('Booking deleted successfully!');
+//         } catch (error) {
+//             console.error('Failed to delete booking', error);
+//             toast.error(error.message || 'Failed to delete booking.');
+//         }
+//         finally { setConfirmOpen(false); setItemToDelete(null); }
+//     };
+
+//     const handleSave = async (formData) => {
+//         if (!editingBooking) return;
+//         try {
+//             const response = await apiFetch(`/bookings/${editingBooking._id}`, { method: 'PUT', body: JSON.stringify(formData) });
+//             setBookings(bookings.map(b => b._id === editingBooking._id ? response.data : b));
+//             toast.success('Booking updated successfully!');
+//             closeModal();
+//         } catch (error) {
+//             console.error('Failed to save booking', error);
+//             toast.error(error.message || 'Failed to save booking.');
+//         }
+//     };
+
+//     const closeModal = () => { setIsModalOpen(false); setEditingBooking(null); };
+
+//     return (
+//         <div className="space-y-6">
+//             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Bookings Management</h1>
+//             <Card>
+//                 <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4"><div className="relative w-full md:w-auto"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input type="text" placeholder="Search bookings..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full md:w-80 pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" /></div></div>
+//                 <div className="overflow-x-auto"><table className="w-full text-left"><thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700"><tr><th className="p-3">Customer</th><th className="p-3">Vehicle</th><th className="p-3">Service</th><th className="p-3">Date</th><th className="p-3">Status</th><th className="p-3 text-right">Cost</th><th className="p-3 text-center">Actions</th></tr></thead>
+//                     <tbody>{filteredBookings.map(booking => (
+//                         <tr key={booking._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
+//                             <td className="p-3 font-medium text-gray-900 dark:text-white">{booking.customer?.fullName || 'N/A'}</td>
+//                             <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel || 'N/A'}</td>
+//                             <td className="p-3 text-gray-600 dark:text-gray-300">{booking.serviceType || 'N/A'}</td>
+//                             <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
+//                             <td className="p-3"><StatusBadge status={booking.status} /></td>
+//                             <td className="p-3 text-right font-medium">रु{booking.totalCost}</td>
+//                             <td className="p-3 text-center">
+//                                 <div className="flex justify-center items-center gap-2">
+//                                     <a href={`#/admin/bookings/${booking._id}`} className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 p-1" title="View Details"><Search size={18} /></a>
+//                                     <button onClick={() => handleEdit(booking)} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="Edit Booking"><Edit size={18} /></button>
+//                                     <button onClick={() => handleDeleteClick(booking._id)} className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1" title="Delete Booking"><Trash2 size={18} /></button>
+//                                 </div>
+//                             </td>
+//                         </tr>))}
+//                     </tbody></table></div>
+//             </Card>
+//             <BookingFormModal isOpen={isModalOpen} onClose={closeModal} booking={editingBooking} onSave={handleSave} />
+//             <ConfirmationModal isOpen={isConfirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={confirmDelete} title="Delete Booking" message="Are you sure you want to delete this booking? This action cannot be undone." />
+//         </div>
+//     );
+// };
 
 const BookingDetailsPage = ({ bookingId }) => {
     const [booking, setBooking] = useState(null);
