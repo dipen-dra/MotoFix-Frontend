@@ -1,6 +1,7 @@
 // import React, { useState, useEffect, useRef } from 'react';
 // import { BarChart, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-// import { LayoutDashboard, CalendarDays, User, LogOut, Menu, X, Sun, Moon, PlusCircle, Bike, Wrench, Edit, Trash2, AlertTriangle, Camera, MapPin } from 'lucide-react';
+// // Added 'CreditCard' icon for payments
+// import { LayoutDashboard, CalendarDays, User, LogOut, Menu, X, Sun, Moon, PlusCircle, Bike, Wrench, Edit, Trash2, AlertTriangle, Camera, MapPin, CreditCard } from 'lucide-react';
 // import { toast } from 'react-toastify';
 
 // //-///////////////////////////////////////////////////////////////////////////
@@ -43,6 +44,8 @@
 //         case 'In Progress': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
 //         case 'Pending': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
 //         case 'Cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+//         // Added payment status colors
+//         case 'Paid': return 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-300';
 //         default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
 //     }
 // };
@@ -211,7 +214,12 @@
 //                         <table className="w-full text-left">
 //                             <thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700">
 //                                 <tr>
-//                                     <th className="p-3">Service</th><th className="p-3">Bike</th><th className="p-3">Date</th><th className="p-3">Status</th><th className="p-3 text-right">Cost</th>
+//                                     <th className="p-3">Service</th>
+//                                     <th className="p-3">Bike</th>
+//                                     <th className="p-3">Date</th>
+//                                     <th className="p-3">Status</th>
+//                                     <th className="p-3">Payment</th>
+//                                     <th className="p-3 text-right">Cost</th>
 //                                 </tr>
 //                             </thead>
 //                             <tbody>
@@ -221,6 +229,7 @@
 //                                         <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel}</td>
 //                                         <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
 //                                         <td className="p-3"><StatusBadge status={booking.status} /></td>
+//                                         <td className="p-3"><StatusBadge status={booking.paymentStatus} /></td>
 //                                         <td className="p-3 text-right font-semibold">रु{booking.totalCost}</td>
 //                                     </tr>
 //                                 ))}
@@ -269,15 +278,14 @@
 //         }
 
 //         try {
-//             await apiFetchUser('/bookings', {
+//             const response = await apiFetchUser('/bookings', {
 //                 method: 'POST',
 //                 body: JSON.stringify(formData)
 //             });
-//             toast.success("Your booking has been successfully submitted! We will contact you shortly.");
-//             setFormData({ serviceId: '', bikeModel: '', date: '', notes: '' });
-//             setTimeout(() => {
-//                 window.location.hash = '#/user/bookings';
-//             }, 3000);
+//             toast.success("Booking submitted! Please proceed with payment.");
+//             // Redirect to the new payments page
+//             window.location.hash = `#/user/my-payments`;
+
 //         } catch (err) {
 //             toast.error(err.message || "Failed to submit booking. Please try again.");
 //         }
@@ -312,6 +320,80 @@
 //         </div>
 //     );
 // };
+
+// // NEW COMPONENT: MyPaymentsPage
+// const MyPaymentsPage = () => {
+//     const [unpaidBookings, setUnpaidBookings] = useState([]);
+//     const [isLoading, setIsLoading] = useState(true);
+
+//     useEffect(() => {
+//         const fetchUnpaidBookings = async () => {
+//             setIsLoading(true);
+//             try {
+//                 const response = await apiFetchUser('/bookings');
+//                 const allBookings = response.data || [];
+//                 setUnpaidBookings(allBookings.filter(b => b.paymentStatus === 'Pending'));
+//             } catch (error) {
+//                 console.error('Failed to fetch unpaid bookings:', error);
+//                 toast.error(error.message || 'Could not fetch bookings for payment.');
+//             } finally {
+//                 setIsLoading(false);
+//             }
+//         };
+//         fetchUnpaidBookings();
+//     }, []);
+
+//     const handlePayment = async (bookingId, method) => {
+//         if (method === 'Khalti') {
+//             toast.info("Khalti payment is still under construction. Please select Cash on Delivery.");
+//             return;
+//         }
+
+//         try {
+//             await apiFetchUser(`/bookings/${bookingId}/pay`, {
+//                 method: 'PUT',
+//                 body: JSON.stringify({ paymentMethod: method })
+//             });
+//             toast.success("Payment Confirmed! Your booking is now being processed.");
+//             // Refresh the list
+//             setUnpaidBookings(unpaidBookings.filter(b => b._id !== bookingId));
+//         } catch (error) {
+//             toast.error(error.message || "Payment confirmation failed.");
+//         }
+//     };
+
+//     return (
+//         <div className="space-y-6">
+//             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">My Payments</h1>
+//             <Card>
+//                 <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Pending Payments</h2>
+//                 {isLoading ? (<div className="text-center p-12">Loading...</div>) :
+//                     unpaidBookings.length > 0 ? (
+//                         <div className="space-y-4">
+//                             {unpaidBookings.map(booking => (
+//                                 <div key={booking._id} className="p-4 border rounded-lg dark:border-gray-700 flex justify-between items-center">
+//                                     <div>
+//                                         <p className="font-bold">{booking.serviceType} for {booking.bikeModel}</p>
+//                                         <p className="text-sm text-gray-500 dark:text-gray-400">Date: {new Date(booking.date).toLocaleDateString()}</p>
+//                                         <p className="text-lg font-semibold">Total: रु{booking.totalCost}</p>
+//                                     </div>
+//                                     <div className="flex gap-2">
+//                                         <Button onClick={() => handlePayment(booking._id, 'COD')}>Pay with COD</Button>
+//                                         <Button variant="secondary" onClick={() => handlePayment(booking._id, 'Khalti')}>Pay with Khalti</Button>
+//                                     </div>
+//                                 </div>
+//                             ))}
+//                         </div>
+//                     ) : (
+//                         <div className="text-center py-12">
+//                             <p className="text-gray-500 dark:text-gray-400">You have no pending payments.</p>
+//                         </div>
+//                     )}
+//             </Card>
+//         </div>
+//     )
+// }
+
 
 // const UserProfilePage = ({ currentUser, setCurrentUser }) => {
 //     const [profile, setProfile] = useState({ fullName: '', email: '', phone: '', address: '', profilePicture: '' });
@@ -519,6 +601,7 @@
 //             <nav className="flex-1 px-4 py-6 space-y-2">
 //                 <UserNavLink page="dashboard" icon={LayoutDashboard} activePage={activePage} onLinkClick={onLinkClick}>Dashboard</UserNavLink>
 //                 <UserNavLink page="bookings" icon={CalendarDays} activePage={activePage} onLinkClick={onLinkClick}>My Bookings</UserNavLink>
+//                 <UserNavLink page="my-payments" icon={CreditCard} activePage={activePage} onLinkClick={onLinkClick}>My Payments</UserNavLink>
 //                 <UserNavLink page="new-booking" icon={PlusCircle} activePage={activePage} onLinkClick={onLinkClick}>New Booking</UserNavLink>
 //                 <UserNavLink page="profile" icon={User} activePage={activePage} onLinkClick={onLinkClick}>Profile</UserNavLink>
 //             </nav>
@@ -579,6 +662,7 @@
 //             case 'dashboard': return <UserDashboardPage />;
 //             case 'bookings': return <UserBookingsPage />;
 //             case 'new-booking': return <NewBookingPage />;
+//             case 'my-payments': return <MyPaymentsPage />;
 //             case 'profile': return <UserProfilePage currentUser={currentUser} setCurrentUser={setCurrentUser} />;
 //             default:
 //                 window.location.hash = '#/user/dashboard';
@@ -632,9 +716,9 @@
 
 // export default UserDashboard;
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import { BarChart, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-// Added 'CreditCard' icon for payments
 import { LayoutDashboard, CalendarDays, User, LogOut, Menu, X, Sun, Moon, PlusCircle, Bike, Wrench, Edit, Trash2, AlertTriangle, Camera, MapPin, CreditCard } from 'lucide-react';
 import { toast } from 'react-toastify';
 
@@ -678,7 +762,6 @@ const getStatusColor = (status) => {
         case 'In Progress': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
         case 'Pending': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
         case 'Cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-        // Added payment status colors
         case 'Paid': return 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-300';
         default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
     }
@@ -719,7 +802,6 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, confirm
         </div>
     );
 };
-
 
 //-///////////////////////////////////////////////////////////////////////////
 // USER DASHBOARD PAGE COMPONENTS
@@ -817,24 +899,37 @@ const UserDashboardPage = () => {
 const UserBookingsPage = () => {
     const [bookings, setBookings] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [bookingToDelete, setBookingToDelete] = useState(null);
+
+    const fetchBookings = async () => {
+        setIsLoading(true);
+        try {
+            const response = await apiFetchUser('/bookings');
+            setBookings(response.data || []); 
+        } catch (error) {
+            console.error('Failed to fetch bookings:', error.message);
+            toast.error(error.message || 'Failed to fetch your bookings.');
+            setBookings([]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchBookings = async () => {
-            setIsLoading(true);
-            try {
-                const response = await apiFetchUser('/bookings');
-                setBookings(response.data || []); 
-            } catch (error) {
-                console.error('Failed to fetch bookings:', error.message);
-                toast.error(error.message || 'Failed to fetch your bookings.');
-                setBookings([]);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
         fetchBookings();
     }, []);
+
+    const handleDelete = async () => {
+        if (!bookingToDelete) return;
+        try {
+            await apiFetchUser(`/bookings/${bookingToDelete}`, { method: 'DELETE' });
+            toast.success('Booking cancelled successfully.');
+            setBookingToDelete(null);
+            fetchBookings(); // Refresh the list
+        } catch (error) {
+            toast.error(error.message || "Failed to cancel booking.");
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -854,6 +949,7 @@ const UserBookingsPage = () => {
                                     <th className="p-3">Status</th>
                                     <th className="p-3">Payment</th>
                                     <th className="p-3 text-right">Cost</th>
+                                    <th className="p-3 text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -865,6 +961,16 @@ const UserBookingsPage = () => {
                                         <td className="p-3"><StatusBadge status={booking.status} /></td>
                                         <td className="p-3"><StatusBadge status={booking.paymentStatus} /></td>
                                         <td className="p-3 text-right font-semibold">रु{booking.totalCost}</td>
+                                        <td className="p-3 text-center">
+                                            <div className="flex justify-center gap-2">
+                                                <Button variant="secondary" size="sm" onClick={() => window.location.hash = `#/user/edit-booking/${booking._id}`} disabled={booking.status !== 'Pending'}>
+                                                    <Edit size={16}/>
+                                                </Button>
+                                                <Button variant="danger" size="sm" onClick={() => setBookingToDelete(booking._id)} disabled={booking.isPaid}>
+                                                    <Trash2 size={16}/>
+                                                </Button>
+                                            </div>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -877,6 +983,91 @@ const UserBookingsPage = () => {
                         </div>
                     )}
                 </div>
+            </Card>
+            <ConfirmationModal 
+                isOpen={!!bookingToDelete} 
+                onClose={() => setBookingToDelete(null)}
+                onConfirm={handleDelete}
+                title="Cancel Booking"
+                message="Are you sure you want to cancel this booking? This action cannot be undone."
+                confirmText="Yes, Cancel"
+            />
+        </div>
+    );
+};
+
+// NEW: EditBookingPage
+const EditBookingPage = () => {
+    const [formData, setFormData] = useState({ bikeModel: '', date: '', notes: '' });
+    const [bookingId, setBookingId] = useState(null);
+
+    useEffect(() => {
+        const hash = window.location.hash;
+        const id = hash.split('/').pop();
+        setBookingId(id);
+
+        const fetchBookingData = async () => {
+            try {
+                // To get a single booking, we reuse the admin's getBookingById endpoint logic, but on the user side.
+                // Assuming you have a `GET /api/user/bookings/:id` endpoint. If not, you'd need to add it.
+                // For now, let's filter from the full bookings list.
+                const response = await apiFetchUser('/bookings');
+                const booking = response.data.find(b => b._id === id);
+                if (booking) {
+                    setFormData({
+                        bikeModel: booking.bikeModel,
+                        date: new Date(booking.date).toISOString().split('T')[0], // Format for date input
+                        notes: booking.notes
+                    });
+                } else {
+                    toast.error("Booking not found.");
+                    window.location.hash = '#/user/bookings';
+                }
+            } catch (err) {
+                toast.error(err.message || "Failed to load booking data.");
+            }
+        };
+
+        if (id) {
+            fetchBookingData();
+        }
+    }, []);
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await apiFetchUser(`/bookings/${bookingId}`, {
+                method: 'PUT',
+                body: JSON.stringify(formData),
+            });
+            toast.success("Booking updated successfully!");
+            window.location.hash = '#/user/bookings';
+        } catch (err) {
+            toast.error(err.message || "Failed to update booking.");
+        }
+    };
+    
+    return (
+        <div className="space-y-6">
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Edit Booking</h1>
+            <Card>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <Input id="bikeModel" name="bikeModel" label="Bike Model" value={formData.bikeModel} onChange={handleChange} required />
+                    <Input id="date" name="date" label="Preferred Date" type="date" value={formData.date} onChange={handleChange} required min={new Date().toISOString().split("T")[0]} />
+                    <div>
+                        <label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Problem Description</label>
+                        <textarea id="notes" name="notes" rows="4" value={formData.notes} onChange={handleChange} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white" placeholder="Any specific issues or requests?"></textarea>
+                    </div>
+
+                    <div className="flex justify-end gap-3">
+                        <Button variant="secondary" onClick={() => window.location.hash = '#/user/bookings'}>Cancel</Button>
+                        <Button type="submit">Save Changes</Button>
+                    </div>
+                </form>
             </Card>
         </div>
     );
@@ -1250,7 +1441,7 @@ const UserSidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClos
 };
 
 const UserDashboard = () => {
-    const [activePage, setActivePage] = useState(() => window.location.hash.replace('#/user/', '') || 'dashboard');
+    const [activePage, setActivePage] = useState('dashboard');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isLogoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState({ fullName: 'Guest', email: '', profilePicture: '' });
@@ -1278,11 +1469,16 @@ const UserDashboard = () => {
 
     useEffect(() => {
         const handleHashChange = () => {
-            const page = window.location.hash.replace('#/user/', '') || 'dashboard';
-            setActivePage(page);
+            const hash = window.location.hash.replace('#/user/', '');
+            // Handle dynamic routes like edit-booking/:id
+            if (hash.startsWith('edit-booking/')) {
+                setActivePage('edit-booking');
+            } else {
+                setActivePage(hash || 'dashboard');
+            }
         };
         window.addEventListener('hashchange', handleHashChange);
-        handleHashChange();
+        handleHashChange(); // Initial check
         return () => window.removeEventListener('hashchange', handleHashChange);
     }, []);
 
@@ -1297,6 +1493,7 @@ const UserDashboard = () => {
             case 'bookings': return <UserBookingsPage />;
             case 'new-booking': return <NewBookingPage />;
             case 'my-payments': return <MyPaymentsPage />;
+            case 'edit-booking': return <EditBookingPage />; // New case
             case 'profile': return <UserProfilePage currentUser={currentUser} setCurrentUser={setCurrentUser} />;
             default:
                 window.location.hash = '#/user/dashboard';
