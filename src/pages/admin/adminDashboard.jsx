@@ -5,10 +5,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { Plus, Edit, Trash2, Search, Users, Wrench, DollarSign, List, User, LogOut, Menu, X, Sun, Moon, Camera, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { toast } from 'react-toastify';
 
-//-///////////////////////////////////////////////////////////////////////////
-// API HELPER FUNCTIONS
-//-///////////////////////////////////////////////////////////////////////////
-
 const API_BASE_URL = "http://localhost:5050/api/admin";
 
 const apiFetch = async (endpoint, options = {}) => {
@@ -36,9 +32,6 @@ const apiFetch = async (endpoint, options = {}) => {
 };
 
 
-//-///////////////////////////////////////////////////////////////////////////
-// REUSABLE UI COMPONENTS
-//-///////////////////////////////////////////////////////////////////////////
 
 const getStatusColor = (status) => {
     // Matching the exact strings from your schema's enum
@@ -104,10 +97,6 @@ const Input = ({ id, label, ...props }) => (
 
 const StatusBadge = ({ status }) => (<span className={`px-2.5 py-1 text-xs font-semibold rounded-full capitalize ${getStatusColor(status)}`}>{status}</span>);
 
-
-//-///////////////////////////////////////////////////////////////////////////
-// PAGE COMPONENTS
-//-///////////////////////////////////////////////////////////////////////////
 
 const DashboardPage = () => {
     const [analytics, setAnalytics] = useState({ totalRevenue: 0, totalBookings: 0, newUsers: 0, revenueData: [], servicesData: [] });
@@ -251,94 +240,6 @@ const BookingsPage = () => {
         </div>
     );
 };
-
-// const BookingsPage = () => {
-//     const [bookings, setBookings] = useState([]);
-//     const [searchTerm, setSearchTerm] = useState('');
-//     const [isModalOpen, setIsModalOpen] = useState(false);
-//     const [editingBooking, setEditingBooking] = useState(null);
-//     const [isConfirmOpen, setConfirmOpen] = useState(false);
-//     const [itemToDelete, setItemToDelete] = useState(null);
-
-//     const fetchBookings = async () => {
-//         try {
-//             const response = await apiFetch('/bookings');
-//             setBookings(response.data || []);
-//         } catch (error) {
-//             console.error('Failed to fetch bookings', error.message);
-//             toast.error(error.message || 'Failed to fetch bookings.');
-//             setBookings([]);
-//         }
-//     };
-
-//     useEffect(() => { fetchBookings(); }, []);
-
-//     const filteredBookings = bookings.filter(b =>
-//         (b.customer?.fullName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-//         (b.serviceType?.toLowerCase() || '').includes(searchTerm.toLowerCase())
-//     );
-
-//     const handleEdit = (booking) => { setEditingBooking(booking); setIsModalOpen(true); };
-//     const handleDeleteClick = (id) => { setItemToDelete(id); setConfirmOpen(true); };
-
-//     const confirmDelete = async () => {
-//         if (!itemToDelete) return;
-//         try {
-//             await apiFetch(`/bookings/${itemToDelete}`, { method: 'DELETE' });
-//             setBookings(bookings.filter(b => b._id !== itemToDelete));
-//             toast.success('Booking deleted successfully!');
-//         } catch (error) {
-//             console.error('Failed to delete booking', error);
-//             toast.error(error.message || 'Failed to delete booking.');
-//         }
-//         finally { setConfirmOpen(false); setItemToDelete(null); }
-//     };
-
-//     const handleSave = async (formData) => {
-//         if (!editingBooking) return;
-//         try {
-//             const response = await apiFetch(`/bookings/${editingBooking._id}`, { method: 'PUT', body: JSON.stringify(formData) });
-//             setBookings(bookings.map(b => b._id === editingBooking._id ? response.data : b));
-//             toast.success('Booking updated successfully!');
-//             closeModal();
-//         } catch (error) {
-//             console.error('Failed to save booking', error);
-//             toast.error(error.message || 'Failed to save booking.');
-//         }
-//     };
-
-//     const closeModal = () => { setIsModalOpen(false); setEditingBooking(null); };
-
-//     return (
-//         <div className="space-y-6">
-//             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Bookings Management</h1>
-//             <Card>
-//                 <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4"><div className="relative w-full md:w-auto"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input type="text" placeholder="Search bookings..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full md:w-80 pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" /></div></div>
-//                 <div className="overflow-x-auto"><table className="w-full text-left"><thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700"><tr><th className="p-3">Customer</th><th className="p-3">Vehicle</th><th className="p-3">Service</th><th className="p-3">Date</th><th className="p-3">Status</th><th className="p-3 text-right">Cost</th><th className="p-3 text-center">Actions</th></tr></thead>
-//                     <tbody>{filteredBookings.map(booking => (
-//                         <tr key={booking._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
-//                             <td className="p-3 font-medium text-gray-900 dark:text-white">{booking.customer?.fullName || 'N/A'}</td>
-//                             <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel || 'N/A'}</td>
-//                             <td className="p-3 text-gray-600 dark:text-gray-300">{booking.serviceType || 'N/A'}</td>
-//                             <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
-//                             <td className="p-3"><StatusBadge status={booking.status} /></td>
-//                             <td className="p-3 text-right font-medium">रु{booking.totalCost}</td>
-//                             <td className="p-3 text-center">
-//                                 <div className="flex justify-center items-center gap-2">
-//                                     <a href={`#/admin/bookings/${booking._id}`} className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 p-1" title="View Details"><Search size={18} /></a>
-//                                     <button onClick={() => handleEdit(booking)} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="Edit Booking"><Edit size={18} /></button>
-//                                     <button onClick={() => handleDeleteClick(booking._id)} className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1" title="Delete Booking"><Trash2 size={18} /></button>
-//                                 </div>
-//                             </td>
-//                         </tr>))}
-//                     </tbody></table></div>
-//             </Card>
-//             <BookingFormModal isOpen={isModalOpen} onClose={closeModal} booking={editingBooking} onSave={handleSave} />
-//             <ConfirmationModal isOpen={isConfirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={confirmDelete} title="Delete Booking" message="Are you sure you want to delete this booking? This action cannot be undone." />
-//         </div>
-//     );
-// };
-
 const BookingDetailsPage = ({ bookingId }) => {
     const [booking, setBooking] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -580,7 +481,6 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
     );
 };
 
-// MODAL FORMS
 
 const BookingFormModal = ({ isOpen, onClose, booking, onSave }) => {
     const [formData, setFormData] = useState({});
@@ -603,10 +503,6 @@ const UserFormModal = ({ isOpen, onClose, onSave, user }) => {
     const handleSubmit = (e) => { e.preventDefault(); const dataToSave = { ...formData }; if (user && !dataToSave.password) { delete dataToSave.password; } onSave(dataToSave); }
     return (<Modal isOpen={isOpen} onClose={onClose} title={user ? 'Edit User' : 'Add New User'}><form onSubmit={handleSubmit} className="space-y-4"><Input id="fullName" name="fullName" label="Full Name" value={formData.fullName} onChange={handleChange} required /><Input id="email" name="email" label="Email Address" type="email" value={formData.email} onChange={handleChange} required /><Input id="password" name="password" label="Password" type="password" value={formData.password} onChange={handleChange} placeholder={user ? "Leave blank to keep current" : ""} required={!user} /><div><label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Role</label><select id="role" name="role" value={formData.role || 'user'} onChange={handleChange} className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg dark:text-white"><option value="user">User</option><option value="admin">Admin</option></select></div><div className="flex justify-end gap-3 pt-4"><Button type="button" variant="secondary" onClick={onClose}>Cancel</Button><Button type="submit" variant="primary">{user ? 'Save Changes' : 'Add User'}</Button></div></form></Modal>)
 }
-
-//-///////////////////////////////////////////////////////////////////////////
-// SIDEBAR & MAIN LAYOUT
-//-///////////////////////////////////////////////////////////////////////////
 
 const NavLink = ({ page, icon: Icon, children, activePage, onLinkClick }) => {
     const isActive = activePage === page;
@@ -660,59 +556,6 @@ const SidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClose })
         </div>
     </>
 );
-// const SidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClose }) => (
-//   <>
-//     <div className="p-4 flex items-center justify-between">
-//       <div
-//         className="flex items-center gap-3 cursor-pointer"
-//         onClick={() => onLinkClick('/admin/dashboard')}
-//       >
-//         <img
-//           src="/motofix-removebg-preview.png"
-//           alt="MotoFix Logo"
-//           className="h-20 w-auto"
-//         />
-//       </div>
-//       {onMenuClose && (
-//         <button onClick={onMenuClose} className="lg:hidden text-gray-500 dark:text-gray-400">
-//           <X size={24} />
-//         </button>
-//       )}
-//     </div>
-
-//     <nav className="flex-1 px-4 py-6 space-y-2">
-//       <NavLink page="dashboard" icon={BarChart} activePage={activePage} onLinkClick={onLinkClick}>
-//         Dashboard
-//       </NavLink>
-//       <NavLink page="bookings" icon={List} activePage={activePage} onLinkClick={onLinkClick}>
-//         Bookings
-//       </NavLink>
-//       <NavLink page="users" icon={Users} activePage={activePage} onLinkClick={onLinkClick}>
-//         Users
-//       </NavLink>
-//       <NavLink page="services" icon={Wrench} activePage={activePage} onLinkClick={onLinkClick}>
-//         Services
-//       </NavLink>
-//       <NavLink page="profile" icon={User} activePage={activePage} onLinkClick={onLinkClick}>
-//         Profile
-//       </NavLink>
-//     </nav>
-
-//     <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-//       <button
-//         onClick={onLogoutClick}
-//         className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-//       >
-//         <LogOut size={22} />
-//         <span className="text-md">Logout</span>
-//       </button>
-//     </div>
-//   </>
-// );
-
-// const SidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClose }) => (
-//     <><div className="p-4 flex items-center justify-between"><div className="flex items-center gap-3"><img src="/motofix-removebg-preview.png" alt="MotoFix Logo" className="h-20 w-auto" /></div>{onMenuClose && <button onClick={onMenuClose} className="lg:hidden text-gray-500 dark:text-gray-400"><X size={24} /></button>}</div><nav className="flex-1 px-4 py-6 space-y-2"><NavLink page="dashboard" icon={BarChart} activePage={activePage} onLinkClick={onLinkClick}>Dashboard</NavLink><NavLink page="bookings" icon={List} activePage={activePage} onLinkClick={onLinkClick}>Bookings</NavLink><NavLink page="users" icon={Users} activePage={activePage} onLinkClick={onLinkClick}>Users</NavLink><NavLink page="services" icon={Wrench} activePage={activePage} onLinkClick={onLinkClick}>Services</NavLink><NavLink page="profile" icon={User} activePage={activePage} onLinkClick={onLinkClick}>Profile</NavLink></nav><div className="p-4 border-t border-gray-200 dark:border-gray-700"><button onClick={onLogoutClick} className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"><LogOut size={22} /><span className="text-md">Logout</span></button></div></>
-// );
 
 const AdminDashboard = () => {
     const [activePage, setActivePage] = useState(() => (window.location.hash.replace('#/admin/', '').split('/')[0] || 'dashboard'));

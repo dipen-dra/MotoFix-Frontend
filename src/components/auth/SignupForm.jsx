@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { UserIcon, EmailIcon, LockIcon } from '../../assets/icons';
-import { FormInputWithLabel } from './FormInputWithLabel';
+import { FormInputWithLabel } from './FormInputWIthLabel';
 import { toast } from 'react-toastify';
 import { registerUserApi } from '../../api/authApi';
 

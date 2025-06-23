@@ -6,9 +6,6 @@ import { BarChart, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend
 import { LayoutDashboard, CalendarDays, User, LogOut, Menu, X, Sun, Moon, PlusCircle, Bike, Wrench, Edit, Trash2, AlertTriangle, Camera, MapPin, CreditCard, ArrowLeft } from 'lucide-react';
 import { toast } from 'react-toastify';
 
-//-///////////////////////////////////////////////////////////////////////////
-// API HELPER FUNCTIONS (USER-FACING)
-//-///////////////////////////////////////////////////////////////////////////
 
 const API_BASE_URL_USER = "http://localhost:5050/api/user";
 
@@ -28,7 +25,7 @@ const apiFetchUser = async (endpoint, options = {}) => {
         const errorData = await response.json();
         throw new Error(errorData.message || 'An API error occurred.');
     }
-    
+
     const contentType = response.headers.get("content-type");
     if (contentType && contentType.indexOf("application/json") !== -1) {
         return response.json();
@@ -36,9 +33,6 @@ const apiFetchUser = async (endpoint, options = {}) => {
     return;
 };
 
-//-///////////////////////////////////////////////////////////////////////////
-// REUSABLE UI COMPONENTS
-//-///////////////////////////////////////////////////////////////////////////
 
 const getStatusColor = (status) => {
     switch (status) {
@@ -89,9 +83,6 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, confirm
     );
 };
 
-//-///////////////////////////////////////////////////////////////////////////
-// USER DASHBOARD PAGE COMPONENTS
-//-///////////////////////////////////////////////////////////////////////////
 
 const UserDashboardPage = () => {
     const [stats, setStats] = useState({ upcomingBookings: 0, completedServices: 0 });
@@ -118,7 +109,7 @@ const UserDashboardPage = () => {
     return (
         <div className="space-y-8">
             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">My Dashboard</h1>
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="md:col-span-1 hover:border-blue-500 border-2 border-transparent">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full"><CalendarDays className="text-blue-600 dark:text-blue-300" size={28} /></div>
@@ -137,9 +128,9 @@ const UserDashboardPage = () => {
                         </div>
                     </div>
                 </Card>
-                 <a href="#/user/new-booking" className="md:col-span-1">
+                <a href="#/user/new-booking" className="md:col-span-1">
                     <Card className="h-full flex flex-col items-center justify-center text-center bg-blue-50 dark:bg-blue-900/50 hover:bg-blue-100 dark:hover:bg-blue-900 border-2 border-dashed border-blue-400 hover:border-blue-600">
-                        <PlusCircle className="text-blue-600 dark:text-blue-400 mb-2" size={32}/>
+                        <PlusCircle className="text-blue-600 dark:text-blue-400 mb-2" size={32} />
                         <h3 className="text-xl font-semibold text-blue-800 dark:text-blue-300">Book a New Service</h3>
                         <p className="text-sm text-gray-500 dark:text-gray-400">Get your bike checked</p>
                     </Card>
@@ -169,7 +160,7 @@ const UserDashboardPage = () => {
                             </tbody>
                         </table>
                     ) : (
-                         <div className="text-center py-10">
+                        <div className="text-center py-10">
                             <p className="text-gray-500 dark:text-gray-400">You have no recent bookings.</p>
                             <Button className="mt-4" onClick={() => window.location.hash = '#/user/new-booking'}>
                                 Book Your First Service
@@ -191,7 +182,7 @@ const UserBookingsPage = () => {
         setIsLoading(true);
         try {
             const response = await apiFetchUser('/bookings');
-            setBookings(response.data || []); 
+            setBookings(response.data || []);
         } catch (error) {
             console.error('Failed to fetch bookings:', error.message);
             toast.error(error.message || 'Failed to fetch your bookings.');
@@ -250,10 +241,10 @@ const UserBookingsPage = () => {
                                         <td className="p-3 text-center">
                                             <div className="flex justify-center gap-2">
                                                 <Button variant="secondary" size="sm" onClick={() => window.location.hash = `#/user/edit-booking/${booking._id}`} disabled={booking.status !== 'Pending'}>
-                                                    <Edit size={16}/>
+                                                    <Edit size={16} />
                                                 </Button>
                                                 <Button variant="danger" size="sm" onClick={() => setBookingToDelete(booking._id)} disabled={booking.isPaid}>
-                                                    <Trash2 size={16}/>
+                                                    <Trash2 size={16} />
                                                 </Button>
                                             </div>
                                         </td>
@@ -263,15 +254,15 @@ const UserBookingsPage = () => {
                         </table>
                     ) : (
                         <div className="text-center py-12">
-                            <Bike size={48} className="mx-auto text-gray-400"/>
+                            <Bike size={48} className="mx-auto text-gray-400" />
                             <h3 className="mt-2 text-xl font-semibold">No Bookings Yet</h3>
                             <p className="mt-1 text-sm text-gray-500">Looks like you haven't booked any services with us.</p>
                         </div>
                     )}
                 </div>
             </Card>
-            <ConfirmationModal 
-                isOpen={!!bookingToDelete} 
+            <ConfirmationModal
+                isOpen={!!bookingToDelete}
                 onClose={() => setBookingToDelete(null)}
                 onConfirm={handleDelete}
                 title="Cancel Booking"
@@ -300,9 +291,9 @@ const EditBookingPage = () => {
                     apiFetchUser('/services'),
                     apiFetchUser('/bookings')
                 ]);
-                
+
                 setServices(servicesRes.data || []);
-                
+
                 const booking = bookingsRes.data.find(b => b._id === id);
 
                 if (booking) {
@@ -346,7 +337,7 @@ const EditBookingPage = () => {
             toast.error(err.message || "Failed to update booking.");
         }
     };
-    
+
     if (isLoading) {
         return <div className="text-center p-12">Loading...</div>
     }
@@ -391,11 +382,11 @@ const EditBookingPage = () => {
 const NewBookingPage = () => {
     const [services, setServices] = useState([]);
     const [formData, setFormData] = useState({ serviceId: '', bikeModel: '', date: '', notes: '' });
-    
+
     useEffect(() => {
         const fetchServices = async () => {
             try {
-                const response = await apiFetchUser('/services'); 
+                const response = await apiFetchUser('/services');
                 setServices(response.data || []);
             } catch (err) {
                 console.error("Failed to fetch services:", err);
@@ -479,7 +470,7 @@ const MyPaymentsPage = () => {
             setIsLoading(false);
         }
     };
-    
+
     useEffect(() => {
         fetchBookings();
     }, []);
@@ -501,7 +492,7 @@ const MyPaymentsPage = () => {
 
         if (method === 'Khalti') {
             const khaltiConfig = {
-                publicKey: "00609f04e862459c88c0db5f186a53c7", // Your Live Public Key
+                publicKey: "test_public_key_dc74e0fd57cb46cd93832aee0a390234", // Your Live Public Key
                 productIdentity: booking._id,
                 productName: booking.serviceType,
                 productUrl: window.location.href,
@@ -541,7 +532,7 @@ const MyPaymentsPage = () => {
     return (
         <div className="space-y-8">
             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">My Payments</h1>
-            
+
             <Card>
                 <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Pending Payments</h2>
                 {isLoading ? (<div className="text-center p-12">Loading...</div>) :
@@ -628,7 +619,7 @@ const UserProfilePage = ({ currentUser, setCurrentUser }) => {
         };
         fetchProfile();
     }, []);
-    
+
     const handleFetchLocation = async () => {
         if (!navigator.geolocation) {
             toast.error("Geolocation is not supported by your browser.");
@@ -674,7 +665,7 @@ const UserProfilePage = ({ currentUser, setCurrentUser }) => {
                         message = "The request to get user location timed out.";
                         break;
                 }
-                
+
                 toast.error(message);
                 setIsFetchingLocation(false);
             }
@@ -712,14 +703,14 @@ const UserProfilePage = ({ currentUser, setCurrentUser }) => {
         setProfile(initialProfile);
         setIsEditing(false);
     };
-    
+
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
             setProfile(p => ({ ...p, profilePictureUrl: URL.createObjectURL(file), newProfilePicture: file }));
         }
     };
-    
+
     const handleImageError = (e) => { e.target.src = `https://placehold.co/128x128/e2e8f0/4a5568?text=${profile.fullName ? profile.fullName.charAt(0).toUpperCase() : 'U'}`; };
     const profilePictureSrc = profile.profilePictureUrl || (profile.profilePicture ? `http://localhost:5050/${profile.profilePicture}` : `https://placehold.co/128x128/e2e8f0/4a5568?text=${profile.fullName ? profile.fullName.charAt(0).toUpperCase() : 'U'}`);
 
@@ -728,15 +719,15 @@ const UserProfilePage = ({ currentUser, setCurrentUser }) => {
             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">My Profile</h1>
             <Card>
                 <div className="flex justify-end mb-4">
-                     {!isEditing && <Button onClick={() => setIsEditing(true)}><Edit size={16}/> Edit Profile</Button>}
+                    {!isEditing && <Button onClick={() => setIsEditing(true)}><Edit size={16} /> Edit Profile</Button>}
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-1 flex flex-col items-center text-center">
-                        <img key={profilePictureSrc} src={profilePictureSrc} alt="Profile" className="w-32 h-32 rounded-full object-cover mb-4 ring-4 ring-blue-500/50" onError={handleImageError}/>
+                        <img key={profilePictureSrc} src={profilePictureSrc} alt="Profile" className="w-32 h-32 rounded-full object-cover mb-4 ring-4 ring-blue-500/50" onError={handleImageError} />
                         {isEditing && (
                             <>
                                 <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
-                                <Button variant="secondary" onClick={() => fileInputRef.current.click()}><Camera size={16}/> Change Picture</Button>
+                                <Button variant="secondary" onClick={() => fileInputRef.current.click()}><Camera size={16} /> Change Picture</Button>
                             </>
                         )}
                         <h2 className="text-2xl font-semibold mt-4 text-gray-800 dark:text-white">{profile.fullName}</h2>
@@ -744,17 +735,17 @@ const UserProfilePage = ({ currentUser, setCurrentUser }) => {
                         <p className="text-gray-500 dark:text-gray-400">{profile.phone}</p>
                     </div>
                     <div className="lg:col-span-2 space-y-4">
-                        <Input id="fullName" label="Full Name" name="fullName" value={profile.fullName || ''} onChange={(e) => setProfile({...profile, fullName: e.target.value})} disabled={!isEditing} />
-                        <Input id="email" label="Email Address" name="email" type="email" value={profile.email || ''} onChange={(e) => setProfile({...profile, email: e.target.value})} disabled={!isEditing} />
-                        <Input id="phone" label="Phone Number" name="phone" value={profile.phone || ''} onChange={(e) => setProfile({...profile, phone: e.target.value})} disabled={!isEditing} />
-                        
+                        <Input id="fullName" label="Full Name" name="fullName" value={profile.fullName || ''} onChange={(e) => setProfile({ ...profile, fullName: e.target.value })} disabled={!isEditing} />
+                        <Input id="email" label="Email Address" name="email" type="email" value={profile.email || ''} onChange={(e) => setProfile({ ...profile, email: e.target.value })} disabled={!isEditing} />
+                        <Input id="phone" label="Phone Number" name="phone" value={profile.phone || ''} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} disabled={!isEditing} />
+
                         <div>
                             <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address</label>
                             <div className="flex items-center gap-2">
                                 <textarea id="address" name="address" rows="3"
                                     className="flex-grow px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-600"
                                     value={profile.address || ''}
-                                    onChange={(e) => setProfile({...profile, address: e.target.value})}
+                                    onChange={(e) => setProfile({ ...profile, address: e.target.value })}
                                     disabled={!isEditing || isFetchingLocation}
                                     placeholder="Click the button to fetch automatically or enter manually."
                                 />
@@ -779,10 +770,6 @@ const UserProfilePage = ({ currentUser, setCurrentUser }) => {
     );
 };
 
-
-//-///////////////////////////////////////////////////////////////////////////
-// SIDEBAR & MAIN LAYOUT COMPONENT
-//-///////////////////////////////////////////////////////////////////////////
 
 const UserNavLink = ({ page, icon: Icon, children, activePage, onLinkClick }) => {
     const isActive = activePage === page;
@@ -898,7 +885,7 @@ const UserDashboard = () => {
                 <div className="flex-1 bg-black bg-opacity-50" onClick={() => setIsSidebarOpen(false)}></div>
             </div>
             <aside className="w-72 bg-white dark:bg-gray-800 shadow-md hidden lg:flex flex-col flex-shrink-0">
-                <UserSidebarContent activePage={activePage} onLinkClick={() => {}} onLogoutClick={() => setLogoutConfirmOpen(true)} />
+                <UserSidebarContent activePage={activePage} onLinkClick={() => { }} onLogoutClick={() => setLogoutConfirmOpen(true)} />
             </aside>
 
             {/* Main Content */}
