@@ -1,6 +1,71 @@
+// import React, { useEffect, useState } from 'react';
+// import { useLocation, useNavigate } from 'react-router-dom';
+// import { toast } from 'react-toastify';
+
+// const EsewaSuccess = () => {
+//   const location = useLocation();
+//   const navigate = useNavigate();
+//   const [message, setMessage] = useState('Verifying your payment, please wait...');
+
+//   useEffect(() => {
+//     const verifyPayment = async () => {
+//       const params = new URLSearchParams(location.search);
+//       const data = params.get('data');
+
+//       if (data) {
+//         try {
+//           // Using fetch with the full, correct URL to avoid any base URL issues.
+//           const response = await fetch(`http://localhost:5050/api/payment/esewa/verify?data=${data}`, {
+//             method: 'GET',
+//             headers: {
+//                 'Authorization': `Bearer ${localStorage.getItem('token')}`
+//             }
+//           });
+          
+//           const result = await response.json();
+
+//           if (!response.ok) {
+//             throw new Error(result.message || 'Payment verification failed.');
+//           }
+
+//           setMessage(result.message);
+//           toast.success('Payment successful!');
+
+//         } catch (error) {
+//           setMessage(error.message);
+//           toast.error(error.message);
+//         } finally {
+//             setTimeout(() => {
+//                 window.location.hash = '#/user/my-payments';
+//             }, 3000);
+//         }
+//       } else {
+//         setMessage('No payment data received from eSewa.');
+//         toast.error('Could not verify payment.');
+//         setTimeout(() => {
+//             window.location.hash = '#/user/my-payments';
+//         }, 3000);
+//       }
+//     };
+
+//     verifyPayment();
+//   }, [location, navigate]);
+
+//   return (
+//     <div className="flex justify-center items-center h-screen">
+//       <div className="text-center">
+//         <h1 className="text-2xl font-bold mb-4">{message}</h1>
+//         <p>You will be redirected to your payments page shortly...</p>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default EsewaSuccess;
+
+
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import api from '../api/api';
 import { toast } from 'react-toastify';
 
 const EsewaSuccess = () => {
@@ -15,23 +80,36 @@ const EsewaSuccess = () => {
 
       if (data) {
         try {
-          const response = await api.get(`/payment/esewa/verify?data=${data}`);
-          setMessage(response.data.message);
+          const response = await fetch(`http://localhost:5050/api/payment/esewa/verify?data=${data}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          
+          const result = await response.json();
+
+          // MODIFICATION: Check the response and throw an error with the detailed message
+          if (!response.ok) {
+            throw new Error(result.error || result.message || 'An unknown verification error occurred.');
+          }
+
+          setMessage(result.message);
           toast.success('Payment successful!');
+
         } catch (error) {
-          const errorMessage = error.response?.data?.message || 'Payment verification failed.';
-          setMessage(errorMessage);
-          toast.error(errorMessage);
+          setMessage(error.message);
+          toast.error(error.message);
         } finally {
             setTimeout(() => {
-                navigate('/user/my-payments'); 
+                window.location.hash = '#/user/my-payments';
             }, 3000);
         }
       } else {
         setMessage('No payment data received from eSewa.');
         toast.error('Could not verify payment.');
         setTimeout(() => {
-            navigate('/user/my-payments');
+            window.location.hash = '#/user/my-payments';
         }, 3000);
       }
     };
@@ -43,7 +121,7 @@ const EsewaSuccess = () => {
     <div className="flex justify-center items-center h-screen">
       <div className="text-center">
         <h1 className="text-2xl font-bold mb-4">{message}</h1>
-        <p>You will be redirected shortly...</p>
+        <p>You will be redirected to your payments page shortly...</p>
       </div>
     </div>
   );
