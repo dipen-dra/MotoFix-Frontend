@@ -1514,7 +1514,7 @@ const MyPaymentsPage = () => {
                                         </Button>
 
                                         <Button variant="success" onClick={() => handlePayment(booking, 'eSewa')}>
-                                            <img src="/esewalogo.png" alt="eSewa" style={{ height: '24px' }} />
+                                            <img src="/esewa_logo.png" alt="eSewa" style={{ height: '24px' }} />
                                         </Button>
 
                                         {/* <Button variant="secondary" onClick={() => handlePayment(booking, 'Khalti')}>Pay with Khalti</Button>
