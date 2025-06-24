@@ -14,7 +14,6 @@
 
 //       if (data) {
 //         try {
-//           // Using fetch with the full, correct URL to avoid any base URL issues.
 //           const response = await fetch(`http://localhost:5050/api/payment/esewa/verify?data=${data}`, {
 //             method: 'GET',
 //             headers: {
@@ -24,8 +23,9 @@
           
 //           const result = await response.json();
 
+//           // MODIFICATION: Check the response and throw an error with the detailed message
 //           if (!response.ok) {
-//             throw new Error(result.message || 'Payment verification failed.');
+//             throw new Error(result.error || result.message || 'An unknown verification error occurred.');
 //           }
 
 //           setMessage(result.message);
@@ -64,6 +64,9 @@
 // export default EsewaSuccess;
 
 
+
+
+
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -83,13 +86,12 @@ const EsewaSuccess = () => {
           const response = await fetch(`http://localhost:5050/api/payment/esewa/verify?data=${data}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
           });
-          
+
           const result = await response.json();
 
-          // MODIFICATION: Check the response and throw an error with the detailed message
           if (!response.ok) {
             throw new Error(result.error || result.message || 'An unknown verification error occurred.');
           }
@@ -97,20 +99,26 @@ const EsewaSuccess = () => {
           setMessage(result.message);
           toast.success('Payment successful!');
 
+          // ✅ Delay then navigate
+          setTimeout(() => {
+            navigate('/dashboard#/user/my-payments'); // You can change this if using hash-based routing differently
+          }, 2000);
+
         } catch (error) {
           setMessage(error.message);
           toast.error(error.message);
-        } finally {
-            setTimeout(() => {
-                window.location.hash = '#/user/my-payments';
-            }, 3000);
+
+          setTimeout(() => {
+            navigate('/dashboard#/user/my-payments');
+          }, 2000);
         }
       } else {
         setMessage('No payment data received from eSewa.');
         toast.error('Could not verify payment.');
+
         setTimeout(() => {
-            window.location.hash = '#/user/my-payments';
-        }, 3000);
+          navigate('/dashboard#/user/my-payments');
+        }, 2000);
       }
     };
 
