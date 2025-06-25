@@ -12,6 +12,7 @@ import AdminDashboard from './pages/admin/adminDashboard';
 import UserDashboard from './pages/UserDashboard';
 import EsewaSuccess from './pages/EsewaSuccess';
 import EsewaFailure from './pages/EsewaFailure';
+import ForgotPasswordPage from './pages/ForgetPasswordPage';
 
 function App() {
   const { user } = useContext(AuthContext);
@@ -47,6 +48,11 @@ function App() {
             path="/register"
             element={!user ? <AuthPage /> : <Navigate to="/dashboard" replace />}
           />
+          <Route
+            path="/forgot-password"
+            element={!user ? <ForgotPasswordPage /> : <Navigate to="/dashboard" replace />}
+          />
+
           <Route
             path="/dashboard"
             element={
