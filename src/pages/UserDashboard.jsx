@@ -1,7 +1,5 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { BarChart, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-// IMPORT THE NEW ICON
 import { LayoutDashboard, CalendarDays, User, LogOut, Menu, X, Sun, Moon, PlusCircle, Bike, Wrench, Edit, Trash2, AlertTriangle, Camera, MapPin, CreditCard, ArrowLeft, Gift } from 'lucide-react';
 import { toast } from 'react-toastify';
 
@@ -29,7 +27,7 @@ const apiFetchUser = async (endpoint, options = {}) => {
     if (contentType && contentType.indexOf("application/json") !== -1) {
         return response.json();
     }
-    return; // For DELETE requests etc. that might not return JSON
+    return;
 };
 
 
@@ -55,7 +53,8 @@ const Button = ({ children, onClick, className = '', variant = 'primary', ...pro
         primary: "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
         secondary: "bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 focus:ring-gray-500",
         danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
-        success: "bg-green-600 text-white hover:bg-green-700 focus:ring-green-500"
+        success: "bg-green-600 text-white hover:bg-green-700 focus:ring-green-500",
+        special: "bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500"
     };
     return (<button onClick={onClick} className={`${baseClasses} ${variants[variant]} ${className}`} {...props}>{children}</button>);
 };
@@ -86,7 +85,6 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, confirm
 
 
 const UserDashboardPage = () => {
-    // UPDATED STATE
     const [stats, setStats] = useState({ upcomingBookings: 0, completedServices: 0, loyaltyPoints: 0 });
     const [recentBookings, setRecentBookings] = useState([]);
 
@@ -95,7 +93,6 @@ const UserDashboardPage = () => {
             try {
                 const response = await apiFetchUser('/dashboard-summary');
                 const data = response.data;
-                // UPDATED setStats call
                 setStats({
                     upcomingBookings: data.upcomingBookings,
                     completedServices: data.completedServices,
@@ -113,7 +110,6 @@ const UserDashboardPage = () => {
     return (
         <div className="space-y-8">
             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">My Dashboard</h1>
-            {/* UPDATED GRID LAYOUT */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <Card className="hover:border-blue-500 border-2 border-transparent">
                     <div className="flex items-center gap-4">
@@ -133,7 +129,6 @@ const UserDashboardPage = () => {
                         </div>
                     </div>
                 </Card>
-                {/* NEW LOYALTY POINTS CARD */}
                 <Card className="hover:border-purple-500 border-2 border-transparent">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-full"><Gift className="text-purple-600 dark:text-purple-300" size={28} /></div>
@@ -169,7 +164,8 @@ const UserDashboardPage = () => {
                                         <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel}</td>
                                         <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
                                         <td className="p-3"><StatusBadge status={booking.status} /></td>
-                                        <td className="p-3 text-right font-medium text-gray-900 dark:text-white">रु{booking.totalCost}</td>
+                                        {/* --- FIX: Use finalAmount OR totalCost to prevent NaN --- */}
+                                        <td className="p-3 text-right font-medium text-gray-900 dark:text-white">रु{booking.finalAmount ?? booking.totalCost}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -217,7 +213,7 @@ const UserBookingsPage = () => {
             await apiFetchUser(`/bookings/${bookingToDelete}`, { method: 'DELETE' });
             toast.success('Booking cancelled successfully.');
             setBookingToDelete(null);
-            fetchBookings(); // Refresh the list
+            fetchBookings(); 
         } catch (error) {
             toast.error(error.message || "Failed to cancel booking.");
         }
@@ -252,10 +248,16 @@ const UserBookingsPage = () => {
                                         <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
                                         <td className="p-3"><StatusBadge status={booking.status} /></td>
                                         <td className="p-3"><StatusBadge status={booking.paymentStatus} /></td>
-                                        <td className="p-3 text-right font-semibold">रु{booking.totalCost}</td>
+                                        {/* --- FIX: Use finalAmount OR totalCost and show discount --- */}
+                                        <td className="p-3 text-right font-semibold">
+                                            {booking.discountApplied && (
+                                                <span className="text-xs text-red-500 line-through mr-1">रु{booking.totalCost}</span>
+                                            )}
+                                            रु{booking.finalAmount ?? booking.totalCost}
+                                        </td>
                                         <td className="p-3 text-center">
                                             <div className="flex justify-center gap-2">
-                                                <Button variant="secondary" size="sm" onClick={() => window.location.hash = `#/user/edit-booking/${booking._id}`} disabled={booking.status !== 'Pending'}>
+                                                <Button variant="secondary" size="sm" onClick={() => window.location.hash = `#/user/edit-booking/${booking._id}`} disabled={booking.status !== 'Pending' || booking.isPaid || booking.discountApplied}>
                                                     <Edit size={16} />
                                                 </Button>
                                                 <Button variant="danger" size="sm" onClick={() => setBookingToDelete(booking._id)} disabled={booking.isPaid}>
@@ -293,6 +295,7 @@ const EditBookingPage = () => {
     const [services, setServices] = useState([]);
     const [bookingId, setBookingId] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         const hash = window.location.hash;
@@ -302,15 +305,21 @@ const EditBookingPage = () => {
         const fetchInitialData = async () => {
             setIsLoading(true);
             try {
-                // Fetch services and the specific booking
                 const servicesRes = await apiFetchUser('/services');
-                setServices(servicesRes.data || []);
-                
+                const allServices = servicesRes.data || [];
+                setServices(allServices);
+
                 const bookingRes = await apiFetchUser(`/bookings`);
                 const booking = bookingRes.data.find(b => b._id === id);
 
                 if (booking) {
-                    const service = (servicesRes.data || []).find(s => s.name === booking.serviceType);
+                    if(booking.isPaid || booking.discountApplied) {
+                        toast.error("Cannot edit a booking that is paid or has a discount applied.");
+                        window.location.hash = '#/user/bookings';
+                        return;
+                    }
+
+                    const service = allServices.find(s => s.name === booking.serviceType);
                     setFormData({
                         serviceId: service ? service._id : '',
                         bikeModel: booking.bikeModel,
@@ -339,6 +348,7 @@ const EditBookingPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             const response = await apiFetchUser(`/bookings/${bookingId}`, {
                 method: 'PUT',
@@ -348,6 +358,8 @@ const EditBookingPage = () => {
             window.location.hash = '#/user/bookings';
         } catch (err) {
             toast.error(err.message || "Failed to update booking.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -383,8 +395,8 @@ const EditBookingPage = () => {
                     </div>
 
                     <div className="flex justify-end gap-3">
-                        <Button variant="secondary" onClick={() => window.location.hash = '#/user/bookings'}>Cancel</Button>
-                        <Button type="submit">Save Changes</Button>
+                        <Button variant="secondary" type="button" onClick={() => window.location.hash = '#/user/bookings'}>Cancel</Button>
+                        <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Saving...' : 'Save Changes'}</Button>
                     </div>
                 </form>
             </Card>
@@ -394,6 +406,7 @@ const EditBookingPage = () => {
 const NewBookingPage = () => {
     const [services, setServices] = useState([]);
     const [formData, setFormData] = useState({ serviceId: '', bikeModel: '', date: '', notes: '' });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         const fetchServices = async () => {
@@ -419,7 +432,7 @@ const NewBookingPage = () => {
             toast.error("Please fill out all required fields.");
             return;
         }
-
+        setIsSubmitting(true);
         try {
             await apiFetchUser('/bookings', {
                 method: 'POST',
@@ -430,6 +443,8 @@ const NewBookingPage = () => {
 
         } catch (err) {
             toast.error(err.message || "Failed to submit booking. Please try again.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -455,7 +470,7 @@ const NewBookingPage = () => {
                     </div>
 
                     <div className="flex justify-center">
-                        <Button type="submit">Submit Request</Button>
+                        <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Submitting...' : 'Submit Request'}</Button>
                     </div>
                 </form>
             </Card>
@@ -464,7 +479,7 @@ const NewBookingPage = () => {
 };
 
 
-const MyPaymentsPage = () => {
+const MyPaymentsPage = ({ currentUser, loyaltyPoints, onDiscountApplied }) => {
     const [unpaidBookings, setUnpaidBookings] = useState([]);
     const [paidBookings, setPaidBookings] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -485,10 +500,8 @@ const MyPaymentsPage = () => {
     };
 
     useEffect(() => {
-        // This effect runs once on mount to fetch bookings
         fetchBookings();
 
-        // This effect handles the redirect from eSewa
         const params = new URLSearchParams(window.location.search);
         const status = params.get('status');
         const message = params.get('message');
@@ -499,13 +512,26 @@ const MyPaymentsPage = () => {
             } else {
                 toast.error(message);
             }
-            // Clean up the URL
             window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
         }
-
     }, []);
 
+    const handleApplyDiscount = async (bookingId) => {
+        try {
+            const response = await apiFetchUser(`/bookings/${bookingId}/apply-discount`, {
+                method: 'PUT',
+            });
+            toast.success(response.message || 'Discount applied!');
+            onDiscountApplied(response.data.loyaltyPoints);
+            fetchBookings();
+        } catch (error) {
+            toast.error(error.message || "Failed to apply discount.");
+        }
+    };
+    
     const handlePayment = async (booking, method) => {
+        const amountToPay = booking.finalAmount ?? booking.totalCost;
+
         if (method === 'COD') {
             try {
                 const response = await apiFetchUser(`/bookings/${booking._id}/pay`, {
@@ -514,6 +540,8 @@ const MyPaymentsPage = () => {
                 });
                 toast.success(response.message || "Payment Confirmed! Your booking is now being processed.");
                 fetchBookings();
+                const profileResponse = await apiFetchUser('/profile');
+                onDiscountApplied(profileResponse.data.loyaltyPoints);
             } catch (error) {
                 toast.error(error.message || "Payment confirmation failed.");
             }
@@ -522,7 +550,6 @@ const MyPaymentsPage = () => {
 
         if (method === 'eSewa') {
             try {
-                // This API call is not under /api/user, so it needs its own fetch config
                 const response = await fetch('http://localhost:5050/api/payment/esewa/initiate', {
                     method: 'POST',
                     headers: {
@@ -538,7 +565,6 @@ const MyPaymentsPage = () => {
                 }
 
                 const esewaResponse = await response.json();
-
                 const form = document.createElement('form');
                 form.setAttribute('method', 'POST');
                 form.setAttribute('action', esewaResponse.ESEWA_URL);
@@ -579,6 +605,8 @@ const MyPaymentsPage = () => {
                             });
                             toast.success(response.message || 'Payment Successful & Verified!');
                             fetchBookings();
+                            const profileResponse = await apiFetchUser('/profile');
+                            onDiscountApplied(profileResponse.data.loyaltyPoints);
                         } catch (error) {
                             toast.error(error.message || 'Payment verification failed.');
                         }
@@ -595,7 +623,8 @@ const MyPaymentsPage = () => {
             };
 
             const checkout = new KhaltiCheckout(khaltiConfig);
-            checkout.show({ amount: booking.totalCost * 100 });
+            // --- FIX: Use the correct amount (finalAmount or totalCost) for payment ---
+            checkout.show({ amount: amountToPay * 100 });
         }
     };
 
@@ -604,7 +633,13 @@ const MyPaymentsPage = () => {
             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">My Payments</h1>
 
             <Card>
-                <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Pending Payments</h2>
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Pending Payments</h2>
+                    <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400">
+                        <Gift size={20} />
+                        <span className="font-semibold">{loyaltyPoints} Points</span>
+                    </div>
+                </div>
                 {isLoading ? (<div className="text-center p-12">Loading...</div>) :
                     unpaidBookings.length > 0 ? (
                         <div className="space-y-4">
@@ -613,14 +648,30 @@ const MyPaymentsPage = () => {
                                     <div>
                                         <p className="font-bold">{booking.serviceType} for {booking.bikeModel}</p>
                                         <p className="text-sm text-gray-500 dark:text-gray-400">Date: {new Date(booking.date).toLocaleDateString()}</p>
-                                        <p className="text-lg font-semibold">Total: रु{booking.totalCost}</p>
+                                        {/* --- FIX: Display prices correctly with fallbacks to prevent NaN --- */}
+                                        <div className="text-lg font-semibold mt-1">
+                                            {booking.discountApplied ? (
+                                                <>
+                                                    <span className="text-base text-gray-500 line-through mr-2">रु{booking.totalCost}</span>
+                                                    <span className="text-green-600">रु{booking.finalAmount}</span>
+                                                </>
+                                            ) : (
+                                                <span>Total: रु{booking.totalCost}</span>
+                                            )}
+                                        </div>
+                                         {booking.discountApplied && <p className="text-sm font-bold text-green-500">Discount: -रु{booking.discountAmount}</p>}
                                     </div>
-                                    <div className="flex flex-wrap gap-2">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        {loyaltyPoints >= 100 && !booking.discountApplied && (
+                                            <Button variant="special" onClick={() => handleApplyDiscount(booking._id)}>
+                                                <Gift size={16} /> Apply 20% Discount
+                                            </Button>
+                                        )}
                                         <Button onClick={() => handlePayment(booking, 'COD')}>Pay with COD</Button>
                                         <Button variant="secondary" onClick={() => handlePayment(booking, 'Khalti')} className="bg-white">
                                             <img src="/khaltilogo.png" alt="Khalti" style={{ height: '24px' }} />
                                         </Button>
-                                        <Button variant="success" onClick={() => handlePayment(booking, 'eSewa')} className="bg-white hover:bg-gray-100">
+                                        <Button variant="secondary" onClick={() => handlePayment(booking, 'eSewa')} className="bg-white hover:bg-gray-100">
                                             <img src="/esewa_logo.png" alt="eSewa" style={{ height: '24px' }} />
                                         </Button>
                                     </div>
@@ -647,7 +698,7 @@ const MyPaymentsPage = () => {
                                         <th className="p-3">Service</th>
                                         <th className="p-3">Bike</th>
                                         <th className="p-3">Date</th>
-                                        <th className="p-3">Amount</th>
+                                        <th className="p-3">Amount Paid</th>
                                         <th className="p-3">Method</th>
                                     </tr>
                                 </thead>
@@ -657,7 +708,13 @@ const MyPaymentsPage = () => {
                                             <td className="p-3 font-medium text-gray-900 dark:text-white">{booking.serviceType}</td>
                                             <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel}</td>
                                             <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
-                                            <td className="p-3 font-semibold">रु{booking.totalCost}</td>
+                                            {/* --- FIX: Use finalAmount OR totalCost and show discount --- */}
+                                            <td className="p-3 font-semibold">
+                                                {booking.discountApplied && (
+                                                    <span className="text-xs text-red-500 line-through mr-1">रु{booking.totalCost}</span>
+                                                )}
+                                                रु{booking.finalAmount ?? booking.totalCost}
+                                            </td>
                                             <td className="p-3"><StatusBadge status={booking.paymentMethod} /></td>
                                         </tr>
                                     ))}
@@ -748,7 +805,7 @@ const UserProfilePage = ({ currentUser, setCurrentUser }) => {
             const updatedData = { ...response.data, address: response.data.address || '' };
             setProfile(updatedData);
             setInitialProfile(updatedData);
-            setCurrentUser(updatedData); // Update user info in the main layout
+            setCurrentUser(updatedData); 
             setIsEditing(false);
             toast.success(response.message || 'Profile updated successfully!');
         } catch (error) {
@@ -869,21 +926,22 @@ const UserDashboard = () => {
     const [activePage, setActivePage] = useState('dashboard');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isLogoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
-    const [currentUser, setCurrentUser] = useState({ fullName: 'Guest', email: '', profilePicture: '' });
+    const [currentUser, setCurrentUser] = useState({ fullName: 'Guest', email: '', profilePicture: '', loyaltyPoints: 0 });
     const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('userTheme') === 'dark');
 
-    useEffect(() => {
-        const fetchProfile = async () => {
-            try {
-                const response = await apiFetchUser('/profile');
-                setCurrentUser(response.data || { fullName: 'Guest', email: '' });
-            } catch (error) {
-                console.error("Failed to fetch current user", error);
-                if (error.message.includes('Unauthorized') || error.message.includes('token')) {
-                    handleLogoutConfirm();
-                }
+    const fetchProfile = async () => {
+        try {
+            const response = await apiFetchUser('/profile');
+            setCurrentUser(response.data || { fullName: 'Guest', email: '', loyaltyPoints: 0 });
+        } catch (error) {
+            console.error("Failed to fetch current user", error);
+            if (error.message.includes('Unauthorized') || error.message.includes('token') || error.message.includes('Failed to fetch')) {
+                handleLogoutConfirm();
             }
-        };
+        }
+    };
+    
+    useEffect(() => {
         fetchProfile();
     }, []);
 
@@ -894,7 +952,7 @@ const UserDashboard = () => {
 
     useEffect(() => {
         const handleHashChange = () => {
-            const hash = window.location.hash.replace('#/user/', '').split('?')[0]; // Ignore query params
+            const hash = window.location.hash.replace('#/user/', '').split('?')[0];
             if (hash.startsWith('edit-booking/')) {
                 setActivePage('edit-booking');
             } else {
@@ -906,6 +964,11 @@ const UserDashboard = () => {
         return () => window.removeEventListener('hashchange', handleHashChange);
     }, []);
 
+    const handleDiscountApplied = (newPoints) => {
+        setCurrentUser(prevUser => ({...prevUser, loyaltyPoints: newPoints }));
+        fetchProfile(); 
+    };
+
     const handleLogoutConfirm = () => {
         localStorage.clear();
         window.location.href = '/login';
@@ -916,7 +979,7 @@ const UserDashboard = () => {
             case 'dashboard': return <UserDashboardPage />;
             case 'bookings': return <UserBookingsPage />;
             case 'new-booking': return <NewBookingPage />;
-            case 'my-payments': return <MyPaymentsPage />;
+            case 'my-payments': return <MyPaymentsPage currentUser={currentUser} loyaltyPoints={currentUser.loyaltyPoints} onDiscountApplied={handleDiscountApplied} />;
             case 'edit-booking': return <EditBookingPage />;
             case 'profile': return <UserProfilePage currentUser={currentUser} setCurrentUser={setCurrentUser} />;
             default:
