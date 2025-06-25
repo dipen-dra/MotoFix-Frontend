@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { BarChart, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { LayoutDashboard, CalendarDays, User, LogOut, Menu, X, Sun, Moon, PlusCircle, Bike, Wrench, Edit, Trash2, AlertTriangle, Camera, MapPin, CreditCard, ArrowLeft } from 'lucide-react';
+// IMPORT THE NEW ICON
+import { LayoutDashboard, CalendarDays, User, LogOut, Menu, X, Sun, Moon, PlusCircle, Bike, Wrench, Edit, Trash2, AlertTriangle, Camera, MapPin, CreditCard, ArrowLeft, Gift } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 
@@ -27,7 +29,7 @@ const apiFetchUser = async (endpoint, options = {}) => {
     if (contentType && contentType.indexOf("application/json") !== -1) {
         return response.json();
     }
-    return;
+    return; // For DELETE requests etc. that might not return JSON
 };
 
 
@@ -84,7 +86,8 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, confirm
 
 
 const UserDashboardPage = () => {
-    const [stats, setStats] = useState({ upcomingBookings: 0, completedServices: 0 });
+    // UPDATED STATE
+    const [stats, setStats] = useState({ upcomingBookings: 0, completedServices: 0, loyaltyPoints: 0 });
     const [recentBookings, setRecentBookings] = useState([]);
 
     useEffect(() => {
@@ -92,9 +95,11 @@ const UserDashboardPage = () => {
             try {
                 const response = await apiFetchUser('/dashboard-summary');
                 const data = response.data;
+                // UPDATED setStats call
                 setStats({
                     upcomingBookings: data.upcomingBookings,
-                    completedServices: data.completedServices
+                    completedServices: data.completedServices,
+                    loyaltyPoints: data.loyaltyPoints || 0
                 });
                 setRecentBookings(data.recentBookings || []);
             } catch (error) {
@@ -108,8 +113,9 @@ const UserDashboardPage = () => {
     return (
         <div className="space-y-8">
             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">My Dashboard</h1>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="md:col-span-1 hover:border-blue-500 border-2 border-transparent">
+            {/* UPDATED GRID LAYOUT */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <Card className="hover:border-blue-500 border-2 border-transparent">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full"><CalendarDays className="text-blue-600 dark:text-blue-300" size={28} /></div>
                         <div>
@@ -118,12 +124,22 @@ const UserDashboardPage = () => {
                         </div>
                     </div>
                 </Card>
-                <Card className="md:col-span-1 hover:border-green-500 border-2 border-transparent">
+                <Card className="hover:border-green-500 border-2 border-transparent">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full"><Wrench className="text-green-600 dark:text-green-300" size={28} /></div>
                         <div>
                             <p className="text-gray-500 dark:text-gray-400 text-sm">Completed Services</p>
                             <p className="text-2xl font-bold text-gray-800 dark:text-white">{stats.completedServices}</p>
+                        </div>
+                    </div>
+                </Card>
+                {/* NEW LOYALTY POINTS CARD */}
+                <Card className="hover:border-purple-500 border-2 border-transparent">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-full"><Gift className="text-purple-600 dark:text-purple-300" size={28} /></div>
+                        <div>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm">Loyalty Points</p>
+                            <p className="text-2xl font-bold text-gray-800 dark:text-white">{stats.loyaltyPoints}</p>
                         </div>
                     </div>
                 </Card>
@@ -286,14 +302,12 @@ const EditBookingPage = () => {
         const fetchInitialData = async () => {
             setIsLoading(true);
             try {
-                const [servicesRes, bookingsRes] = await Promise.all([
-                    apiFetchUser('/services'),
-                    apiFetchUser('/bookings')
-                ]);
-
+                // Fetch services and the specific booking
+                const servicesRes = await apiFetchUser('/services');
                 setServices(servicesRes.data || []);
-
-                const booking = bookingsRes.data.find(b => b._id === id);
+                
+                const bookingRes = await apiFetchUser(`/bookings`);
+                const booking = bookingRes.data.find(b => b._id === id);
 
                 if (booking) {
                     const service = (servicesRes.data || []).find(s => s.name === booking.serviceType);
@@ -326,11 +340,11 @@ const EditBookingPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await apiFetchUser(`/bookings/${bookingId}`, {
+            const response = await apiFetchUser(`/bookings/${bookingId}`, {
                 method: 'PUT',
                 body: JSON.stringify(formData),
             });
-            toast.success("Booking updated successfully!");
+            toast.success(response.message || "Booking updated successfully!");
             window.location.hash = '#/user/bookings';
         } catch (err) {
             toast.error(err.message || "Failed to update booking.");
@@ -365,7 +379,7 @@ const EditBookingPage = () => {
                     <Input id="date" name="date" label="Preferred Date" type="date" value={formData.date} onChange={handleChange} required min={new Date().toISOString().split("T")[0]} />
                     <div>
                         <label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Problem Description</label>
-                        <textarea id="notes" name="notes" rows="4" value={formData.notes} onChange={handleChange} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white" placeholder="Any specific issues or requests?"></textarea>
+                        <textarea id="notes" name="notes" rows="4" value={formData.notes || ''} onChange={handleChange} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white" placeholder="Any specific issues or requests?"></textarea>
                     </div>
 
                     <div className="flex justify-end gap-3">
@@ -377,7 +391,6 @@ const EditBookingPage = () => {
         </div>
     );
 };
-
 const NewBookingPage = () => {
     const [services, setServices] = useState([]);
     const [formData, setFormData] = useState({ serviceId: '', bikeModel: '', date: '', notes: '' });
@@ -450,6 +463,7 @@ const NewBookingPage = () => {
     );
 };
 
+
 const MyPaymentsPage = () => {
     const [unpaidBookings, setUnpaidBookings] = useState([]);
     const [paidBookings, setPaidBookings] = useState([]);
@@ -460,7 +474,7 @@ const MyPaymentsPage = () => {
         try {
             const response = await apiFetchUser('/bookings');
             const allBookings = response.data || [];
-            setUnpaidBookings(allBookings.filter(b => b.paymentStatus === 'Pending'));
+            setUnpaidBookings(allBookings.filter(b => b.paymentStatus === 'Pending' && b.status !== 'Cancelled'));
             setPaidBookings(allBookings.filter(b => b.paymentStatus === 'Paid'));
         } catch (error) {
             console.error('Failed to fetch bookings:', error);
@@ -471,17 +485,34 @@ const MyPaymentsPage = () => {
     };
 
     useEffect(() => {
+        // This effect runs once on mount to fetch bookings
         fetchBookings();
+
+        // This effect handles the redirect from eSewa
+        const params = new URLSearchParams(window.location.search);
+        const status = params.get('status');
+        const message = params.get('message');
+        
+        if (status && message) {
+            if (status === 'success') {
+                toast.success(message);
+            } else {
+                toast.error(message);
+            }
+            // Clean up the URL
+            window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+        }
+
     }, []);
 
     const handlePayment = async (booking, method) => {
         if (method === 'COD') {
             try {
-                await apiFetchUser(`/bookings/${booking._id}/pay`, {
+                const response = await apiFetchUser(`/bookings/${booking._id}/pay`, {
                     method: 'PUT',
                     body: JSON.stringify({ paymentMethod: 'COD' })
                 });
-                toast.success("Payment Confirmed! Your booking is now being processed.");
+                toast.success(response.message || "Payment Confirmed! Your booking is now being processed.");
                 fetchBookings();
             } catch (error) {
                 toast.error(error.message || "Payment confirmation failed.");
@@ -491,6 +522,7 @@ const MyPaymentsPage = () => {
 
         if (method === 'eSewa') {
             try {
+                // This API call is not under /api/user, so it needs its own fetch config
                 const response = await fetch('http://localhost:5050/api/payment/esewa/initiate', {
                     method: 'POST',
                     headers: {
@@ -520,7 +552,6 @@ const MyPaymentsPage = () => {
                         form.appendChild(hiddenField);
                     }
                 }
-
                 document.body.appendChild(form);
                 form.submit();
             } catch (error) {
@@ -531,14 +562,14 @@ const MyPaymentsPage = () => {
 
         if (method === 'Khalti') {
             const khaltiConfig = {
-                publicKey: "test_public_key_dc74e0fd57cb46cd93832aee0a390234", // Your Live Public Key
+                publicKey: "test_public_key_dc74e0fd57cb46cd93832aee0a390234",
                 productIdentity: booking._id,
                 productName: booking.serviceType,
                 productUrl: window.location.href,
                 eventHandler: {
                     async onSuccess(payload) {
                         try {
-                            await apiFetchUser('/bookings/verify-khalti', {
+                            const response = await apiFetchUser('/bookings/verify-khalti', {
                                 method: 'POST',
                                 body: JSON.stringify({
                                     token: payload.token,
@@ -546,7 +577,7 @@ const MyPaymentsPage = () => {
                                     booking_id: booking._id
                                 })
                             });
-                            toast.success('Payment Successful & Verified!');
+                            toast.success(response.message || 'Payment Successful & Verified!');
                             fetchBookings();
                         } catch (error) {
                             toast.error(error.message || 'Payment verification failed.');
@@ -584,25 +615,23 @@ const MyPaymentsPage = () => {
                                         <p className="text-sm text-gray-500 dark:text-gray-400">Date: {new Date(booking.date).toLocaleDateString()}</p>
                                         <p className="text-lg font-semibold">Total: रु{booking.totalCost}</p>
                                     </div>
-                                    <div className="flex gap-2">
+                                    <div className="flex flex-wrap gap-2">
                                         <Button onClick={() => handlePayment(booking, 'COD')}>Pay with COD</Button>
-                                        <Button variant="secondary" onClick={() => handlePayment(booking, 'Khalti')}>
+                                        <Button variant="secondary" onClick={() => handlePayment(booking, 'Khalti')} className="bg-white">
                                             <img src="/khaltilogo.png" alt="Khalti" style={{ height: '24px' }} />
                                         </Button>
-
-                                        <Button variant="success" onClick={() => handlePayment(booking, 'eSewa')}>
+                                        <Button variant="success" onClick={() => handlePayment(booking, 'eSewa')} className="bg-white hover:bg-gray-100">
                                             <img src="/esewa_logo.png" alt="eSewa" style={{ height: '24px' }} />
                                         </Button>
-
-                                        {/* <Button variant="secondary" onClick={() => handlePayment(booking, 'Khalti')}>Pay with Khalti</Button>
-                                        <Button variant="success" onClick={() => handlePayment(booking, 'eSewa')}>Pay with eSewa</Button> */}
                                     </div>
                                 </div>
                             ))}
                         </div>
                     ) : (
                         <div className="text-center py-12">
-                            <p className="text-gray-500 dark:text-gray-400">You have no pending payments.</p>
+                            <CreditCard size={48} className="mx-auto text-gray-400" />
+                            <h3 className="mt-2 text-xl font-semibold">No Pending Payments</h3>
+                            <p className="mt-1 text-sm text-gray-500">All your payments are up to date!</p>
                         </div>
                     )}
             </Card>
@@ -673,47 +702,29 @@ const UserProfilePage = ({ currentUser, setCurrentUser }) => {
             toast.error("Geolocation is not supported by your browser.");
             return;
         }
-
         setIsFetchingLocation(true);
         toast.info("Fetching your location...");
-
         navigator.geolocation.getCurrentPosition(
             async (position) => {
                 const { latitude, longitude } = position.coords;
                 try {
                     const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
                     if (!response.ok) throw new Error('Failed to convert location to address.');
-
                     const data = await response.json();
                     if (data && data.display_name) {
                         setProfile(p => ({ ...p, address: data.display_name }));
                         toast.success("Location fetched successfully!");
                     } else {
-                        throw new Error('Could not find a valid address for your location.');
+                        throw new Error('Could not find address.');
                     }
                 } catch (error) {
-                    console.error("Reverse geocoding error:", error);
-                    toast.error(error.message || "Could not fetch address. Please enter it manually.");
+                    toast.error(error.message);
                 } finally {
                     setIsFetchingLocation(false);
                 }
             },
             (error) => {
-                console.error("Geolocation error:", error);
-                let message = "An unknown error occurred while fetching location.";
-
-                switch (error.code) {
-                    case error.PERMISSION_DENIED:
-                        message = "You denied the request for Geolocation. Please enable it in your browser settings.";
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        message = "Location information is unavailable.";
-                        break;
-                    case error.TIMEOUT:
-                        message = "The request to get user location timed out.";
-                        break;
-                }
-
+                let message = "Geolocation permission denied. Please enable it in browser settings.";
                 toast.error(message);
                 setIsFetchingLocation(false);
             }
@@ -729,7 +740,6 @@ const UserProfilePage = ({ currentUser, setCurrentUser }) => {
         if (profile.newProfilePicture) {
             formData.append('profilePicture', profile.newProfilePicture);
         }
-
         try {
             const response = await apiFetchUser('/profile', {
                 method: 'PUT',
@@ -738,11 +748,10 @@ const UserProfilePage = ({ currentUser, setCurrentUser }) => {
             const updatedData = { ...response.data, address: response.data.address || '' };
             setProfile(updatedData);
             setInitialProfile(updatedData);
-            setCurrentUser(updatedData);
+            setCurrentUser(updatedData); // Update user info in the main layout
             setIsEditing(false);
             toast.success(response.message || 'Profile updated successfully!');
         } catch (error) {
-            console.error('Failed to update profile', error);
             toast.error(error.message || 'Failed to update profile.');
         }
     };
@@ -759,8 +768,8 @@ const UserProfilePage = ({ currentUser, setCurrentUser }) => {
         }
     };
 
-    const handleImageError = (e) => { e.target.src = `https://placehold.co/128x128/e2e8f0/4a5568?text=${profile.fullName ? profile.fullName.charAt(0).toUpperCase() : 'U'}`; };
-    const profilePictureSrc = profile.profilePictureUrl || (profile.profilePicture ? `http://localhost:5050/${profile.profilePicture}` : `https://placehold.co/128x128/e2e8f0/4a5568?text=${profile.fullName ? profile.fullName.charAt(0).toUpperCase() : 'U'}`);
+    const handleImageError = (e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.fullName || 'U')}&background=e2e8f0&color=4a5568&size=128`; };
+    const profilePictureSrc = profile.profilePictureUrl || (profile.profilePicture ? `http://localhost:5050/${profile.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.fullName || 'U')}&background=e2e8f0&color=4a5568&size=128`);
 
     return (
         <div className="space-y-6">
@@ -780,13 +789,11 @@ const UserProfilePage = ({ currentUser, setCurrentUser }) => {
                         )}
                         <h2 className="text-2xl font-semibold mt-4 text-gray-800 dark:text-white">{profile.fullName}</h2>
                         <p className="text-gray-500 dark:text-gray-400">{profile.email}</p>
-                        <p className="text-gray-500 dark:text-gray-400">{profile.phone}</p>
                     </div>
                     <div className="lg:col-span-2 space-y-4">
                         <Input id="fullName" label="Full Name" name="fullName" value={profile.fullName || ''} onChange={(e) => setProfile({ ...profile, fullName: e.target.value })} disabled={!isEditing} />
                         <Input id="email" label="Email Address" name="email" type="email" value={profile.email || ''} onChange={(e) => setProfile({ ...profile, email: e.target.value })} disabled={!isEditing} />
                         <Input id="phone" label="Phone Number" name="phone" value={profile.phone || ''} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} disabled={!isEditing} />
-
                         <div>
                             <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address</label>
                             <div className="flex items-center gap-2">
@@ -795,7 +802,7 @@ const UserProfilePage = ({ currentUser, setCurrentUser }) => {
                                     value={profile.address || ''}
                                     onChange={(e) => setProfile({ ...profile, address: e.target.value })}
                                     disabled={!isEditing || isFetchingLocation}
-                                    placeholder="Click the button to fetch automatically or enter manually."
+                                    placeholder="Click button to fetch or enter manually."
                                 />
                                 {isEditing && (
                                     <Button type="button" variant="secondary" onClick={handleFetchLocation} disabled={isFetchingLocation} className="shrink-0">
@@ -804,7 +811,6 @@ const UserProfilePage = ({ currentUser, setCurrentUser }) => {
                                 )}
                             </div>
                         </div>
-
                         {isEditing && (
                             <div className="flex justify-end gap-3 pt-4">
                                 <Button variant="secondary" onClick={handleCancel}>Cancel</Button>
@@ -834,12 +840,11 @@ const UserSidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClos
         window.location.hash = '#/user/dashboard';
         if (onMenuClose) onMenuClose();
     };
-
     return (
         <>
             <div className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <img src="/motofix-removebg-preview.png" alt="MotoFix Logo" className="h-20 w-auto cursor-pointer hover:opacity-80 transition-opacity duration-200" onClick={handleLogoClick} title="Go to Dashboard" />
+                <div className="flex items-center gap-3 cursor-pointer" onClick={handleLogoClick} title="Go to Dashboard">
+                    <img src="/motofix-removebg-preview.png" alt="MotoFix Logo" className="h-20 w-auto hover:opacity-80 transition-opacity duration-200" />
                 </div>
                 {onMenuClose && <button onClick={onMenuClose} className="lg:hidden text-gray-500 dark:text-gray-400"><X size={24} /></button>}
             </div>
@@ -874,7 +879,7 @@ const UserDashboard = () => {
                 setCurrentUser(response.data || { fullName: 'Guest', email: '' });
             } catch (error) {
                 console.error("Failed to fetch current user", error);
-                if (error.message.includes('Unauthorized')) {
+                if (error.message.includes('Unauthorized') || error.message.includes('token')) {
                     handleLogoutConfirm();
                 }
             }
@@ -889,7 +894,7 @@ const UserDashboard = () => {
 
     useEffect(() => {
         const handleHashChange = () => {
-            const hash = window.location.hash.replace('#/user/', '');
+            const hash = window.location.hash.replace('#/user/', '').split('?')[0]; // Ignore query params
             if (hash.startsWith('edit-booking/')) {
                 setActivePage('edit-booking');
             } else {
@@ -920,12 +925,11 @@ const UserDashboard = () => {
         }
     };
 
-    const handleImageError = (e) => { e.target.src = `https://placehold.co/40x40/e2e8f0/4a5568?text=${currentUser.fullName ? currentUser.fullName.charAt(0).toUpperCase() : 'U'}`; };
-    const profilePictureSrc = currentUser.profilePicture ? `http://localhost:5050/${currentUser.profilePicture}` : `https://placehold.co/40x40/e2e8f0/4a5568?text=${currentUser.fullName ? currentUser.fullName.charAt(0).toUpperCase() : 'U'}`;
+    const handleImageError = (e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.fullName || 'U')}&background=e2e8f0&color=4a5568&size=40`; };
+    const profilePictureSrc = currentUser.profilePicture ? `http://localhost:5050/${currentUser.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.fullName || 'U')}&background=e2e8f0&color=4a5568&size=40`;
 
     return (
         <div className={`flex h-screen bg-gray-100 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100`}>
-            {/* Sidebar */}
             <div className={`fixed inset-0 z-40 flex lg:hidden transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="w-72 bg-white dark:bg-gray-800 shadow-lg flex flex-col">
                     <UserSidebarContent activePage={activePage} onLinkClick={() => setIsSidebarOpen(false)} onLogoutClick={() => { setIsSidebarOpen(false); setLogoutConfirmOpen(true); }} onMenuClose={() => setIsSidebarOpen(false)} />
@@ -936,8 +940,7 @@ const UserDashboard = () => {
                 <UserSidebarContent activePage={activePage} onLinkClick={() => { }} onLogoutClick={() => setLogoutConfirmOpen(true)} />
             </aside>
 
-            {/* Main Content */}
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <main className="flex-1 flex flex-col overflow-hidden">
                 <header className="bg-white dark:bg-gray-800 shadow-sm p-4 flex justify-between items-center">
                     <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-gray-600 dark:text-gray-300"><Menu size={28} /></button>
                     <div className="hidden lg:block" />
@@ -954,10 +957,10 @@ const UserDashboard = () => {
                         </div>
                     </div>
                 </header>
-                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 md:p-8">
+                <div className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 md:p-8">
                     {renderPage()}
-                </main>
-            </div>
+                </div>
+            </main>
 
             <ConfirmationModal isOpen={isLogoutConfirmOpen} onClose={() => setLogoutConfirmOpen(false)} onConfirm={handleLogoutConfirm} title="Confirm Logout" message="Are you sure you want to logout?" confirmText="Logout" confirmButtonVariant="danger" Icon={LogOut} />
         </div>
