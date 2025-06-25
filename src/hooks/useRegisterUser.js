@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { registerUserService } from "../services/authServices";
+import { toast } from "react-toastify";
 
 export const useRegisterUser = () => {
     const [loading, setLoading] = useState(false);
@@ -15,9 +16,12 @@ export const useRegisterUser = () => {
         try {
             const response = await registerUserService(formData);
             setData(response);
+            toast.success("Registration successful!");
             return response; // Return the response for further use if needed
         } catch (err) {
-            setError(err.message || "Registration Failed");
+            const errorMessage = err.message || "Registration Failed";
+            setError(errorMessage);
+            toast.error(errorMessage);
             return null; // Return null or handle the error as needed
         } finally {
             setLoading(false);
