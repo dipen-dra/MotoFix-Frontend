@@ -92,8 +92,10 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
+      {!user && location.pathname !== "/forgot-password" && <Footer />}
 
-      {!user && <Footer />}
+
+      {/* {!user && <Footer />} */}
     </div>
   );
 }
