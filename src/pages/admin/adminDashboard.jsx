@@ -1,8 +1,6 @@
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { Plus, Edit, Trash2, Search, Users, Wrench, DollarSign, List, User, LogOut, Menu, X, Sun, Moon, Camera, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Users, Wrench, DollarSign, List, User, LogOut, Menu, X, Sun, Moon, Camera, AlertTriangle, ArrowLeft, MapPin } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 const API_BASE_URL = "http://localhost:5050/api/admin";
@@ -193,9 +191,9 @@ const BookingsPage = () => {
         if (!editingBooking) return;
         try {
             // This URL now matches our fixed backend route
-            const response = await apiFetch(`/bookings/${editingBooking._id}`, { 
-                method: 'PUT', 
-                body: JSON.stringify(formData) 
+            const response = await apiFetch(`/bookings/${editingBooking._id}`, {
+                method: 'PUT',
+                body: JSON.stringify(formData)
             });
             // The backend now returns the fully populated booking, so this works
             setBookings(bookings.map(b => b._id === editingBooking._id ? response.data : b));
@@ -209,8 +207,6 @@ const BookingsPage = () => {
 
     const closeModal = () => { setIsModalOpen(false); setEditingBooking(null); };
 
-    // ... rest of the BookingsPage component JSX ...
-    // ... no changes needed there.
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Bookings Management</h1>
@@ -440,6 +436,7 @@ const ServicesPage = () => {
 const ProfilePage = ({ currentUser, setCurrentUser }) => {
     const [profile, setProfile] = useState(currentUser);
     const [isEditing, setIsEditing] = useState(false);
+    const [isFetchingLocation, setIsFetchingLocation] = useState(false);
     const fileInputRef = useRef(null);
 
     useEffect(() => { setProfile(currentUser); }, [currentUser]);
@@ -447,6 +444,54 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
     const handleChange = (e) => { setProfile({ ...profile, [e.target.name]: e.target.value }); }
     const handleFileChange = (e) => { const file = e.target.files[0]; if (file) { setProfile(p => ({ ...p, profilePictureUrl: URL.createObjectURL(file), newProfilePicture: file })); } };
     const handleUploadClick = () => { fileInputRef.current.click(); };
+
+    const handleFetchLocation = () => {
+        if (!navigator.geolocation) {
+            toast.error("Geolocation is not supported by your browser.");
+            return;
+        }
+
+        setIsFetchingLocation(true);
+        toast.info("Fetching your location...");
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                try {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok for reverse geocoding.');
+                    }
+                    const data = await response.json();
+                    const address = data.display_name;
+                    if (address) {
+                        setProfile(p => ({ ...p, address: address }));
+                        toast.success("Location fetched and address updated!");
+                    } else {
+                        toast.error("Could not determine address from your location.");
+                    }
+                } catch (error) {
+                    console.error("Reverse geocoding failed:", error);
+                    toast.error("Failed to fetch address. Please enter manually.");
+                } finally {
+                    setIsFetchingLocation(false);
+                }
+            },
+            (error) => {
+                console.error("Geolocation error:", error);
+                let errorMessage = "An unknown geolocation error occurred.";
+                if (error.code === error.PERMISSION_DENIED) {
+                    errorMessage = "Location access denied. Please enable it in your browser settings.";
+                } else if (error.code === error.POSITION_UNAVAILABLE) {
+                    errorMessage = "Location information is currently unavailable.";
+                } else if (error.code === error.TIMEOUT) {
+                    errorMessage = "Request for location timed out.";
+                }
+                toast.error(errorMessage);
+                setIsFetchingLocation(false);
+            }
+        );
+    };
 
     const handleSave = async () => {
         const formData = new FormData();
@@ -473,7 +518,22 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
                 <div className="lg:col-span-1 flex flex-col items-center"><img key={profilePictureSrc} src={profilePictureSrc} alt="Profile" className="w-32 h-32 rounded-full object-cover mb-4 ring-4 ring-blue-500/50" onError={handleImageError} />{isEditing && (<div className="w-full space-y-2"><input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" /><Button variant="secondary" className="w-full" onClick={handleUploadClick}><Camera size={16} /> Change Picture</Button></div>)}</div>
                 <div className="lg:col-span-2 space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6"><Input id="workshopName" label="Workshop Name" name="workshopName" value={profile.workshopName || ''} onChange={handleChange} disabled={!isEditing} /><Input id="ownerName" label="Owner Name" name="ownerName" value={profile.ownerName || ''} onChange={handleChange} disabled={!isEditing} /><Input id="email" label="Email Address" name="email" type="email" value={profile.email || ''} onChange={handleChange} disabled={!isEditing} /><Input id="phone" label="Phone Number" name="phone" value={profile.phone || ''} onChange={handleChange} disabled={!isEditing} /></div>
-                    <div><label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address</label><textarea id="address" name="address" rows="3" value={profile.address || ''} onChange={handleChange} disabled={!isEditing} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-200 dark:disabled:bg-gray-700/50 dark:text-white"></textarea></div>
+                    <div>
+                        <div className="flex justify-between items-center mb-1">
+                            <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Address</label>
+                            {isEditing && (
+                                <Button
+                                    variant="secondary"
+                                    onClick={handleFetchLocation}
+                                    disabled={isFetchingLocation}
+                                    className="text-xs py-1 px-2 !gap-1.5"
+                                >
+                                    {isFetchingLocation ? 'Fetching...' : <><MapPin size={14} /> Fetch Location</>}
+                                </Button>
+                            )}
+                        </div>
+                        <textarea id="address" name="address" rows="3" value={profile.address || ''} onChange={handleChange} disabled={!isEditing} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-200 dark:disabled:bg-gray-700/50 dark:text-white" placeholder="Enter workshop address or fetch current location"></textarea>
+                    </div>
                     {isEditing && (<div className="flex justify-end gap-3 pt-4"><Button variant="secondary" onClick={handleCancel}>Cancel</Button><Button onClick={handleSave}>Save Changes</Button></div>)}
                 </div>
             </div></div></Card>
