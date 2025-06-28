@@ -13,6 +13,8 @@ import UserDashboard from './pages/UserDashboard';
 import EsewaSuccess from './pages/EsewaSuccess';
 import EsewaFailure from './pages/EsewaFailure';
 import ForgotPasswordPage from './pages/ForgetPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+
 
 function App() {
   const { user } = useContext(AuthContext);
@@ -52,6 +54,7 @@ function App() {
             path="/forgot-password"
             element={!user ? <ForgotPasswordPage /> : <Navigate to="/dashboard" replace />}
           />
+          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
           <Route
             path="/dashboard"
