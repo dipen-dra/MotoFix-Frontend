@@ -10,7 +10,7 @@ export const useLoginUser = () => {
             console.log("Login response:", res); // 👀 Check this
 
             // Correct: res.data is the user, res.token is the token
-            login(res.data, res.token); // ✅ Works with backend format
+            login(res.data, res.token); // 
             toast.success("Login successful!");
         },
 

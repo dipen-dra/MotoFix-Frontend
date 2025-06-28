@@ -97,7 +97,7 @@ export const HomePage = () => {
                     <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">Why Choose MotoFix?</h2>
                     <div className="grid md:grid-cols-3 gap-8 text-center">
                         <div
-                            className="group relative rounded-lg shadow-lg h-56 transform transition-transform duration-300 hover:scale-105 bg-cover bg-center overflow-hidden"
+                            className="group relative rounded-lg shadow-lg h-64 transform transition-transform duration-300 hover:scale-105 bg-cover bg-center overflow-hidden"
                             style={{ backgroundImage: `url('https://pplx-res.cloudinary.com/image/upload/v1749555876/gpt4o_images/bybdnjs6xsay9lvrwxd1.png')` }}
                         >
                             <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-70 transition-all duration-300"></div>
@@ -109,7 +109,7 @@ export const HomePage = () => {
                             </div>
                         </div>
                         <div
-                            className="group relative rounded-lg shadow-lg h-56 transform transition-transform duration-300 hover:scale-105 bg-cover bg-center overflow-hidden"
+                            className="group relative rounded-lg shadow-lg h-64 transform transition-transform duration-300 hover:scale-105 bg-cover bg-center overflow-hidden"
                             style={{ backgroundImage: `url('https://www.pmrgo.com/wp-content/uploads/2025/05/transparent-pricing-packers-and-movers.webp')` }}
                         >
                             <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-70 transition-all duration-300"></div>
@@ -121,7 +121,7 @@ export const HomePage = () => {
                             </div>
                         </div>
                         <div
-                            className="group relative rounded-lg shadow-lg h-56 transform transition-transform duration-300 hover:scale-105 bg-cover bg-center overflow-hidden"
+                            className="group relative rounded-lg shadow-lg h-64 transform transition-transform duration-300 hover:scale-105 bg-cover bg-center overflow-hidden"
                             style={{ backgroundImage: `url('https://pplx-res.cloudinary.com/image/upload/v1749741326/gpt4o_images/nxpnscz8nwbgx1o3aqkg.png')` }}
                         >
                             <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-70 transition-all duration-300"></div>
@@ -152,7 +152,7 @@ export const HomePage = () => {
                             // Each card has a fixed width (w-80 = 320px) and margin (mx-4 = 32px total)
                             <div key={index} className="mx-4 flex-shrink-0 w-80">
                                 <div
-                                    className="group relative rounded-lg shadow-lg h-56 transform transition-transform duration-300 hover:scale-105 bg-cover bg-center overflow-hidden"
+                                    className="group relative rounded-lg shadow-lg h-64 transform transition-transform duration-300 hover:scale-105 bg-cover bg-center overflow-hidden"
                                     style={{ backgroundImage: `url('${service.imageUrl}')` }}
                                 >
                                     <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-70 transition-all duration-300"></div>
@@ -224,4 +224,5 @@ export const HomePage = () => {
         </>
     );
 }
+
 export default HomePage;
