@@ -14,11 +14,14 @@ import EsewaSuccess from './pages/EsewaSuccess';
 import EsewaFailure from './pages/EsewaFailure';
 import ForgotPasswordPage from './pages/ForgetPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-
+import ChatbotComponent from '../src/components/chatbot/Chatbot'; // Correct import
 
 function App() {
   const { user } = useContext(AuthContext);
   const location = useLocation();
+
+  // Show chatbot on homepage for everyone, and on all pages for logged-in users.
+  const showChatbot = location.pathname === '/' || user;
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -97,8 +100,8 @@ function App() {
       </main>
       {!user && location.pathname !== "/forgot-password" && <Footer />}
 
-
-      {/* {!user && <Footer />} */}
+      {/* Render chatbot based on the logic */}
+      {showChatbot && <ChatbotComponent />}
     </div>
   );
 }
