@@ -1,22 +1,37 @@
+import React from 'react';
 import { createChatBotMessage, createClientMessage } from 'react-chatbot-kit';
+import { Wrench } from 'lucide-react';
+import BotAvatar from './BotAvatar.jsx';
 
 const config = {
-    botName: "MotoFix-Bot",
-  initialMessages: [createChatBotMessage(`Welcome to MotoFix! How can I help you today?`)],
-  customComponents: {
-    header: () => <div style={{ backgroundColor: '#376B7E', padding: "5px", borderRadius: "3px", color: 'white', textAlign: 'center' }}><h2 className="text-lg font-semibold">MotoFix Assistant</h2></div>,
-  },
-  customStyles: {
-    botMessageBox: {
-      backgroundColor: '#376B7E',
+    botName: "MotoFixBot",
+    initialMessages: [createChatBotMessage(`Welcome to MotoFix! How can I help you today?`)],
+    customComponents: {
+        // Replace the default header
+        header: () => (
+            <div 
+                style={{
+                    background: 'linear-gradient(90deg, #2563eb, #3b82f6)',
+                    color: 'white',
+                    padding: '16px',
+                    borderTopLeftRadius: '12px',
+                    borderTopRightRadius: '12px',
+                    fontSize: '1.1rem',
+                    fontWeight: '600',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px'
+                }}
+            >
+                <Wrench size={24} />
+                <span>MotoFix Assistant</span>
+            </div>
+        ),
+        // Replace the default bot avatar
+        botAvatar: (props) => <BotAvatar {...props} />,
     },
-    chatButton: {
-      backgroundColor: '#376B7E',
-    },
-  },
-  // These are passed to the ActionProvider and MessageParser
-  createChatBotMessage,
-  createClientMessage,
+    createChatBotMessage,
+    createClientMessage,
 };
 
 export default config;

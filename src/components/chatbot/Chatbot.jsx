@@ -1,15 +1,18 @@
 import React, { useState, useContext, useMemo } from 'react';
 import Chatbot from 'react-chatbot-kit';
 import 'react-chatbot-kit/build/main.css';
+import '../chatbot/chatbot.css'; // Import the new custom styles
+
 import config from '../chatbot/config.jsx';
-import createMessageParser from '../chatbot/MessageParser.jsx'; // Corrected import
-import createActionProvider from '../chatbot/ActionProvider.jsx'; // Corrected import
+import createMessageParser from '../chatbot/MessageParser.jsx';
+import createActionProvider from '../chatbot/ActionProvider.jsx';
 import { MessageSquare, X } from 'lucide-react';
 import { AuthContext } from '../../auth/AuthContext.jsx';
 
 const ChatbotComponent = () => {
     const [showBot, setShowBot] = useState(false);
-    const { user } = useContext(AuthContext);
+    const { user } = useContext(AuthContext
+    );
 
     // Create the ActionProvider class, injecting the user context
     const ActionProvider = useMemo(() => createActionProvider(user), [user]);
