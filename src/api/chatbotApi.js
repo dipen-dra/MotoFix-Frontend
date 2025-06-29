@@ -1,22 +1,25 @@
-
-// src/api/chatbotApi.js
 import axios from "axios";
 
-const CHATBOT_API_URL = "http://localhost:5050/api"; // Static, no .env needed
+// This new Axios instance is specifically for the chatbot.
+// Its baseURL points to the root of your API, which is what the chatbot routes need.
+const API_URL = "http://localhost:5050/api";
 
 const chatbotApi = axios.create({
-    baseURL: CHATBOT_API_URL,
+    baseURL: API_URL,
     headers: {
         'Content-Type': 'application/json',
     }
 });
 
+// It also uses the same logic to add the authentication token if the user is logged in.
 chatbotApi.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
-}, (error) => Promise.reject(error));
+}, (error) => {
+    return Promise.reject(error);
+});
 
 export default chatbotApi;
