@@ -17,13 +17,12 @@ const EsewaSuccess = () => {
           const response = await fetch(`http://localhost:5050/api/payment/esewa/verify?data=${data}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
           });
-          
+
           const result = await response.json();
 
-          // MODIFICATION: Check the response and throw an error with the detailed message
           if (!response.ok) {
             throw new Error(result.error || result.message || 'An unknown verification error occurred.');
           }
@@ -31,13 +30,11 @@ const EsewaSuccess = () => {
           setMessage(result.message);
           toast.success('Payment successful!');
           setTimeout(() => {
-            navigate('/dashboard#/user/my-payments'); // You can change this if using hash-based routing differently
+            navigate('/dashboard#/user/my-payments');
           }, 2000);
-
         } catch (error) {
           setMessage(error.message);
           toast.error(error.message);
-
           setTimeout(() => {
             navigate('/dashboard#/user/my-payments');
           }, 2000);
@@ -45,12 +42,12 @@ const EsewaSuccess = () => {
       } else {
         setMessage('No payment data received from eSewa.');
         toast.error('Could not verify payment.');
-
         setTimeout(() => {
           navigate('/dashboard#/user/my-payments');
         }, 2000);
       }
     };
+
     verifyPayment();
   }, [location, navigate]);
 
@@ -65,7 +62,3 @@ const EsewaSuccess = () => {
 };
 
 export default EsewaSuccess;
-
-
-
-
