@@ -1,6 +1,7 @@
 import React from 'react';
 import chatbotApi from '../../api/chatbotApi';
 
+
 const createActionProvider = (user) => {
     class ActionProvider {
         constructor(createChatBotMessage, setStateFunc) {
@@ -67,6 +68,7 @@ const createActionProvider = (user) => {
                     this.updateChatbotState(this.createChatBotMessage("We don't have any services listed right now."));
                 }
             } catch (error) {
+                console.error("Chatbot API Error:", error);
                 this.updateChatbotState(this.createChatBotMessage("Sorry, I couldn't fetch services right now."));
             }
         }
@@ -114,6 +116,7 @@ const createActionProvider = (user) => {
                 this.updateChatbotState(profileMessage);
 
             } catch (error) {
+                 console.error("Chatbot Profile Error:", error);
                  this.updateChatbotState(this.createChatBotMessage("Sorry, I was unable to retrieve your profile information."));
             }
         }

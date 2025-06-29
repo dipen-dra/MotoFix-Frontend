@@ -1,15 +1,22 @@
 import React from 'react';
-import { createChatBotMessage, createClientMessage } from 'react-chatbot-kit';
+import { createChatBotMessage } from 'react-chatbot-kit';
 import { Wrench } from 'lucide-react';
-import BotAvatar from './BotAvatar.jsx';
+
+import BotAvatar from '../chatbot/BotAvatar.jsx'; // Make sure this path is correct
+import ServiceOptions from './widgets/ServiceOptions.jsx'; // Import the widget
 
 const config = {
     botName: "MotoFixBot",
-    initialMessages: [createChatBotMessage(`Welcome to MotoFix! How can I help you today?`)],
+    initialMessages: [
+        createChatBotMessage("Welcome to MotoFix! How can I help you today?")
+    ],
+    // Add an initial state for your services
+    state: {
+        services: []
+    },
     customComponents: {
-        // Replace the default header
         header: () => (
-            <div 
+            <div
                 style={{
                     background: 'linear-gradient(90deg, #2563eb, #3b82f6)',
                     color: 'white',
@@ -27,11 +34,17 @@ const config = {
                 <span>MotoFix Assistant</span>
             </div>
         ),
-        // Replace the default bot avatar
         botAvatar: (props) => <BotAvatar {...props} />,
     },
-    createChatBotMessage,
-    createClientMessage,
+    // Register your custom widget here
+    widgets: [
+        {
+            widgetName: 'serviceOptions',
+            widgetFunc: (props) => <ServiceOptions {...props} />,
+            // Map the widget to the 'services' piece of state
+            mapStateToProps: ['services'],
+        },
+    ],
 };
 
 export default config;
