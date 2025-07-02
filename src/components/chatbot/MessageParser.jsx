@@ -8,9 +8,21 @@ const createMessageParser = (user) => {
         parse(message) {
             const lowerCaseMessage = message.toLowerCase();
 
+            // Handle the case of initial options being clicked
+            if (message.includes("initial")) {
+                this.actionProvider.handleInitialOptions(JSON.parse(message));
+                return;
+            }
+
+            // --- ADD THIS BLOCK ---
+            if (lowerCaseMessage.includes("help") || lowerCaseMessage.includes("options") || lowerCaseMessage === "?") {
+                this.actionProvider.handleHelp();
+            } 
+            // --- END ADD ---
+
             // Check for the most specific phrases first to avoid incorrect matches.
             // Admin-Specific Commands
-            if (lowerCaseMessage.includes("total bookings")) {
+            else if (lowerCaseMessage.includes("total bookings")) {
                 this.actionProvider.handleAdminTotalBookings();
             } else if (lowerCaseMessage.includes("pending") || lowerCaseMessage.includes("orders")) {
                 this.actionProvider.handleAdminPendingBookings();
