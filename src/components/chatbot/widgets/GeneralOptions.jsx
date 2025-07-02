@@ -1,23 +1,21 @@
-import React from 'react';
+// src/chatbot/widgets/GeneralOptions.jsx
 
-// A styled button component for consistency
-const OptionButton = ({ text, handler }) => (
-    <button
-        onClick={handler}
-        className="chatbot-option-button"
-    >
-        {text}
-    </button>
-);
+import React from 'react';
 
 const GeneralOptions = (props) => {
     // This component will receive an array of options from the ActionProvider
     const { options } = props;
 
     return (
-        <div className="chatbot-options-container">
-            {options.map((option, index) => (
-                <OptionButton key={index} text={option.text} handler={option.handler} />
+        <div className="options-container">
+            {options.map((option) => (
+                <button
+                    key={option.id}
+                    onClick={option.handler}
+                    className="option-button"
+                >
+                    {option.text}
+                </button>
             ))}
         </div>
     );

@@ -43,7 +43,7 @@ const createActionProvider = (user) => {
                 return [
                     { text: 'My Profile', handler: this.handleProfileInquiry, id: 8 },
                     { text: 'My Bookings', handler: this.handleUserBookings, id: 9 },
-                    { text: 'Upcoming Services', handler: this.handleUserUpcomingServices, id: 10 },
+                    { text: 'Upcoming Bookings', handler: this.handleUserUpcomingServices, id: 10 },
                     { text: 'My Loyalty Points', handler: this.handleUserLoyaltyPoints, id: 11 },
                      // THIS NOW CALLS THE NEW DEDICATED HANDLER
                     { text: 'Our Services', handler: this.showServiceOptions, id: 1 },
@@ -246,9 +246,9 @@ const createActionProvider = (user) => {
             try {
                 const response = await chatbotApi.get('/chatbot/user-dashboard');
                 const { upcomingServices } = response.data.data;
-                this.updateChatbotState(this.createChatBotMessage(`You have ${upcomingServices} upcoming service(s) scheduled.`));
+                this.updateChatbotState(this.createChatBotMessage(`You have ${upcomingServices} upcoming Booking(s) scheduled.`));
             } catch (error) {
-                this.updateChatbotState(this.createChatBotMessage("I couldn't fetch your upcoming services."));
+                this.updateChatbotState(this.createChatBotMessage("I couldn't fetch your upcoming bookings."));
             }
         }
         
