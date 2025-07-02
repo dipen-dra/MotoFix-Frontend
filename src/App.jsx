@@ -14,7 +14,7 @@ import EsewaSuccess from './pages/EsewaSuccess';
 import EsewaFailure from './pages/EsewaFailure';
 import ForgotPasswordPage from './pages/ForgetPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-import ChatbotComponent from '../src/components/chatbot/Chatbot'; // Correct import
+import ChatbotComponent from '../src/components/chatbot/Chatbotgit '; // Correct import
 
 function App() {
   const { user } = useContext(AuthContext);
