@@ -1041,12 +1041,13 @@
 // export default UserDashboard;
 
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { BarChart, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-// 💡 Import MessageSquare for the chat icon
-import { LayoutDashboard, CalendarDays, User, LogOut, Menu, X, Sun, Moon, PlusCircle, Bike, Wrench, Edit, Trash2, AlertTriangle, Camera, MapPin, CreditCard, ArrowLeft, Gift, ArrowRight, ChevronDown, ChevronUp, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, User, LogOut, Menu, X, Sun, Moon, PlusCircle, Bike, Wrench, Edit, Trash2, AlertTriangle, Camera, MapPin, CreditCard, ArrowLeft, Gift, ArrowRight, ChevronDown, ChevronUp, MessageSquare, Send } from 'lucide-react';
 import { toast } from 'react-toastify';
-import io from 'socket.io-client'; // 💡 Import socket.io-client
+import io from 'socket.io-client';
+import { AuthContext } from '../auth/AuthContext';
+
 
 const API_BASE_URL_USER = "http://localhost:5050/api/user";
 
@@ -1054,27 +1055,37 @@ const API_BASE_URL_USER = "http://localhost:5050/api/user";
 const ChatPage = ({ currentUser }) => {
     const [currentMessage, setCurrentMessage] = useState("");
     const [messageList, setMessageList] = useState([]);
-    const room = "support_chat"; // This must match the room the admin joins
     const chatBodyRef = useRef(null);
     const socket = useRef(io.connect("http://localhost:5050")).current;
+
+    // 💡 Create a unique, private room name using the user's ID
+    const room = currentUser?._id ? `chat-${currentUser._id}` : null;
     const authorName = currentUser?.fullName || 'Customer';
+    const authorId = currentUser?._id || null;
 
     useEffect(() => {
+        if (!room) {
+            return; // Do not proceed if there's no room (user not loaded yet)
+        }
+
         socket.emit("join_room", room);
 
-        // 💡 Listener for receiving the initial chat history
         const historyListener = (history) => {
-            setMessageList(history);
+            // Ensure the history is for this user's room
+            if (history.length === 0 || (history.length > 0 && history[0].room === room)) {
+                setMessageList(history);
+            }
         };
         socket.on("chat_history", historyListener);
 
-        // Listener for new incoming messages
         const messageListener = (data) => {
-            setMessageList((list) => [...list, data]);
+            // Only add the message if it's for this user's room
+            if (data.room === room) {
+                setMessageList((list) => [...list, data]);
+            }
         };
         socket.on("receive_message", messageListener);
 
-        // Cleanup listeners on component unmount
         return () => {
             socket.off("chat_history", historyListener);
             socket.off("receive_message", messageListener);
@@ -1082,21 +1093,20 @@ const ChatPage = ({ currentUser }) => {
     }, [socket, room]);
 
     useEffect(() => {
-        // Auto-scroll to the latest message
         if (chatBodyRef.current) {
             chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
         }
     }, [messageList]);
 
     const sendMessage = async () => {
-        if (currentMessage.trim() !== "") {
+        if (currentMessage.trim() !== "" && room && authorId) {
             const messageData = {
                 room: room,
                 author: authorName,
+                authorId: authorId, // 💡 Send the user's ID
                 message: currentMessage,
             };
             await socket.emit("send_message", messageData);
-            // Instantly add the sent message to the list for a responsive feel
             setMessageList((list) => [...list, { ...messageData, timestamp: new Date().toISOString() }]);
             setCurrentMessage("");
         }
@@ -1108,8 +1118,8 @@ const ChatPage = ({ currentUser }) => {
             <Card className="flex flex-col" style={{ height: '75vh' }}>
                 <div className="flex-grow overflow-y-auto p-4 space-y-4" ref={chatBodyRef}>
                     {messageList.map((msg, index) => (
-                        <div key={index} className={`flex items-end gap-2 ${msg.author === authorName ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`p-3 rounded-lg max-w-lg ${msg.author === authorName ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
+                        <div key={index} className={`flex items-end gap-2 ${msg.authorId === authorId ? 'justify-end' : 'justify-start'}`}>
+                             <div className={`p-3 rounded-lg max-w-lg ${msg.authorId === authorId ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
                                 <p className="text-sm font-bold text-gray-500 dark:text-gray-400">{msg.author}</p>
                                 <p className="text-md mt-1">{msg.message}</p>
                                 <p className="text-xs text-right mt-2 opacity-70">{new Date(msg.timestamp || Date.now()).toLocaleTimeString()}</p>
@@ -1126,7 +1136,7 @@ const ChatPage = ({ currentUser }) => {
                         placeholder="Type your message..."
                         className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 border-transparent rounded-lg focus:ring-blue-500 focus:border-blue-500"
                     />
-                    <Button onClick={sendMessage} disabled={!currentMessage}>Send</Button>
+                    <Button onClick={sendMessage} disabled={!currentMessage}><Send size={18}/></Button>
                 </div>
             </Card>
         </div>
@@ -2062,27 +2072,29 @@ const UserSidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClos
 };
 
 const UserDashboard = () => {
+    const { user } = useContext(AuthContext);
     const [activePage, setActivePage] = useState('dashboard');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isLogoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
-    const [currentUser, setCurrentUser] = useState({ fullName: 'Guest', email: '', profilePicture: '', loyaltyPoints: 0 });
+    const [currentUser, setCurrentUser] = useState(null); // 💡 Initialize as null
     const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('userTheme') === 'dark');
 
-    const fetchProfile = async () => {
-        try {
-            const response = await apiFetchUser('/profile');
-            setCurrentUser(response.data || { fullName: 'Guest', email: '', loyaltyPoints: 0 });
-        } catch (error) {
-            console.error("Failed to fetch current user", error);
-            if (error.message.includes('Unauthorized') || error.message.includes('token') || error.message.includes('Failed to fetch')) {
-                handleLogoutConfirm();
-            }
-        }
-    };
-    
     useEffect(() => {
+        const fetchProfile = async () => {
+            if (!user) return;
+            try {
+                const response = await apiFetchUser('/profile');
+                setCurrentUser(response.data);
+            } catch (error) {
+                console.error("Failed to fetch current user", error);
+                if (error.message.includes('Unauthorized') || error.message.includes('token')) {
+                    handleLogoutConfirm();
+                }
+            }
+        };
+        
         fetchProfile();
-    }, []);
+    }, [user]);
 
     useEffect(() => {
         document.documentElement.classList.toggle('dark', isDarkMode);
@@ -2103,9 +2115,9 @@ const UserDashboard = () => {
         return () => window.removeEventListener('hashchange', handleHashChange);
     }, []);
 
-    const handleDiscountApplied = (newPoints) => {
-        setCurrentUser(prevUser => ({...prevUser, loyaltyPoints: newPoints }));
-        fetchProfile(); 
+    const handleDiscountApplied = async (newPoints) => {
+        const response = await apiFetchUser('/profile');
+        setCurrentUser(response.data);
     };
 
     const handleLogoutConfirm = () => {
@@ -2114,6 +2126,11 @@ const UserDashboard = () => {
     };
 
     const renderPage = () => {
+        // 💡 Don't render pages until we have the current user's data
+        if (!currentUser) {
+            return <div className="text-center p-12">Loading User Data...</div>;
+        }
+
         switch (activePage) {
             case 'dashboard': return <UserDashboardPage />;
             case 'bookings': return <UserBookingsPage />;
@@ -2121,7 +2138,6 @@ const UserDashboard = () => {
             case 'my-payments': return <MyPaymentsPage currentUser={currentUser} loyaltyPoints={currentUser.loyaltyPoints} onDiscountApplied={handleDiscountApplied} />;
             case 'edit-booking': return <EditBookingPage />;
             case 'profile': return <UserProfilePage currentUser={currentUser} setCurrentUser={setCurrentUser} />;
-            // 💡 Render the ChatPage component, passing the current user's data
             case 'chat': return <ChatPage currentUser={currentUser} />;
             default:
                 window.location.hash = '#/user/dashboard';
@@ -2129,8 +2145,8 @@ const UserDashboard = () => {
         }
     };
 
-    const handleImageError = (e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.fullName || 'U')}&background=e2e8f0&color=4a5568&size=40`; };
-    const profilePictureSrc = currentUser.profilePicture ? `http://localhost:5050/${currentUser.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.fullName || 'U')}&background=e2e8f0&color=4a5568&size=40`;
+    const handleImageError = (e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser?.fullName || 'U')}&background=e2e8f0&color=4a5568&size=40`; };
+    const profilePictureSrc = currentUser?.profilePicture ? `http://localhost:5050/${currentUser.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser?.fullName || 'U')}&background=e2e8f0&color=4a5568&size=40`;
 
     return (
         <div className={`flex h-screen bg-gray-100 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100`}>
@@ -2155,7 +2171,7 @@ const UserDashboard = () => {
                         <div className="flex items-center gap-3">
                             <img key={profilePictureSrc} src={profilePictureSrc} alt="User" className="w-10 h-10 rounded-full object-cover" onError={handleImageError} />
                             <div>
-                                <p className="font-semibold text-sm">{currentUser.fullName}</p>
+                                <p className="font-semibold text-sm">{currentUser?.fullName}</p>
                                 <p className="text-xs text-gray-500 dark:text-gray-400">Customer</p>
                             </div>
                         </div>

@@ -829,88 +829,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Plus, Edit, Trash2, Search, Users, Wrench, DollarSign, List, User, LogOut, Menu, X, Sun, Moon, Camera, AlertTriangle, ArrowLeft, MapPin, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Users, Wrench, DollarSign, List, User, LogOut, Menu, X, Sun, Moon, Camera, AlertTriangle, ArrowLeft, MapPin, ChevronLeft, ChevronRight, MessageSquare, Send, Inbox } from 'lucide-react';
 import { toast } from 'react-toastify';
 import io from 'socket.io-client';
-
-// --- Chat Page Component ---
-const ChatPage = () => {
-    const [currentMessage, setCurrentMessage] = useState("");
-    const [messageList, setMessageList] = useState([]);
-    const room = "support_chat";
-    const chatBodyRef = useRef(null);
-    const socket = useRef(io.connect("http://localhost:5050")).current;
-
-    useEffect(() => {
-        socket.emit("join_room", room);
-
-        // 💡 Listener for receiving the initial chat history
-        const historyListener = (history) => {
-            setMessageList(history);
-        };
-        socket.on("chat_history", historyListener);
-
-        // Listener for new incoming messages
-        const messageListener = (data) => {
-            setMessageList((list) => [...list, data]);
-        };
-        socket.on("receive_message", messageListener);
-
-        // Cleanup listeners on component unmount
-        return () => {
-            socket.off("chat_history", historyListener);
-            socket.off("receive_message", messageListener);
-        };
-    }, [socket, room]);
-
-    useEffect(() => {
-        chatBodyRef.current?.scrollTo(0, chatBodyRef.current.scrollHeight);
-    }, [messageList]);
-
-    const sendMessage = async () => {
-        if (currentMessage.trim() !== "") {
-            const messageData = {
-                room: room,
-                author: "Admin",
-                message: currentMessage,
-            };
-            await socket.emit("send_message", messageData);
-            setMessageList((list) => [...list, { ...messageData, timestamp: new Date().toISOString() }]);
-            setCurrentMessage("");
-        }
-    };
-
-    return (
-        <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Live Chat</h1>
-            <Card className="flex flex-col" style={{ height: '75vh' }}>
-                <div className="flex-grow overflow-y-auto p-4 space-y-4" ref={chatBodyRef}>
-                    {messageList.map((msg, index) => (
-                        <div key={index} className={`flex items-end gap-2 ${msg.author === "Admin" ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`p-3 rounded-lg max-w-lg ${msg.author === "Admin" ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
-                                <p className="text-sm font-bold text-gray-500 dark:text-gray-400">{msg.author}</p>
-                                <p className="text-md mt-1">{msg.message}</p>
-                                <p className="text-xs text-right mt-2 opacity-70">{new Date(msg.timestamp || Date.now()).toLocaleTimeString()}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex gap-3">
-                    <input
-                        type="text"
-                        value={currentMessage}
-                        onChange={(e) => setCurrentMessage(e.target.value)}
-                        onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-                        placeholder="Type a message..."
-                        className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 border-transparent rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                    />
-                    <Button onClick={sendMessage} disabled={!currentMessage}>Send</Button>
-                </div>
-            </Card>
-        </div>
-    );
-};
-
 
 const API_BASE_URL = "http://localhost:5050/api/admin";
 
@@ -938,6 +859,173 @@ const apiFetch = async (endpoint, options = {}) => {
     return;
 };
 
+
+// --- START: Admin Chat Page Component ---
+const AdminChatPage = () => {
+    const [conversations, setConversations] = useState([]);
+    const [activeConversation, setActiveConversation] = useState(null);
+    const [messages, setMessages] = useState([]);
+    const [currentMessage, setCurrentMessage] = useState('');
+    const chatBodyRef = useRef(null);
+    const socket = useRef(io.connect("http://localhost:5050")).current;
+
+    // Fetch all active conversations on component mount
+    useEffect(() => {
+        const fetchConversations = async () => {
+            try {
+                const response = await apiFetch('/chat/users');
+                setConversations(response.data || []);
+            } catch (error) {
+                toast.error('Failed to fetch chat conversations.');
+                console.error(error);
+            }
+        };
+        fetchConversations();
+    }, []);
+
+    // Handle socket events when active conversation changes
+    useEffect(() => {
+        if (activeConversation) {
+            const roomName = `chat-${activeConversation._id}`;
+            socket.emit('join_room', roomName);
+
+            const historyListener = (history) => {
+                // Ensure history is for the currently active conversation
+                if (history.length > 0 && history[0].room === roomName) {
+                     setMessages(history);
+                } else if (history.length === 0 && activeConversation?._id && `chat-${activeConversation._id}` === roomName) {
+                     setMessages([]);
+                }
+            };
+            socket.on('chat_history', historyListener);
+
+            const messageListener = (data) => {
+                // Only add the message if it belongs to the active conversation
+                if (data.room === roomName) {
+                    setMessages((prev) => [...prev, data]);
+                }
+            };
+            socket.on('receive_message', messageListener);
+
+            // Cleanup listeners when changing conversation or unmounting
+            return () => {
+                socket.off('chat_history', historyListener);
+                socket.off('receive_message', messageListener);
+            };
+        }
+    }, [activeConversation, socket]);
+
+    // Auto-scroll logic
+    useEffect(() => {
+        if (chatBodyRef.current) {
+            chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+        }
+    }, [messages]);
+
+    const handleSendMessage = async () => {
+        if (currentMessage.trim() === '' || !activeConversation) return;
+
+        const messageData = {
+            room: `chat-${activeConversation._id}`,
+            author: 'Admin',
+            authorId: 'admin_user', // Generic ID for admin
+            message: currentMessage,
+        };
+
+        await socket.emit('send_message', messageData);
+        setMessages((prev) => [...prev, { ...messageData, timestamp: new Date().toISOString() }]);
+        setCurrentMessage('');
+    };
+
+    const handleSelectConversation = (user) => {
+        if (activeConversation?._id !== user._id) {
+            setMessages([]);
+            setActiveConversation(user);
+        }
+    };
+    
+    const handleImageError = (e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(e.target.dataset.name || 'U')}&background=e2e8f0&color=4a5568&size=40`; };
+
+    return (
+        <div className="space-y-6">
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Customer Chats</h1>
+            <Card className="p-0 flex" style={{ height: '75vh' }}>
+                {/* Conversations List */}
+                <div className="w-1/3 border-r dark:border-gray-700 overflow-y-auto">
+                    <div className="p-4 border-b dark:border-gray-600">
+                        <h2 className="font-semibold text-lg">Conversations</h2>
+                    </div>
+                    <ul className="divide-y dark:divide-gray-700">
+                        {conversations.map(user => (
+                            <li key={user._id} onClick={() => handleSelectConversation(user)} className={`p-4 cursor-pointer flex items-center gap-3 ${activeConversation?._id === user._id ? 'bg-blue-100 dark:bg-blue-900/50' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}>
+                                <img 
+                                    src={user.profilePicture ? `http://localhost:5050/${user.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || 'U')}&background=0D8ABC&color=fff&size=40`} 
+                                    alt={user.fullName} 
+                                    className="w-10 h-10 rounded-full object-cover"
+                                    data-name={user.fullName}
+                                    onError={handleImageError}
+                                />
+                                <div className="flex-grow overflow-hidden">
+                                    <p className="font-semibold truncate">{user.fullName}</p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{user.lastMessage}</p>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+
+                {/* Chat Window */}
+                <div className="w-2/3 flex flex-col">
+                    {activeConversation ? (
+                        <>
+                            <div className="p-4 border-b dark:border-gray-700 flex items-center gap-3">
+                                 <img 
+                                    src={activeConversation.profilePicture ? `http://localhost:5050/${activeConversation.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(activeConversation.fullName || 'U')}&background=0D8ABC&color=fff&size=40`} 
+                                    alt={activeConversation.fullName} 
+                                    className="w-10 h-10 rounded-full object-cover"
+                                    data-name={activeConversation.fullName}
+                                    onError={handleImageError}
+                                />
+                                <div>
+                                    <h3 className="font-semibold">{activeConversation.fullName}</h3>
+                                    <p className="text-sm text-gray-500">{activeConversation.email}</p>
+                                </div>
+                            </div>
+                            <div className="flex-grow overflow-y-auto p-4 space-y-4" ref={chatBodyRef}>
+                                {messages.map((msg, index) => (
+                                    <div key={index} className={`flex items-end gap-2 ${msg.authorId === 'admin_user' ? 'justify-end' : 'justify-start'}`}>
+                                        <div className={`p-3 rounded-lg max-w-lg ${msg.authorId === 'admin_user' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
+                                            <p className="text-sm font-bold text-gray-500 dark:text-gray-400">{msg.author}</p>
+                                            <p className="text-md mt-1">{msg.message}</p>
+                                            <p className="text-xs text-right mt-2 opacity-70">{new Date(msg.timestamp || Date.now()).toLocaleTimeString()}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="p-4 border-t dark:border-gray-700 flex gap-3">
+                                <input
+                                    type="text"
+                                    value={currentMessage}
+                                    onChange={(e) => setCurrentMessage(e.target.value)}
+                                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                                    placeholder="Type your message..."
+                                    className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 border-transparent rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                />
+                                <Button onClick={handleSendMessage} disabled={!currentMessage}><Send size={18}/></Button>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400">
+                            <Inbox size={64} />
+                            <p className="mt-4 text-lg">Select a conversation to start chatting</p>
+                        </div>
+                    )}
+                </div>
+            </Card>
+        </div>
+    );
+};
+// --- END: Admin Chat Page Component ---
 
 
 const getStatusColor = (status) => {
@@ -1258,7 +1346,6 @@ const BookingDetailsPage = ({ bookingId }) => {
         </div>
     );
 };
-
 const UsersPage = () => {
     const [users, setUsers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -1465,7 +1552,6 @@ const ServicesPage = () => {
         </div>
     );
 };
-
 const ProfilePage = ({ currentUser, setCurrentUser }) => {
     const [profile, setProfile] = useState(currentUser);
     const [isEditing, setIsEditing] = useState(false);
@@ -1573,9 +1659,6 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
         </div>
     );
 };
-
-
-
 const BookingFormModal = ({ isOpen, onClose, booking, onSave }) => {
     const [formData, setFormData] = useState({});
     useEffect(() => { if (booking) { setFormData({ status: booking.status, totalCost: booking.totalCost }); } }, [booking, isOpen]);
@@ -1636,7 +1719,6 @@ const SidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClose })
             <NavLink page="profile" icon={User} activePage={activePage} onLinkClick={onLinkClick}>
                 Profile
             </NavLink>
-            {/* 💡 Add Chat NavLink to Admin Sidebar */}
             <NavLink page="chat" icon={MessageSquare} activePage={activePage} onLinkClick={onLinkClick}>
                 Chat
             </NavLink>
@@ -1705,7 +1787,7 @@ const AdminDashboard = () => {
             case 'users': return <UsersPage />;
             case 'services': return <ServicesPage />;
             case 'profile': return <ProfilePage currentUser={currentUser} setCurrentUser={setCurrentUser} />;
-            case 'chat': return <ChatPage />; // 💡 Render Chat Page
+            case 'chat': return <AdminChatPage />; // Use the new AdminChatPage
             default:
                 window.location.hash = '#/admin/dashboard';
                 return <DashboardPage />;
