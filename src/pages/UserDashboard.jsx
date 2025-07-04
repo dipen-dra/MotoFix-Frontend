@@ -1,6 +1,6 @@
 // import React, { useState, useEffect, useRef } from 'react';
 // import { BarChart, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-// import { LayoutDashboard, CalendarDays, User, LogOut, Menu, X, Sun, Moon, PlusCircle, Bike, Wrench, Edit, Trash2, AlertTriangle, Camera, MapPin, CreditCard, ArrowLeft, Gift, ArrowRight } from 'lucide-react';
+// import { LayoutDashboard, CalendarDays, User, LogOut, Menu, X, Sun, Moon, PlusCircle, Bike, Wrench, Edit, Trash2, AlertTriangle, Camera, MapPin, CreditCard, ArrowLeft, Gift, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
 // import { toast } from 'react-toastify';
 
 
@@ -92,6 +92,30 @@
 //             <span className="text-sm text-gray-700 dark:text-gray-300">Page {currentPage} of {totalPages}</span>
 //             <Button variant="secondary" onClick={() => onPageChange(currentPage + 1)} disabled={currentPage >= totalPages} className="!px-3 !py-1.5 text-sm">
 //                 Next <ArrowRight size={16} />
+//             </Button>
+//         </div>
+//     );
+// };
+
+// const LoadMoreControl = ({ onToggle, isExpanded, hasMore }) => {
+//     if (!hasMore) return null;
+
+//     return (
+//         <div className="flex justify-center pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+//             <Button
+//                 variant="secondary"
+//                 onClick={onToggle}
+//                 className="!px-6 !py-2 text-sm !gap-1.5 transform hover:scale-105 hover:shadow-lg transition-all duration-200"
+//             >
+//                 {isExpanded ? (
+//                     <>
+//                         <ChevronUp size={18} /> Show Less
+//                     </>
+//                 ) : (
+//                     <>
+//                         <ChevronDown size={18} /> Load More
+//                     </>
+//                 )}
 //             </Button>
 //         </div>
 //     );
@@ -476,6 +500,7 @@
 //     const [unpaidBookings, setUnpaidBookings] = useState([]);
 //     const [paidBookings, setPaidBookings] = useState([]);
 //     const [isLoading, setIsLoading] = useState(true);
+//     const [showAllHistory, setShowAllHistory] = useState(false);
 
 //     const fetchData = async () => {
 //         setIsLoading(true);
@@ -615,6 +640,8 @@
 //         }
 //     };
 
+//     const displayedHistory = showAllHistory ? paidBookings : paidBookings.slice(0, 10);
+
 //     return (
 //         <div className="space-y-8">
 //             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">My Payments</h1>
@@ -673,7 +700,7 @@
 //                 <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Payment History</h2>
 //                 <div className="overflow-x-auto flex-grow">
 //                     {isLoading && paidBookings.length === 0 ? (<div className="text-center p-12">Loading history...</div>) :
-//                         paidBookings.length > 0 ? (
+//                         displayedHistory.length > 0 ? (
 //                             <table className="w-full text-left">
 //                                 <thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700">
 //                                     <tr>
@@ -682,7 +709,7 @@
 //                                     </tr>
 //                                 </thead>
 //                                 <tbody>
-//                                     {paidBookings.map(booking => (
+//                                     {displayedHistory.map(booking => (
 //                                         <tr key={booking._id} className="border-b dark:border-gray-700">
 //                                             <td className="p-3 font-medium text-gray-900 dark:text-white">{booking.serviceType}</td>
 //                                             <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel}</td>
@@ -703,6 +730,11 @@
 //                         )
 //                     }
 //                 </div>
+//                 <LoadMoreControl 
+//                     onToggle={() => setShowAllHistory(!showAllHistory)}
+//                     isExpanded={showAllHistory}
+//                     hasMore={paidBookings.length > 10}
+//                 />
 //             </Card>
 //         </div>
 //     );
@@ -1009,16 +1041,99 @@
 // export default UserDashboard;
 
 
-
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import { BarChart, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { LayoutDashboard, CalendarDays, User, LogOut, Menu, X, Sun, Moon, PlusCircle, Bike, Wrench, Edit, Trash2, AlertTriangle, Camera, MapPin, CreditCard, ArrowLeft, Gift, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
+// 💡 Import MessageSquare for the chat icon
+import { LayoutDashboard, CalendarDays, User, LogOut, Menu, X, Sun, Moon, PlusCircle, Bike, Wrench, Edit, Trash2, AlertTriangle, Camera, MapPin, CreditCard, ArrowLeft, Gift, ArrowRight, ChevronDown, ChevronUp, MessageSquare } from 'lucide-react';
 import { toast } from 'react-toastify';
-
+import io from 'socket.io-client'; // 💡 Import socket.io-client
 
 const API_BASE_URL_USER = "http://localhost:5050/api/user";
+
+// --- START: Chat Page Component ---
+const ChatPage = ({ currentUser }) => {
+    const [currentMessage, setCurrentMessage] = useState("");
+    const [messageList, setMessageList] = useState([]);
+    const room = "support_chat"; // This must match the room the admin joins
+    const chatBodyRef = useRef(null);
+    const socket = useRef(io.connect("http://localhost:5050")).current;
+    const authorName = currentUser?.fullName || 'Customer';
+
+    useEffect(() => {
+        socket.emit("join_room", room);
+
+        // 💡 Listener for receiving the initial chat history
+        const historyListener = (history) => {
+            setMessageList(history);
+        };
+        socket.on("chat_history", historyListener);
+
+        // Listener for new incoming messages
+        const messageListener = (data) => {
+            setMessageList((list) => [...list, data]);
+        };
+        socket.on("receive_message", messageListener);
+
+        // Cleanup listeners on component unmount
+        return () => {
+            socket.off("chat_history", historyListener);
+            socket.off("receive_message", messageListener);
+        };
+    }, [socket, room]);
+
+    useEffect(() => {
+        // Auto-scroll to the latest message
+        if (chatBodyRef.current) {
+            chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+        }
+    }, [messageList]);
+
+    const sendMessage = async () => {
+        if (currentMessage.trim() !== "") {
+            const messageData = {
+                room: room,
+                author: authorName,
+                message: currentMessage,
+            };
+            await socket.emit("send_message", messageData);
+            // Instantly add the sent message to the list for a responsive feel
+            setMessageList((list) => [...list, { ...messageData, timestamp: new Date().toISOString() }]);
+            setCurrentMessage("");
+        }
+    };
+
+    return (
+        <div className="space-y-6">
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Live Chat with Admin</h1>
+            <Card className="flex flex-col" style={{ height: '75vh' }}>
+                <div className="flex-grow overflow-y-auto p-4 space-y-4" ref={chatBodyRef}>
+                    {messageList.map((msg, index) => (
+                        <div key={index} className={`flex items-end gap-2 ${msg.author === authorName ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`p-3 rounded-lg max-w-lg ${msg.author === authorName ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
+                                <p className="text-sm font-bold text-gray-500 dark:text-gray-400">{msg.author}</p>
+                                <p className="text-md mt-1">{msg.message}</p>
+                                <p className="text-xs text-right mt-2 opacity-70">{new Date(msg.timestamp || Date.now()).toLocaleTimeString()}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex gap-3">
+                    <input
+                        type="text"
+                        value={currentMessage}
+                        onChange={(e) => setCurrentMessage(e.target.value)}
+                        onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+                        placeholder="Type your message..."
+                        className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 border-transparent rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <Button onClick={sendMessage} disabled={!currentMessage}>Send</Button>
+                </div>
+            </Card>
+        </div>
+    );
+};
+// --- END: Chat Page Component ---
+
 
 const apiFetchUser = async (endpoint, options = {}) => {
     const headers = {
@@ -1933,6 +2048,8 @@ const UserSidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClos
                 <UserNavLink page="my-payments" icon={CreditCard} activePage={activePage} onLinkClick={onLinkClick}>My Payments</UserNavLink>
                 <UserNavLink page="new-booking" icon={PlusCircle} activePage={activePage} onLinkClick={onLinkClick}>New Booking</UserNavLink>
                 <UserNavLink page="profile" icon={User} activePage={activePage} onLinkClick={onLinkClick}>Profile</UserNavLink>
+                {/* 💡 Add Chat NavLink to User Sidebar */}
+                <UserNavLink page="chat" icon={MessageSquare} activePage={activePage} onLinkClick={onLinkClick}>Chat</UserNavLink>
             </nav>
             <div className="p-4 border-t border-gray-200 dark:border-gray-700">
                 <button onClick={onLogoutClick} className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">
@@ -2004,6 +2121,8 @@ const UserDashboard = () => {
             case 'my-payments': return <MyPaymentsPage currentUser={currentUser} loyaltyPoints={currentUser.loyaltyPoints} onDiscountApplied={handleDiscountApplied} />;
             case 'edit-booking': return <EditBookingPage />;
             case 'profile': return <UserProfilePage currentUser={currentUser} setCurrentUser={setCurrentUser} />;
+            // 💡 Render the ChatPage component, passing the current user's data
+            case 'chat': return <ChatPage currentUser={currentUser} />;
             default:
                 window.location.hash = '#/user/dashboard';
                 return <UserDashboardPage />;
