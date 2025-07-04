@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { Plus, Edit, Trash2, Search, Users, Wrench, DollarSign, List, User, LogOut, Menu, X, Sun, Moon, Camera, AlertTriangle, ArrowLeft, MapPin } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Users, Wrench, DollarSign, List, User, LogOut, Menu, X, Sun, Moon, Camera, AlertTriangle, ArrowLeft, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 const API_BASE_URL = "http://localhost:5050/api/admin";
@@ -32,7 +32,6 @@ const apiFetch = async (endpoint, options = {}) => {
 
 
 const getStatusColor = (status) => {
-    // Matching the exact strings from your schema's enum
     switch (status) {
         case 'Completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
         case 'In Progress': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
@@ -95,6 +94,34 @@ const Input = ({ id, label, ...props }) => (
 
 const StatusBadge = ({ status }) => (<span className={`px-2.5 py-1 text-xs font-semibold rounded-full capitalize ${getStatusColor(status)}`}>{status}</span>);
 
+const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+    return (
+        <div className="flex items-center justify-between pt-3 mt-auto border-t border-gray-200 dark:border-gray-700">
+            <Button
+                variant="secondary"
+                onClick={() => onPageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="!px-3 !py-1.5 text-sm"
+            >
+                <ChevronLeft size={16} />
+                Previous
+            </Button>
+            <span className="text-sm text-gray-700 dark:text-gray-300">
+                Page {totalPages > 0 ? currentPage : 0} of {totalPages > 0 ? totalPages : 0}
+            </span>
+            <Button
+                variant="secondary"
+                onClick={() => onPageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+                className="!px-3 !py-1.5 text-sm"
+            >
+                Next
+                <ChevronRight size={16} />
+            </Button>
+        </div>
+    );
+};
+
 
 const DashboardPage = () => {
     const [analytics, setAnalytics] = useState({ totalRevenue: 0, totalBookings: 0, newUsers: 0, revenueData: [], servicesData: [] });
@@ -152,23 +179,26 @@ const BookingsPage = () => {
     const [isConfirmOpen, setConfirmOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
 
-    const fetchBookings = async () => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
+    const ITEMS_PER_PAGE = 11;
+
+    const fetchBookings = async (page) => {
         try {
-            const response = await apiFetch('/bookings');
+            const response = await apiFetch(`/bookings?page=${page}&limit=${ITEMS_PER_PAGE}&search=${searchTerm}`);
             setBookings(response.data || []);
+            setTotalPages(response.totalPages || 0);
         } catch (error) {
             console.error('Failed to fetch bookings', error.message);
             toast.error(error.message || 'Failed to fetch bookings.');
             setBookings([]);
+            setTotalPages(0);
         }
     };
 
-    useEffect(() => { fetchBookings(); }, []);
-
-    const filteredBookings = bookings.filter(b =>
-        (b.customer?.fullName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-        (b.serviceType?.toLowerCase() || '').includes(searchTerm.toLowerCase())
-    );
+    useEffect(() => {
+        fetchBookings(currentPage);
+    }, [currentPage, searchTerm]);
 
     const handleEdit = (booking) => { setEditingBooking(booking); setIsModalOpen(true); };
     const handleDeleteClick = (id) => { setItemToDelete(id); setConfirmOpen(true); };
@@ -177,8 +207,8 @@ const BookingsPage = () => {
         if (!itemToDelete) return;
         try {
             await apiFetch(`/bookings/${itemToDelete}`, { method: 'DELETE' });
-            setBookings(bookings.filter(b => b._id !== itemToDelete));
             toast.success('Booking deleted successfully!');
+            fetchBookings(currentPage);
         } catch (error) {
             console.error('Failed to delete booking', error);
             toast.error(error.message || 'Failed to delete booking.');
@@ -186,16 +216,13 @@ const BookingsPage = () => {
         finally { setConfirmOpen(false); setItemToDelete(null); }
     };
 
-    // THIS FUNCTION IS NOW CORRECT because the backend route is fixed.
     const handleSave = async (formData) => {
         if (!editingBooking) return;
         try {
-            // This URL now matches our fixed backend route
             const response = await apiFetch(`/bookings/${editingBooking._id}`, {
                 method: 'PUT',
                 body: JSON.stringify(formData)
             });
-            // The backend now returns the fully populated booking, so this works
             setBookings(bookings.map(b => b._id === editingBooking._id ? response.data : b));
             toast.success(response.message || 'Booking updated successfully!');
             closeModal();
@@ -205,31 +232,51 @@ const BookingsPage = () => {
         }
     };
 
+    const handlePageChange = (newPage) => {
+        if (newPage > 0 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+        }
+    };
+
     const closeModal = () => { setIsModalOpen(false); setEditingBooking(null); };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 flex flex-col flex-grow">
             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Bookings Management</h1>
-            <Card>
-                <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4"><div className="relative w-full md:w-auto"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input type="text" placeholder="Search bookings..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full md:w-80 pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" /></div></div>
-                <div className="overflow-x-auto"><table className="w-full text-left"><thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700"><tr><th className="p-3">Customer</th><th className="p-3">Vehicle</th><th className="p-3">Service</th><th className="p-3">Date</th><th className="p-3">Status</th><th className="p-3 text-right">Cost</th><th className="p-3 text-center">Actions</th></tr></thead>
-                    <tbody>{filteredBookings.map(booking => (
-                        <tr key={booking._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
-                            <td className="p-3 font-medium text-gray-900 dark:text-white">{booking.customer?.fullName || 'N/A'}</td>
-                            <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel || 'N/A'}</td>
-                            <td className="p-3 text-gray-600 dark:text-gray-300">{booking.serviceType || 'N/A'}</td>
-                            <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
-                            <td className="p-3"><StatusBadge status={booking.status} /></td>
-                            <td className="p-3 text-right font-medium">रु{booking.totalCost}</td>
-                            <td className="p-3 text-center">
-                                <div className="flex justify-center items-center gap-2">
-                                    <a href={`#/admin/bookings/${booking._id}`} className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 p-1" title="View Details"><Search size={18} /></a>
-                                    <button onClick={() => handleEdit(booking)} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="Edit Booking"><Edit size={18} /></button>
-                                    <button onClick={() => handleDeleteClick(booking._id)} className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1" title="Delete Booking"><Trash2 size={18} /></button>
-                                </div>
-                            </td>
-                        </tr>))}
-                    </tbody></table></div>
+            {/* MODIFICATION: Card is now a flex container to fix pagination to bottom */}
+            <Card className="flex flex-col flex-grow">
+                <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+                    <div className="relative w-full md:w-auto">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                        <input type="text" placeholder="Search bookings..." value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}} className="w-full md:w-80 pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                </div>
+                {/* MODIFICATION: This container now grows to fill available space */}
+                <div className="overflow-x-auto flex-grow">
+                    <table className="w-full text-left">
+                        <thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700"><tr><th className="p-3">Customer</th><th className="p-3">Vehicle</th><th className="p-3">Service</th><th className="p-3">Date</th><th className="p-3">Status</th><th className="p-3 text-right">Cost</th><th className="p-3 text-center">Actions</th></tr></thead>
+                        <tbody>
+                            {bookings.length > 0 ? bookings.map(booking => (
+                                <tr key={booking._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
+                                    <td className="p-3 font-medium text-gray-900 dark:text-white">{booking.customer?.fullName || 'N/A'}</td>
+                                    <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel || 'N/A'}</td>
+                                    <td className="p-3 text-gray-600 dark:text-gray-300">{booking.serviceType || 'N/A'}</td>
+                                    <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
+                                    <td className="p-3"><StatusBadge status={booking.status} /></td>
+                                    <td className="p-3 text-right font-medium">रु{booking.totalCost}</td>
+                                    <td className="p-3 text-center">
+                                        <div className="flex justify-center items-center gap-2">
+                                            <a href={`#/admin/bookings/${booking._id}`} className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 p-1" title="View Details"><Search size={18} /></a>
+                                            <button onClick={() => handleEdit(booking)} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="Edit Booking"><Edit size={18} /></button>
+                                            <button onClick={() => handleDeleteClick(booking._id)} className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1" title="Delete Booking"><Trash2 size={18} /></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )) : (<tr><td colSpan="7" className="text-center py-10 text-gray-500">No bookings found.</td></tr>)}
+                        </tbody>
+                    </table>
+                </div>
+                <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
             </Card>
             <BookingFormModal isOpen={isModalOpen} onClose={closeModal} booking={editingBooking} onSave={handleSave} />
             <ConfirmationModal isOpen={isConfirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={confirmDelete} title="Delete Booking" message="Are you sure you want to delete this booking? This action cannot be undone." />
@@ -313,16 +360,26 @@ const UsersPage = () => {
     const [isConfirmOpen, setConfirmOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
 
-    const fetchUsers = async () => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
+    const ITEMS_PER_PAGE = 10;
+
+    const fetchUsers = async (page) => {
         try {
-            const response = await apiFetch('/users');
+            const response = await apiFetch(`/users?page=${page}&limit=${ITEMS_PER_PAGE}&search=${searchTerm}`);
             setUsers(response.data || []);
-        } catch (error) { console.error('Failed to fetch users', error); setUsers([]); toast.error(error.message || 'Failed to fetch users.'); }
+            setTotalPages(response.totalPages || 0);
+        } catch (error) {
+            console.error('Failed to fetch users', error);
+            setUsers([]);
+            setTotalPages(0);
+            toast.error(error.message || 'Failed to fetch users.');
+        }
     };
 
-    useEffect(() => { fetchUsers(); }, []);
-
-    const filteredUsers = users.filter(u => u.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || u.email.toLowerCase().includes(searchTerm.toLowerCase()));
+    useEffect(() => {
+        fetchUsers(currentPage);
+    }, [currentPage, searchTerm]);
 
     const handleAddNew = () => { setEditingUser(null); setIsModalOpen(true); };
     const handleEdit = (user) => { setEditingUser(user); setIsModalOpen(true); };
@@ -331,41 +388,69 @@ const UsersPage = () => {
     const confirmDelete = async () => {
         try {
             await apiFetch(`/users/${itemToDelete}`, { method: 'DELETE' });
-            setUsers(users.filter(u => u._id !== itemToDelete));
             toast.success('User deleted successfully!');
-        } catch (error) { console.error('Failed to delete user', error); toast.error(error.message || 'Failed to delete user.'); }
+            fetchUsers(currentPage);
+        } catch (error) {
+            console.error('Failed to delete user', error);
+            toast.error(error.message || 'Failed to delete user.');
+        }
         finally { setConfirmOpen(false); setItemToDelete(null); }
     };
 
     const handleSave = async (formData) => {
         try {
             if (editingUser) {
-                const response = await apiFetch(`/users/${editingUser._id}`, { method: 'PUT', body: JSON.stringify(formData) });
-                setUsers(users.map(u => u._id === editingUser._id ? response.data : u));
+                await apiFetch(`/users/${editingUser._id}`, { method: 'PUT', body: JSON.stringify(formData) });
                 toast.success('User updated successfully!');
             } else {
-                const response = await apiFetch('/users/create', { method: 'POST', body: JSON.stringify(formData) });
-                setUsers([...users, response.data]);
+                await apiFetch('/users/create', { method: 'POST', body: JSON.stringify(formData) });
                 toast.success('User created successfully!');
             }
+            fetchUsers(currentPage);
             closeModal();
-        } catch (error) { console.error('Failed to save user', error); toast.error(error.message || 'Failed to save user.'); }
+        } catch (error) {
+            console.error('Failed to save user', error);
+            toast.error(error.message || 'Failed to save user.');
+        }
+    };
+    
+    const handlePageChange = (newPage) => {
+        if (newPage > 0 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+        }
     };
 
     const closeModal = () => { setIsModalOpen(false); setEditingUser(null); };
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center"><h1 className="text-3xl font-bold text-gray-800 dark:text-white">User Management</h1><Button onClick={handleAddNew}><Plus size={20} />Add New User</Button></div>
-            <Card>
-                <div className="flex justify-between items-center mb-4"><div className="relative w-full md:w-auto"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input type="text" placeholder="Search users..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full md:w-80 pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" /></div></div>
-                <div className="overflow-x-auto"><table className="w-full text-left"><thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700"><tr><th className="p-3">Name</th><th className="p-3">Email</th><th className="p-3">Joined On</th><th className="p-3">Role</th><th className="p-3 text-center">Actions</th></tr></thead>
-                    <tbody>{filteredUsers.map(user => (
-                        <tr key={user._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
-                            <td className="p-3 font-medium text-gray-900 dark:text-white">{user.fullName}</td><td className="p-3 text-gray-600 dark:text-gray-300">{user.email}</td><td className="p-3 text-gray-600 dark:text-gray-300">{new Date(user.createdAt).toLocaleDateString()}</td><td className="p-3 text-gray-600 dark:text-gray-300 capitalize">{user.role}</td>
-                            <td className="p-3 text-center"><div className="flex justify-center items-center gap-2"><button onClick={() => handleEdit(user)} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-1"><Edit size={18} /></button><button onClick={() => handleDeleteClick(user._id)} className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1"><Trash2 size={18} /></button></div></td>
-                        </tr>))}
-                    </tbody></table></div>
+        <div className="space-y-6 flex flex-col flex-grow">
+            <div className="flex justify-between items-center">
+                <h1 className="text-3xl font-bold text-gray-800 dark:text-white">User Management</h1>
+                <Button onClick={handleAddNew}><Plus size={20} />Add New User</Button>
+            </div>
+            {/* MODIFICATION: Card is now a flex container to fix pagination to bottom */}
+            <Card className="flex flex-col flex-grow">
+                <div className="flex justify-between items-center mb-4">
+                    <div className="relative w-full md:w-auto">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                        <input type="text" placeholder="Search users..." value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}} className="w-full md:w-80 pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                </div>
+                {/* MODIFICATION: This container now grows to fill available space */}
+                <div className="overflow-x-auto flex-grow">
+                    <table className="w-full text-left">
+                        <thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700"><tr><th className="p-3">Name</th><th className="p-3">Email</th><th className="p-3">Joined On</th><th className="p-3">Role</th><th className="p-3 text-center">Actions</th></tr></thead>
+                        <tbody>
+                            {users.length > 0 ? users.map(user => (
+                                <tr key={user._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
+                                    <td className="p-3 font-medium text-gray-900 dark:text-white">{user.fullName}</td><td className="p-3 text-gray-600 dark:text-gray-300">{user.email}</td><td className="p-3 text-gray-600 dark:text-gray-300">{new Date(user.createdAt).toLocaleDateString()}</td><td className="p-3 text-gray-600 dark:text-gray-300 capitalize">{user.role}</td>
+                                    <td className="p-3 text-center"><div className="flex justify-center items-center gap-2"><button onClick={() => handleEdit(user)} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-1"><Edit size={18} /></button><button onClick={() => handleDeleteClick(user._id)} className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1"><Trash2 size={18} /></button></div></td>
+                                </tr>
+                            )) : (<tr><td colSpan="5" className="text-center py-10 text-gray-500">No users found.</td></tr>)}
+                        </tbody>
+                    </table>
+                </div>
+                <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
             </Card>
             <UserFormModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSave} user={editingUser} />
             <ConfirmationModal isOpen={isConfirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={confirmDelete} title="Delete User" message="Are you sure you want to delete this user? This will permanently remove their data." />
@@ -380,14 +465,26 @@ const ServicesPage = () => {
     const [isConfirmOpen, setConfirmOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
 
-    const fetchServices = async () => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
+    const ITEMS_PER_PAGE = 6;
+
+    const fetchServices = async (page) => {
         try {
-            const response = await apiFetch('/services');
+            const response = await apiFetch(`/services?page=${page}&limit=${ITEMS_PER_PAGE}`);
             setServices(response.data || []);
-        } catch (error) { console.error('Failed to fetch services', error); setServices([]); toast.error(error.message || 'Failed to fetch services.'); }
+            setTotalPages(response.totalPages || 0);
+        } catch (error) {
+            console.error('Failed to fetch services', error);
+            setServices([]);
+            setTotalPages(0);
+            toast.error(error.message || 'Failed to fetch services.');
+        }
     };
 
-    useEffect(() => { fetchServices(); }, []);
+    useEffect(() => {
+        fetchServices(currentPage);
+    }, [currentPage]);
 
     const handleAddNew = () => { setEditingService(null); setIsModalOpen(true); };
     const handleEdit = (service) => { setEditingService(service); setIsModalOpen(true); };
@@ -396,9 +493,12 @@ const ServicesPage = () => {
     const confirmDelete = async () => {
         try {
             await apiFetch(`/services/${itemToDelete}`, { method: 'DELETE' });
-            setServices(services.filter(s => s._id !== itemToDelete));
             toast.success('Service deleted successfully!');
-        } catch (error) { console.error('Failed to delete service', error); toast.error(error.message || 'Failed to delete service.'); }
+            fetchServices(currentPage);
+        } catch (error) {
+            console.error('Failed to delete service', error);
+            toast.error(error.message || 'Failed to delete service.');
+        }
         finally { setConfirmOpen(false); setItemToDelete(null); }
     };
 
@@ -406,27 +506,57 @@ const ServicesPage = () => {
         try {
             const url = editingService ? `/services/${editingService._id}` : '/services';
             const method = editingService ? 'PUT' : 'POST';
-            const response = await apiFetch(url, { method, body: JSON.stringify(serviceData) });
+            await apiFetch(url, { method, body: JSON.stringify(serviceData) });
 
-            if (editingService) {
-                setServices(services.map(s => s._id === editingService._id ? response.data : s));
-                toast.success('Service updated successfully!');
-            } else {
-                setServices([...services, response.data]);
-                toast.success('Service added successfully!');
-            }
+            toast.success(editingService ? 'Service updated successfully!' : 'Service added successfully!');
+            fetchServices(currentPage);
             closeModal();
-        } catch (error) { console.error('Failed to save service', error); toast.error(error.message || 'Failed to save service.'); }
+        } catch (error) {
+            console.error('Failed to save service', error);
+            toast.error(error.message || 'Failed to save service.');
+        }
+    };
+    
+    const handlePageChange = (newPage) => {
+        if (newPage > 0 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+        }
     };
 
     const closeModal = () => { setIsModalOpen(false); setEditingService(null); }
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center"><h1 className="text-3xl font-bold text-gray-800 dark:text-white">Services Management</h1><Button onClick={handleAddNew}><Plus size={20} />Add New Service</Button></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">{services.map(service => (
-                <Card key={service._id} className="flex flex-col"><div className="flex-grow"><h3 className="text-xl font-bold text-blue-600 dark:text-blue-400">{service.name}</h3><p className="text-gray-600 dark:text-gray-300 mt-2 mb-4">{service.description}</p></div><div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"><div><p className="text-lg font-semibold text-gray-800 dark:text-white">रु{service.price}</p><p className="text-sm text-gray-500 dark:text-gray-400">{service.duration}</p></div><div className="flex gap-2"><button onClick={() => handleEdit(service)} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"><Edit size={18} /></button><button onClick={() => handleDeleteClick(service._id)} className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"><Trash2 size={18} /></button></div></div></Card>
-            ))}</div>
+        <div className="space-y-6 flex flex-col flex-grow">
+            <div className="flex justify-between items-center">
+                <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Services Management</h1>
+                <Button onClick={handleAddNew}><Plus size={20} />Add New Service</Button>
+            </div>
+            {/* MODIFICATION: Card is now a flex container to fix pagination to bottom */}
+            <Card className="flex flex-col flex-grow">
+                {/* MODIFICATION: This container now grows to fill available space */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-grow">
+                    {services.length > 0 ? services.map(service => (
+                        <div className="flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
+                            <div className="p-6 flex-grow">
+                                <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400">{service.name}</h3>
+                                <p className="text-gray-600 dark:text-gray-300 mt-2 mb-4">{service.description}</p>
+                            </div>
+                            <div className="p-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                                <div>
+                                    <p className="text-lg font-semibold text-gray-800 dark:text-white">रु{service.price}</p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">{service.duration}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button onClick={() => handleEdit(service)} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"><Edit size={18} /></button>
+                                    <button onClick={() => handleDeleteClick(service._id)} className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"><Trash2 size={18} /></button>
+                                </div>
+                            </div>
+                        </div>
+                    )) : (<div className="col-span-full text-center py-10 text-gray-500">No services found.</div>)}
+                </div>
+                 <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+            </Card>
+
             <ServiceFormModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSave} service={editingService} />
             <ConfirmationModal isOpen={isConfirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={confirmDelete} title="Delete Service" message="Are you sure you want to delete this service? This action is permanent." />
         </div>
@@ -542,6 +672,7 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
 };
 
 
+
 const BookingFormModal = ({ isOpen, onClose, booking, onSave }) => {
     const [formData, setFormData] = useState({});
     useEffect(() => { if (booking) { setFormData({ status: booking.status, totalCost: booking.totalCost }); } }, [booking, isOpen]);
@@ -572,7 +703,6 @@ const NavLink = ({ page, icon: Icon, children, activePage, onLinkClick }) => {
 const SidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClose }) => (
     <>
         <div className="p-4 flex items-center justify-between">
-            {/* CORRECTED IMPLEMENTATION: Use an anchor tag for navigation */}
             <a href="#/admin/dashboard" onClick={onLinkClick} className="flex items-center gap-3 cursor-pointer">
                 <img
                     src="/motofix-removebg-preview.png"
@@ -683,7 +813,9 @@ const AdminDashboard = () => {
             <aside className="w-72 bg-white dark:bg-gray-800 shadow-md hidden lg:flex flex-col flex-shrink-0"><SidebarContent activePage={activePage} onLinkClick={() => { }} onLogoutClick={() => setLogoutConfirmOpen(true)} /></aside>
             <div className="flex-1 flex flex-col overflow-hidden">
                 <header className="bg-white dark:bg-gray-800 shadow-sm p-4 flex justify-between items-center"><button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-gray-600 dark:text-gray-300"><Menu size={28} /></button><div className="hidden lg:block" /><div className="flex items-center gap-4"><button onClick={() => setIsDarkMode(!isDarkMode)} className="text-gray-600 dark:text-gray-300 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">{isDarkMode ? <Sun size={20} /> : <Moon size={20} />}</button><div className="flex items-center gap-3"><img key={profilePictureSrc} src={profilePictureSrc} alt="Admin" className="w-10 h-10 rounded-full object-cover" onError={handleImageError} /><div><p className="font-semibold text-sm">{currentUser.ownerName}</p><p className="text-xs text-gray-500 dark:text-gray-400">Workshop Owner</p></div></div></div></header>
-                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 md:p-8">{renderPage()}</main>
+                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 md:p-8 flex flex-col">
+                    {renderPage()}
+                </main>
             </div>
             <ConfirmationModal isOpen={isLogoutConfirmOpen} onClose={() => setLogoutConfirmOpen(false)} onConfirm={handleLogoutConfirm} title="Confirm Logout" message="Are you sure you want to logout?" confirmText="Logout" confirmButtonVariant="danger" Icon={LogOut} />
         </div>

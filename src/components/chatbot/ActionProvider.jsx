@@ -1,7 +1,6 @@
 import React from 'react';
 import chatbotApi from '../../api/chatbotApi';
 
-
 const createActionProvider = (user) => {
     class ActionProvider {
         constructor(createChatBotMessage, setStateFunc) {
@@ -10,25 +9,109 @@ const createActionProvider = (user) => {
             this.user = user;
         }
 
-        updateChatbotState(message) {
+        // --- Helper to create and update state with a bot message ---
+        updateChatbotState(message, stateChanges = {}) {
             this.setState((prevState) => ({
                 ...prevState,
+                ...stateChanges,
                 messages: [...prevState.messages, message],
             }));
         }
 
+        // --- Helper to get contextual options ---
+        getOptions = () => {
+            const guestOptions = [
+                // THIS NOW CALLS THE NEW DEDICATED HANDLER
+                { text: 'Our Services', handler: this.showServiceOptions, id: 1 },
+                { text: 'Payment Options', handler: this.handlePaymentInquiry, id: 2 },
+                { text: 'How to Book', handler: this.handleBookingInquiry, id: 3 },
+            ];
+            
+            if (!this.user) {
+                return guestOptions;
+            }
+
+            if (this.user.data.role === 'admin') {
+                return [
+                    { text: 'My Profile', handler: this.handleProfileInquiry, id: 4 },
+                    { text: 'Total Bookings', handler: this.handleAdminTotalBookings, id: 5 },
+                    { text: 'Pending Bookings', handler: this.handleAdminPendingBookings, id: 6 },
+                    { text: 'Total Revenue', handler: this.handleAdminRevenue, id: 7 },
+                    { text: 'View Services List', handler: this.showServiceOptions, id: 1 }, // Added for admin
+                ];
+            } else { // Regular User
+                return [
+                    { text: 'My Profile', handler: this.handleProfileInquiry, id: 8 },
+                    { text: 'My Bookings', handler: this.handleUserBookings, id: 9 },
+                    { text: 'Upcoming Bookings', handler: this.handleUserUpcomingServices, id: 10 },
+                    { text: 'My Loyalty Points', handler: this.handleUserLoyaltyPoints, id: 11 },
+                     // THIS NOW CALLS THE NEW DEDICATED HANDLER
+                    { text: 'Our Services', handler: this.showServiceOptions, id: 1 },
+                ];
+            }
+        }
+        
+        // --- NEW: Dedicated action to show the service options widget ---
+        showServiceOptions = async () => {
+            try {
+                const response = await chatbotApi.get('/chatbot/services');
+                const services = response.data.data;
+
+                if (services && services.length > 0) {
+                    const botMessage = this.createChatBotMessage(
+                        "Of course! Here are our services. Select one to see more details.",
+                        { widget: 'serviceOptions' }
+                    );
+                    this.updateChatbotState(botMessage, { services }); // Pass services to state for the widget
+                } else {
+                    this.updateChatbotState(this.createChatBotMessage("We don't have any services listed right now."));
+                }
+            } catch (error) {
+                console.error("Chatbot API Error:", error);
+                this.updateChatbotState(this.createChatBotMessage("Sorry, I couldn't fetch our services right now. Please try again in a moment."));
+            }
+        };
+
+        // --- Action to show help options ---
+        handleHelp = () => {
+            const options = this.getOptions();
+            const botMessage = this.createChatBotMessage(
+                "No problem, here are some things I can help with:",
+                { widget: 'generalOptions' }
+            );
+            this.updateChatbotState(botMessage, { options });
+        };
+        
         // --- Generic Actions ---
         greet = () => {
-            const greetingMessage = this.createChatBotMessage("Hello! How can I assist you today?");
-            this.updateChatbotState(greetingMessage);
+            const options = this.getOptions();
+            const greetingMessage = this.createChatBotMessage(
+                "Hello! How can I assist you today?",
+                { widget: 'generalOptions' }
+            );
+            this.updateChatbotState(greetingMessage, { options });
         }
 
         handleUnknown = () => {
-            const message = this.createChatBotMessage("I'm sorry, I don't understand. You can ask about 'services', 'booking', 'payment', or if logged in, your account details.");
-            this.updateChatbotState(message);
+            const options = this.getOptions();
+            const message = this.createChatBotMessage(
+                "I'm sorry, I don't understand. Maybe one of these options will help?",
+                { widget: 'generalOptions' }
+            );
+            this.updateChatbotState(message, { options });
         }
+        
+        handleInitialOptions = (payload) => {
+             if (payload.initial) {
+                const options = this.getOptions();
+                const message = this.createChatBotMessage(
+                    "Great! What would you like to know?",
+                    { widget: 'generalOptions' }
+                );
+                 this.updateChatbotState(message, { options });
+             }
+        };
 
-        // --- Public Actions (for Guests & All Users) ---
         handlePaymentInquiry = () => {
             const message = this.createChatBotMessage(
                 <>
@@ -41,7 +124,8 @@ const createActionProvider = (user) => {
             this.updateChatbotState(message);
         }
 
-        handleServicesInquiry = async (message) => {
+        // This function now handles typed messages like "tell me about services" or "oil change"
+        handleServicesInquiry = async (message = "") => {
              try {
                 const response = await chatbotApi.get('/chatbot/services');
                 const services = response.data.data;
@@ -49,24 +133,15 @@ const createActionProvider = (user) => {
                 
                 const foundService = serviceNames.find(name => message.includes(name));
 
-                if(foundService) {
+                // If user typed a specific service name, show its details
+                if (foundService) {
                     this.handleServiceDetail(foundService);
                     return;
                 }
 
-                if (services && services.length > 0) {
-                    const botMessage = this.createChatBotMessage(
-                        "Of course! Here are our services. Select one to see more details.",
-                        { widget: 'serviceOptions' }
-                    );
-                    this.setState((prev) => ({
-                        ...prev,
-                        messages: [...prev.messages, botMessage],
-                        services: response.data.data,
-                    }));
-                } else {
-                    this.updateChatbotState(this.createChatBotMessage("We don't have any services listed right now."));
-                }
+                // Otherwise, if they just typed "service" or something similar, show the options
+                this.showServiceOptions();
+
             } catch (error) {
                 console.error("Chatbot API Error:", error);
                 this.updateChatbotState(this.createChatBotMessage("Sorry, I couldn't fetch services right now."));
@@ -97,7 +172,7 @@ const createActionProvider = (user) => {
         };
 
         handleBookingInquiry = () => {
-            this.updateChatbotState(this.createChatBotMessage("Please log in to book a service. You can register or log in, then find the booking option in your dashboard."));
+            this.updateChatbotState(this.createChatBotMessage("To book a service, please log in, go to the services page, and choose the one you need."));
         }
 
         handleProfileInquiry = async () => {
@@ -171,9 +246,9 @@ const createActionProvider = (user) => {
             try {
                 const response = await chatbotApi.get('/chatbot/user-dashboard');
                 const { upcomingServices } = response.data.data;
-                this.updateChatbotState(this.createChatBotMessage(`You have ${upcomingServices} upcoming service(s) scheduled.`));
+                this.updateChatbotState(this.createChatBotMessage(`You have ${upcomingServices} upcoming Booking(s) scheduled.`));
             } catch (error) {
-                this.updateChatbotState(this.createChatBotMessage("I couldn't fetch your upcoming services."));
+                this.updateChatbotState(this.createChatBotMessage("I couldn't fetch your upcoming bookings."));
             }
         }
         

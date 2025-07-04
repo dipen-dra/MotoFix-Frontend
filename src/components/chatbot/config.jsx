@@ -2,17 +2,23 @@ import React from 'react';
 import { createChatBotMessage } from 'react-chatbot-kit';
 import { Wrench } from 'lucide-react';
 
-import BotAvatar from '../chatbot/BotAvatar.jsx'; // Make sure this path is correct
-import ServiceOptions from './widgets/ServiceOptions.jsx'; // Import the widget
+import BotAvatar from '../chatbot/BotAvatar.jsx';
+import ServiceOptions from './widgets/ServiceOptions.jsx';
+import GeneralOptions from './widgets/GeneralOptions.jsx';
 
 const config = {
     botName: "MotoFixBot",
     initialMessages: [
-        createChatBotMessage("Welcome to MotoFix! How can I help you today?")
+        createChatBotMessage(
+            "Welcome to MotoFix! I'm here to help. Here are a few things you can ask me:",
+            // {
+            //     widget: 'generalOptions', // This widget will now be populated by the ActionProvider
+            // }
+        )
     ],
-    // Add an initial state for your services
     state: {
-        services: []
+        services: [], // This will be populated by the API call
+        options: [],  // This will be populated by the ActionProvider's getOptions method
     },
     customComponents: {
         header: () => (
@@ -36,13 +42,16 @@ const config = {
         ),
         botAvatar: (props) => <BotAvatar {...props} />,
     },
-    // Register your custom widget here
     widgets: [
         {
             widgetName: 'serviceOptions',
             widgetFunc: (props) => <ServiceOptions {...props} />,
-            // Map the widget to the 'services' piece of state
             mapStateToProps: ['services'],
+        },
+        {
+            widgetName: 'generalOptions',
+            widgetFunc: (props) => <GeneralOptions {...props} />,
+            mapStateToProps: ['options'], // Ensure this widget receives the 'options' from the state
         },
     ],
 };
