@@ -1,12 +1,14 @@
 /* motofix-frontend/src/components/admin/Chat.css */
+/* Updated styles for the simple Chat component to mimic Instagram DMs */
+
 .chat-window {
   width: 100%;
   max-width: 800px;
   height: 75vh;
-  background: white;
-  border: 1px solid #ddd;
+  background: white; /* Changed to white */
+  border: 1px solid #dbdbdb; /* Lighter border */
   border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Softer shadow */
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -14,88 +16,105 @@
 }
 
 .chat-header {
-  background: #333;
-  color: white;
+  background: #ffffff; /* White header */
+  color: #262626; /* Dark text */
   padding: 1rem;
   text-align: center;
-  font-size: 1.25rem;
-  font-weight: bold;
+  font-size: 1rem; /* Slightly smaller */
+  font-weight: 600; /* Semibold */
+  border-bottom: 1px solid #dbdbdb;
 }
 
 .chat-body {
   flex-grow: 1;
   padding: 1rem;
-  background-color: #f9f9f9;
+  background-color: #ffffff; /* White background */
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .message {
   display: flex;
-  margin-bottom: 1rem;
+  margin-bottom: 0.25rem; /* Reduced margin for grouping effect */
+  max-width: 70%;
+  align-self: flex-start; /* Default to other */
 }
 
 .message-content {
   padding: 0.75rem 1rem;
-  border-radius: 18px;
-  color: white;
-  max-width: 70%;
+  border-radius: 22px; /* Pill-like shape */
+  color: #262626; /* Dark text for received messages */
+  line-height: 1.4;
+  word-wrap: break-word;
 }
 
 .message-meta {
   font-size: 0.75rem;
-  color: #888;
-  margin-top: 5px;
+  color: #8e8e8e;
+  text-align: right;
+  margin-top: 4px;
 }
 
 /* Styles for "your" messages (Admin) */
 #you {
-  justify-content: flex-end;
+  align-self: flex-end; /* Align to the right */
 }
 #you .message-content {
-  background-color: #007bff;
-  border-bottom-right-radius: 4px;
+  background: linear-gradient(to right, #405de6, #5851db);
+  color: white;
 }
 #you .message-meta {
+  width: 100%;
   text-align: right;
 }
 
+
 /* Styles for "other" messages (User) */
 #other {
-  justify-content: flex-start;
+  align-self: flex-start; /* Align to the left */
 }
 #other .message-content {
-  background-color: #6c757d;
-  border-bottom-left-radius: 4px;
+  background-color: #efefef; /* Light grey for received messages */
 }
 #other .message-meta {
+  width: 100%;
   text-align: left;
 }
 
+/* Hide the author name for a cleaner DM look */
 #author {
-  font-weight: bold;
-  margin-right: 8px;
+ font-weight: bold;
+ margin-bottom: 5px;
 }
+
 
 .chat-footer {
   display: flex;
-  padding: 1rem;
-  border-top: 1px solid #ddd;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid #dbdbdb;
   background: #fff;
+  align-items: center;
 }
 
 .chat-footer input {
   flex-grow: 1;
-  padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 20px;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid #dbdbdb;
+  border-radius: 22px; /* Pill shape */
   outline: none;
   font-size: 1rem;
+  background-color: #fafafa;
+}
+
+.chat-footer input:focus {
+  border-color: #a8a8a8;
 }
 
 .chat-footer button {
   width: 50px;
   border: none;
-  background: #007bff;
+  background: #0095f6;
   color: white;
   border-radius: 50%;
   margin-left: 10px;
@@ -104,4 +123,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 50px;
+}
+
+
+.chat-footer button:hover {
+  background: #00376b;
 }
