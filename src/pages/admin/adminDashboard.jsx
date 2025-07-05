@@ -826,14 +826,15 @@
 
 
 
-
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Plus, Edit, Trash2, Search, Users, Wrench, DollarSign, List, User, LogOut, Menu, X, Sun, Moon, Camera, AlertTriangle, ArrowLeft, MapPin, ChevronLeft, ChevronRight, MessageSquare, Send, Inbox } from 'lucide-react';
 import { toast } from 'react-toastify';
 import io from 'socket.io-client';
 
 const API_BASE_URL = "http://localhost:5050/api/admin";
+// 💡 Establish a single, persistent socket connection for the entire dashboard
+const socket = io.connect("http://localhost:5050");
 
 const apiFetch = async (endpoint, options = {}) => {
     const headers = {
@@ -862,58 +863,108 @@ const apiFetch = async (endpoint, options = {}) => {
 
 // --- START: Admin Chat Page Component ---
 const AdminChatPage = () => {
+    // 💡 State now holds conversations with unread counts
     const [conversations, setConversations] = useState([]);
     const [activeConversation, setActiveConversation] = useState(null);
     const [messages, setMessages] = useState([]);
     const [currentMessage, setCurrentMessage] = useState('');
     const chatBodyRef = useRef(null);
-    const socket = useRef(io.connect("http://localhost:5050")).current;
 
-    // Fetch all active conversations on component mount
+    // 💡 Function to fetch/refresh conversations list from the API
+    const fetchConversations = async () => {
+        try {
+            const response = await apiFetch('/chat/users');
+            setConversations(response.data || []);
+        } catch (error) {
+            toast.error('Failed to fetch chat conversations.');
+            console.error(error);
+        }
+    };
+
+    // Fetch initial conversations on component mount
     useEffect(() => {
-        const fetchConversations = async () => {
-            try {
-                const response = await apiFetch('/chat/users');
-                setConversations(response.data || []);
-            } catch (error) {
-                toast.error('Failed to fetch chat conversations.');
-                console.error(error);
-            }
-        };
         fetchConversations();
     }, []);
 
-    // Handle socket events when active conversation changes
+    // 💡 Centralized effect for handling all real-time socket events
+    useEffect(() => {
+        // --- Event Listener for new messages from users ---
+        const newMessageListener = (data) => {
+            const roomUserId = data.room.replace('chat-', '');
+
+            // Update the message list if the chat is currently active
+            if (activeConversation?._id === roomUserId) {
+                setMessages((prev) => [...prev, data.message]);
+            } else {
+                // If chat is not active, update the unread count in the conversation list
+                setConversations(prevConvos => {
+                    let convoExists = false;
+                    const updatedConvos = prevConvos.map(convo => {
+                        if (convo._id === roomUserId) {
+                            convoExists = true;
+                            return { ...convo, unreadCount: (convo.unreadCount || 0) + 1, lastMessage: data.message, lastMessageTimestamp: new Date().toISOString() };
+                        }
+                        return convo;
+                    });
+                     // If it's the first message from a user, their conversation won't be in the list yet
+                    if (!convoExists) {
+                        fetchConversations(); // Re-fetch the whole list to include the new conversation
+                        return prevConvos;
+                    }
+                    // Sort to bring the conversation with the new message to the top
+                    updatedConvos.sort((a, b) => new Date(b.lastMessageTimestamp) - new Date(a.lastMessageTimestamp));
+                    return updatedConvos;
+                });
+            }
+        };
+
+        // --- Event Listener to confirm admin has read messages ---
+        const messagesReadListener = (data) => {
+            const roomUserId = data.room.replace('chat-', '');
+             // Clear the unread count for the conversation the admin just opened
+            setConversations(prevConvos =>
+                prevConvos.map(convo =>
+                    convo._id === roomUserId ? { ...convo, unreadCount: 0 } : convo
+                )
+            );
+        };
+        
+        socket.on('new_message_notification', newMessageListener);
+        socket.on('messages_read_by_admin', messagesReadListener); // Backend confirms messages are marked as read
+
+        // Cleanup listeners on component unmount
+        return () => {
+            socket.off('new_message_notification', newMessageListener);
+            socket.off('messages_read_by_admin', messagesReadListener);
+        };
+    }, [activeConversation]);
+
+
+    // Handle fetching history and receiving live messages when an active conversation is selected
     useEffect(() => {
         if (activeConversation) {
             const roomName = `chat-${activeConversation._id}`;
-            socket.emit('join_room', roomName);
-
+            
             const historyListener = (history) => {
-                // Ensure history is for the currently active conversation
-                if (history.length > 0 && history[0].room === roomName) {
+                if ((history.length > 0 && history[0].room === roomName) || (history.length === 0 && `chat-${activeConversation._id}` === roomName)) {
                      setMessages(history);
-                } else if (history.length === 0 && activeConversation?._id && `chat-${activeConversation._id}` === roomName) {
-                     setMessages([]);
                 }
             };
-            socket.on('chat_history', historyListener);
-
             const messageListener = (data) => {
-                // Only add the message if it belongs to the active conversation
                 if (data.room === roomName) {
                     setMessages((prev) => [...prev, data]);
                 }
             };
+            
+            socket.on('chat_history', historyListener);
             socket.on('receive_message', messageListener);
 
-            // Cleanup listeners when changing conversation or unmounting
             return () => {
                 socket.off('chat_history', historyListener);
                 socket.off('receive_message', messageListener);
             };
         }
-    }, [activeConversation, socket]);
+    }, [activeConversation]);
 
     // Auto-scroll logic
     useEffect(() => {
@@ -928,7 +979,7 @@ const AdminChatPage = () => {
         const messageData = {
             room: `chat-${activeConversation._id}`,
             author: 'Admin',
-            authorId: 'admin_user', // Generic ID for admin
+            authorId: 'admin_user', // Static ID for admin
             message: currentMessage,
         };
 
@@ -937,10 +988,17 @@ const AdminChatPage = () => {
         setCurrentMessage('');
     };
 
+    // 💡 Updated to emit 'join_room' to mark messages as read
     const handleSelectConversation = (user) => {
         if (activeConversation?._id !== user._id) {
-            setMessages([]);
+            setMessages([]); // Clear previous messages
             setActiveConversation(user);
+            
+            // Tell the server the admin is now in this room
+            socket.emit('join_room', {
+                roomName: `chat-${user._id}`,
+                userId: 'admin_user' // Identify as admin
+            });
         }
     };
     
@@ -957,7 +1015,7 @@ const AdminChatPage = () => {
                     </div>
                     <ul className="divide-y dark:divide-gray-700">
                         {conversations.map(user => (
-                            <li key={user._id} onClick={() => handleSelectConversation(user)} className={`p-4 cursor-pointer flex items-center gap-3 ${activeConversation?._id === user._id ? 'bg-blue-100 dark:bg-blue-900/50' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}>
+                            <li key={user._id} onClick={() => handleSelectConversation(user)} className={`p-4 cursor-pointer flex items-center gap-3 relative ${activeConversation?._id === user._id ? 'bg-blue-100 dark:bg-blue-900/50' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}>
                                 <img 
                                     src={user.profilePicture ? `http://localhost:5050/${user.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || 'U')}&background=0D8ABC&color=fff&size=40`} 
                                     alt={user.fullName} 
@@ -966,9 +1024,16 @@ const AdminChatPage = () => {
                                     onError={handleImageError}
                                 />
                                 <div className="flex-grow overflow-hidden">
-                                    <p className="font-semibold truncate">{user.fullName}</p>
+                                    {/* 💡 Highlight unread conversation */}
+                                    <p className={`truncate ${user.unreadCount > 0 ? 'font-bold' : 'font-semibold'}`}>{user.fullName}</p>
                                     <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{user.lastMessage}</p>
                                 </div>
+                                {/* 💡 Unread message badge */}
+                                {user.unreadCount > 0 && (
+                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                        {user.unreadCount}
+                                    </span>
+                                )}
                             </li>
                         ))}
                     </ul>
@@ -1681,54 +1746,43 @@ const UserFormModal = ({ isOpen, onClose, onSave, user }) => {
     return (<Modal isOpen={isOpen} onClose={onClose} title={user ? 'Edit User' : 'Add New User'}><form onSubmit={handleSubmit} className="space-y-4"><Input id="fullName" name="fullName" label="Full Name" value={formData.fullName} onChange={handleChange} required /><Input id="email" name="email" label="Email Address" type="email" value={formData.email} onChange={handleChange} required /><Input id="password" name="password" label="Password" type="password" value={formData.password} onChange={handleChange} placeholder={user ? "Leave blank to keep current" : ""} required={!user} /><div><label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Role</label><select id="role" name="role" value={formData.role || 'user'} onChange={handleChange} className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg dark:text-white"><option value="user">User</option><option value="admin">Admin</option></select></div><div className="flex justify-end gap-3 pt-4"><Button type="button" variant="secondary" onClick={onClose}>Cancel</Button><Button type="submit" variant="primary">{user ? 'Save Changes' : 'Add User'}</Button></div></form></Modal>)
 }
 
-const NavLink = ({ page, icon: Icon, children, activePage, onLinkClick }) => {
+// 💡 NavLink now accepts a badgeCount prop
+const NavLink = ({ page, icon: Icon, children, activePage, onLinkClick, badgeCount }) => {
     const isActive = activePage === page;
-    return (<a href={`#/admin/${page}`} onClick={onLinkClick} className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-200 ${isActive ? 'bg-blue-600 text-white font-semibold shadow-lg' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}><Icon size={22} /><span className="text-md">{children}</span></a>);
+    return (
+        <a href={`#/admin/${page}`} onClick={onLinkClick} className={`relative flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-200 ${isActive ? 'bg-blue-600 text-white font-semibold shadow-lg' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
+            <Icon size={22} />
+            <span className="text-md">{children}</span>
+            {badgeCount > 0 && (
+                 <span className="absolute right-3 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {badgeCount}
+                </span>
+            )}
+        </a>
+    );
 };
 
-const SidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClose }) => (
+// 💡 SidebarContent now accepts and passes down the badge count
+const SidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClose, totalUnreadCount }) => (
     <>
         <div className="p-4 flex items-center justify-between">
             <a href="#/admin/dashboard" onClick={onLinkClick} className="flex items-center gap-3 cursor-pointer">
-                <img
-                    src="/motofix-removebg-preview.png"
-                    alt="MotoFix Logo"
-                    className="h-20 w-auto"
-                />
+                <img src="/motofix-removebg-preview.png" alt="MotoFix Logo" className="h-20 w-auto" />
             </a>
-            {onMenuClose && (
-                <button onClick={onMenuClose} className="lg:hidden text-gray-500 dark:text-gray-400">
-                    <X size={24} />
-                </button>
-            )}
+            {onMenuClose && ( <button onClick={onMenuClose} className="lg:hidden text-gray-500 dark:text-gray-400"><X size={24} /></button> )}
         </div>
 
         <nav className="flex-1 px-4 py-6 space-y-2">
-            <NavLink page="dashboard" icon={BarChart} activePage={activePage} onLinkClick={onLinkClick}>
-                Dashboard
-            </NavLink>
-            <NavLink page="bookings" icon={List} activePage={activePage} onLinkClick={onLinkClick}>
-                Bookings
-            </NavLink>
-            <NavLink page="users" icon={Users} activePage={activePage} onLinkClick={onLinkClick}>
-                Users
-            </NavLink>
-            <NavLink page="services" icon={Wrench} activePage={activePage} onLinkClick={onLinkClick}>
-                Services
-            </NavLink>
-            <NavLink page="profile" icon={User} activePage={activePage} onLinkClick={onLinkClick}>
-                Profile
-            </NavLink>
-            <NavLink page="chat" icon={MessageSquare} activePage={activePage} onLinkClick={onLinkClick}>
-                Chat
-            </NavLink>
+            <NavLink page="dashboard" icon={BarChart} activePage={activePage} onLinkClick={onLinkClick}>Dashboard</NavLink>
+            <NavLink page="bookings" icon={List} activePage={activePage} onLinkClick={onLinkClick}>Bookings</NavLink>
+            <NavLink page="users" icon={Users} activePage={activePage} onLinkClick={onLinkClick}>Users</NavLink>
+            <NavLink page="services" icon={Wrench} activePage={activePage} onLinkClick={onLinkClick}>Services</NavLink>
+            <NavLink page="profile" icon={User} activePage={activePage} onLinkClick={onLinkClick}>Profile</NavLink>
+            <NavLink page="chat" icon={MessageSquare} activePage={activePage} onLinkClick={onLinkClick} badgeCount={totalUnreadCount}>Chat</NavLink>
         </nav>
 
         <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-            <button
-                onClick={onLogoutClick}
-                className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-            >
+            <button onClick={onLogoutClick} className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">
                 <LogOut size={22} />
                 <span className="text-md">Logout</span>
             </button>
@@ -1742,8 +1796,55 @@ const AdminDashboard = () => {
     const [isLogoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState({ ownerName: 'Admin', workshopName: '' });
     const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('adminTheme') === 'dark');
+    // 💡 State for the total unread chat count for the sidebar badge
+    const [totalUnreadCount, setTotalUnreadCount] = useState(0);
 
     const handleLogoutConfirm = () => { localStorage.clear(); window.location.href = '/'; };
+
+    // 💡 Effect to listen for notifications and update the total unread count
+    useEffect(() => {
+        // Fetch the initial count of unread conversations
+        const fetchInitialCount = async () => {
+            try {
+                const response = await apiFetch('/chat/users');
+                const unreadConversations = response.data.filter(c => c.unreadCount > 0);
+                setTotalUnreadCount(unreadConversations.length);
+            } catch (error) {
+                console.error("Could not fetch initial unread count", error);
+            }
+        };
+        fetchInitialCount();
+
+        // Listen for new messages to update the count in real-time
+        const notificationListener = () => {
+             // Re-fetch the list to get the most accurate count of unread conversations
+             fetchInitialCount();
+        };
+
+        // When a user opens a chat, the unread count for that chat becomes 0.
+        // We need to reflect this in the sidebar badge.
+        const readListener = () => {
+            fetchInitialCount();
+        };
+
+        socket.on('new_message_notification', notificationListener);
+        socket.on('messages_read_by_admin', readListener);
+
+        return () => {
+            socket.off('new_message_notification', notificationListener);
+            socket.off('messages_read_by_admin', readListener);
+        };
+    }, []);
+
+    // 💡 Update document title with unread count
+    useEffect(() => {
+        if (totalUnreadCount > 0) {
+            document.title = `(${totalUnreadCount}) MotoFix Admin`;
+        } else {
+            document.title = 'MotoFix Admin';
+        }
+    }, [totalUnreadCount]);
+
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -1787,7 +1888,7 @@ const AdminDashboard = () => {
             case 'users': return <UsersPage />;
             case 'services': return <ServicesPage />;
             case 'profile': return <ProfilePage currentUser={currentUser} setCurrentUser={setCurrentUser} />;
-            case 'chat': return <AdminChatPage />; // Use the new AdminChatPage
+            case 'chat': return <AdminChatPage />; 
             default:
                 window.location.hash = '#/admin/dashboard';
                 return <DashboardPage />;
@@ -1799,8 +1900,8 @@ const AdminDashboard = () => {
 
     return (
         <div className={`flex h-screen bg-gray-100 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100`}>
-            <div className={`fixed inset-0 z-40 flex lg:hidden transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}><div className="w-72 bg-white dark:bg-gray-800 shadow-lg flex flex-col"><SidebarContent activePage={activePage} onLinkClick={() => setIsSidebarOpen(false)} onLogoutClick={() => { setIsSidebarOpen(false); setLogoutConfirmOpen(true); }} onMenuClose={() => setIsSidebarOpen(false)} /></div><div className="flex-1 bg-black bg-opacity-50" onClick={() => setIsSidebarOpen(false)}></div></div>
-            <aside className="w-72 bg-white dark:bg-gray-800 shadow-md hidden lg:flex flex-col flex-shrink-0"><SidebarContent activePage={activePage} onLinkClick={() => { }} onLogoutClick={() => setLogoutConfirmOpen(true)} /></aside>
+            <div className={`fixed inset-0 z-40 flex lg:hidden transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}><div className="w-72 bg-white dark:bg-gray-800 shadow-lg flex flex-col"><SidebarContent activePage={activePage} onLinkClick={() => setIsSidebarOpen(false)} onLogoutClick={() => { setIsSidebarOpen(false); setLogoutConfirmOpen(true); }} onMenuClose={() => setIsSidebarOpen(false)} totalUnreadCount={totalUnreadCount} /></div><div className="flex-1 bg-black bg-opacity-50" onClick={() => setIsSidebarOpen(false)}></div></div>
+            <aside className="w-72 bg-white dark:bg-gray-800 shadow-md hidden lg:flex flex-col flex-shrink-0"><SidebarContent activePage={activePage} onLinkClick={() => { }} onLogoutClick={() => setLogoutConfirmOpen(true)} totalUnreadCount={totalUnreadCount} /></aside>
             <div className="flex-1 flex flex-col overflow-hidden">
                 <header className="bg-white dark:bg-gray-800 shadow-sm p-4 flex justify-between items-center"><button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-gray-600 dark:text-gray-300"><Menu size={28} /></button><div className="hidden lg:block" /><div className="flex items-center gap-4"><button onClick={() => setIsDarkMode(!isDarkMode)} className="text-gray-600 dark:text-gray-300 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">{isDarkMode ? <Sun size={20} /> : <Moon size={20} />}</button><div className="flex items-center gap-3"><img key={profilePictureSrc} src={profilePictureSrc} alt="Admin" className="w-10 h-10 rounded-full object-cover" onError={handleImageError} /><div><p className="font-semibold text-sm">{currentUser.ownerName}</p><p className="text-xs text-gray-500 dark:text-gray-400">Workshop Owner</p></div></div></div></header>
                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 md:p-8 flex flex-col">

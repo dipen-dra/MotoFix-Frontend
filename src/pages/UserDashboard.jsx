@@ -1040,7 +1040,6 @@
 
 // export default UserDashboard;
 
-
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { BarChart, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { LayoutDashboard, CalendarDays, User, LogOut, Menu, X, Sun, Moon, PlusCircle, Bike, Wrench, Edit, Trash2, AlertTriangle, Camera, MapPin, CreditCard, ArrowLeft, Gift, ArrowRight, ChevronDown, ChevronUp, MessageSquare, Send } from 'lucide-react';
@@ -1048,7 +1047,8 @@ import { toast } from 'react-toastify';
 import io from 'socket.io-client';
 import { AuthContext } from '../auth/AuthContext';
 
-
+// 💡 Establish a single, persistent socket connection for the entire dashboard
+const socket = io.connect("http://localhost:5050");
 const API_BASE_URL_USER = "http://localhost:5050/api/user";
 
 // --- START: Chat Page Component ---
@@ -1056,22 +1056,23 @@ const ChatPage = ({ currentUser }) => {
     const [currentMessage, setCurrentMessage] = useState("");
     const [messageList, setMessageList] = useState([]);
     const chatBodyRef = useRef(null);
-    const socket = useRef(io.connect("http://localhost:5050")).current;
 
-    // 💡 Create a unique, private room name using the user's ID
     const room = currentUser?._id ? `chat-${currentUser._id}` : null;
     const authorName = currentUser?.fullName || 'Customer';
     const authorId = currentUser?._id || null;
 
+    // 💡 This effect runs when the user enters the chat page.
     useEffect(() => {
-        if (!room) {
-            return; // Do not proceed if there's no room (user not loaded yet)
+        if (!room || !authorId) {
+            return; // Don't proceed if user data isn't loaded
         }
 
-        socket.emit("join_room", room);
+        // --- Step 1: Tell the server we are in this room ---
+        // This marks messages as read on the backend and triggers the 'messages_read_by_user' event.
+        socket.emit("join_room", { roomName: room, userId: authorId });
 
+        // --- Step 2: Set up listeners for this chat session ---
         const historyListener = (history) => {
-            // Ensure the history is for this user's room
             if (history.length === 0 || (history.length > 0 && history[0].room === room)) {
                 setMessageList(history);
             }
@@ -1079,19 +1080,20 @@ const ChatPage = ({ currentUser }) => {
         socket.on("chat_history", historyListener);
 
         const messageListener = (data) => {
-            // Only add the message if it's for this user's room
             if (data.room === room) {
                 setMessageList((list) => [...list, data]);
             }
         };
         socket.on("receive_message", messageListener);
 
+        // --- Step 3: Cleanup listeners when the user leaves the chat page ---
         return () => {
             socket.off("chat_history", historyListener);
             socket.off("receive_message", messageListener);
         };
-    }, [socket, room]);
+    }, [room, authorId]); // Re-run if the user or room changes
 
+    // Auto-scroll to the bottom of the chat
     useEffect(() => {
         if (chatBodyRef.current) {
             chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
@@ -1103,7 +1105,7 @@ const ChatPage = ({ currentUser }) => {
             const messageData = {
                 room: room,
                 author: authorName,
-                authorId: authorId, // 💡 Send the user's ID
+                authorId: authorId,
                 message: currentMessage,
             };
             await socket.emit("send_message", messageData);
@@ -2028,18 +2030,24 @@ const UserProfilePage = ({ currentUser, setCurrentUser }) => {
     );
 };
 
-
-const UserNavLink = ({ page, icon: Icon, children, activePage, onLinkClick }) => {
+// 💡 NavLink now accepts a badgeCount prop
+const UserNavLink = ({ page, icon: Icon, children, activePage, onLinkClick, badgeCount }) => {
     const isActive = activePage === page;
     return (
-        <a href={`#/user/${page}`} onClick={onLinkClick} className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-200 ${isActive ? 'bg-blue-600 text-white font-semibold shadow-lg' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
+        <a href={`#/user/${page}`} onClick={onLinkClick} className={`relative flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-200 ${isActive ? 'bg-blue-600 text-white font-semibold shadow-lg' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
             <Icon size={22} />
             <span className="text-md">{children}</span>
+            {badgeCount > 0 && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {badgeCount}
+                </span>
+            )}
         </a>
     );
 };
 
-const UserSidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClose }) => {
+// 💡 SidebarContent now accepts and passes down the badge count
+const UserSidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClose, unreadChatCount }) => {
     const handleLogoClick = () => {
         window.location.hash = '#/user/dashboard';
         if (onMenuClose) onMenuClose();
@@ -2058,8 +2066,7 @@ const UserSidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClos
                 <UserNavLink page="my-payments" icon={CreditCard} activePage={activePage} onLinkClick={onLinkClick}>My Payments</UserNavLink>
                 <UserNavLink page="new-booking" icon={PlusCircle} activePage={activePage} onLinkClick={onLinkClick}>New Booking</UserNavLink>
                 <UserNavLink page="profile" icon={User} activePage={activePage} onLinkClick={onLinkClick}>Profile</UserNavLink>
-                {/* 💡 Add Chat NavLink to User Sidebar */}
-                <UserNavLink page="chat" icon={MessageSquare} activePage={activePage} onLinkClick={onLinkClick}>Chat</UserNavLink>
+                <UserNavLink page="chat" icon={MessageSquare} activePage={activePage} onLinkClick={onLinkClick} badgeCount={unreadChatCount}>Chat</UserNavLink>
             </nav>
             <div className="p-4 border-t border-gray-200 dark:border-gray-700">
                 <button onClick={onLogoutClick} className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">
@@ -2076,25 +2083,68 @@ const UserDashboard = () => {
     const [activePage, setActivePage] = useState('dashboard');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isLogoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
-    const [currentUser, setCurrentUser] = useState(null); // 💡 Initialize as null
+    const [currentUser, setCurrentUser] = useState(null);
     const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('userTheme') === 'dark');
+    // 💡 State to hold unread message count for the current user
+    const [unreadChatCount, setUnreadChatCount] = useState(0);
 
+    // This effect runs once to fetch the user's profile and initial unread chat count.
     useEffect(() => {
-        const fetchProfile = async () => {
+        const fetchInitialData = async () => {
             if (!user) return;
             try {
-                const response = await apiFetchUser('/profile');
-                setCurrentUser(response.data);
+                // Fetch user profile
+                const profileResponse = await apiFetchUser('/profile');
+                setCurrentUser(profileResponse.data);
+
+                // Fetch initial unread message count
+                const unreadResponse = await apiFetchUser('/chat/unread-count');
+                setUnreadChatCount(unreadResponse.count || 0);
+
             } catch (error) {
-                console.error("Failed to fetch current user", error);
+                console.error("Failed to fetch initial user data", error);
                 if (error.message.includes('Unauthorized') || error.message.includes('token')) {
                     handleLogoutConfirm();
                 }
             }
         };
-        
-        fetchProfile();
+        fetchInitialData();
     }, [user]);
+
+    // 💡 This effect manages all real-time socket events for the dashboard
+    useEffect(() => {
+        if (!currentUser) return; // Don't set up listeners until we know who the user is
+
+        // A new message has arrived from the admin
+        const notificationListener = (data) => {
+            // Only increment count if the message is from the admin
+            if (data.authorId !== currentUser._id) {
+                setUnreadChatCount(prevCount => prevCount + 1);
+            }
+        };
+
+        // User has opened the chat, so clear the count
+        const readListener = () => {
+            setUnreadChatCount(0);
+        };
+        
+        socket.on('new_message_notification', notificationListener);
+        socket.on('messages_read_by_user', readListener); // Listens for confirmation from backend
+
+        return () => {
+            socket.off('new_message_notification', notificationListener);
+            socket.off('messages_read_by_user', readListener);
+        };
+    }, [currentUser]); // Re-setup listeners if the user changes (e.g., re-login)
+
+    // 💡 Update document title with unread count
+    useEffect(() => {
+        if (unreadChatCount > 0) {
+            document.title = `(${unreadChatCount}) MotoFix Customer`;
+        } else {
+            document.title = 'MotoFix Customer';
+        }
+    }, [unreadChatCount]);
 
     useEffect(() => {
         document.documentElement.classList.toggle('dark', isDarkMode);
@@ -2126,7 +2176,6 @@ const UserDashboard = () => {
     };
 
     const renderPage = () => {
-        // 💡 Don't render pages until we have the current user's data
         if (!currentUser) {
             return <div className="text-center p-12">Loading User Data...</div>;
         }
@@ -2150,14 +2199,16 @@ const UserDashboard = () => {
 
     return (
         <div className={`flex h-screen bg-gray-100 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100`}>
+            {/* Mobile Sidebar */}
             <div className={`fixed inset-0 z-40 flex lg:hidden transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="w-72 bg-white dark:bg-gray-800 shadow-lg flex flex-col">
-                    <UserSidebarContent activePage={activePage} onLinkClick={() => setIsSidebarOpen(false)} onLogoutClick={() => { setIsSidebarOpen(false); setLogoutConfirmOpen(true); }} onMenuClose={() => setIsSidebarOpen(false)} />
+                    <UserSidebarContent activePage={activePage} onLinkClick={() => setIsSidebarOpen(false)} onLogoutClick={() => { setIsSidebarOpen(false); setLogoutConfirmOpen(true); }} onMenuClose={() => setIsSidebarOpen(false)} unreadChatCount={unreadChatCount} />
                 </div>
                 <div className="flex-1 bg-black bg-opacity-50" onClick={() => setIsSidebarOpen(false)}></div>
             </div>
+            {/* Desktop Sidebar */}
             <aside className="w-72 bg-white dark:bg-gray-800 shadow-md hidden lg:flex flex-col flex-shrink-0">
-                <UserSidebarContent activePage={activePage} onLinkClick={() => { }} onLogoutClick={() => setLogoutConfirmOpen(true)} />
+                <UserSidebarContent activePage={activePage} onLinkClick={() => { }} onLogoutClick={() => setLogoutConfirmOpen(true)} unreadChatCount={unreadChatCount} />
             </aside>
 
             <main className="flex-1 flex flex-col overflow-hidden">
