@@ -24,7 +24,7 @@ const apiFetchUser = async (endpoint, options = {}) => {
         const errorData = await response.json();
         throw new Error(errorData.message || 'An API error occurred.');
     }
-    
+
     return response; // ALWAYS return the response object
 };
 
@@ -142,7 +142,7 @@ const ChatPage = ({ currentUser }) => {
         }
         return (
             <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" download={msg.fileName}
-               className="flex items-center gap-3 bg-black/10 dark:bg-white/10 p-3 rounded-lg hover:bg-black/20 dark:hover:bg-white/20 transition-colors mt-1">
+                className="flex items-center gap-3 bg-black/10 dark:bg-white/10 p-3 rounded-lg hover:bg-black/20 dark:hover:bg-white/20 transition-colors mt-1">
                 <FileText size={32} className="flex-shrink-0" />
                 <span className="truncate font-medium">{msg.fileName || 'Download File'}</span>
             </a>
@@ -176,13 +176,13 @@ const ChatPage = ({ currentUser }) => {
                             <div key={index} className={`flex items-end gap-2 ${isUserMessage ? 'justify-end' : 'justify-start'}`}>
                                 {!isUserMessage && (
                                     <div className="w-8 flex-shrink-0 self-end">
-                                        {isLastInGroup && <img src="/motofix-removebg-preview.png" alt="p" className="w-7 h-7 rounded-full object-contain bg-gray-100 dark:bg-gray-900 p-0.5"/>}
+                                        {isLastInGroup && <img src="/motofix-removebg-preview.png" alt="p" className="w-7 h-7 rounded-full object-contain bg-gray-100 dark:bg-gray-900 p-0.5" />}
                                     </div>
                                 )}
                                 <div className={`py-2 px-3 max-w-md ${isUserMessage ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white'} 
                                     ${isFirstInGroup && isLastInGroup ? 'rounded-2xl' : ''}
-                                    ${isUserMessage ? 
-                                        `${isFirstInGroup ? 'rounded-t-2xl rounded-bl-2xl' : 'rounded-l-2xl'} ${isLastInGroup ? 'rounded-b-2xl' : ''} ${!isFirstInGroup && !isLastInGroup ? 'rounded-l-2xl rounded-r-md' : ''} ${isFirstInGroup && !isLastInGroup ? 'rounded-tr-md' : ''} ${!isFirstInGroup && isLastInGroup ? 'rounded-br-md' : ''}` : 
+                                    ${isUserMessage ?
+                                        `${isFirstInGroup ? 'rounded-t-2xl rounded-bl-2xl' : 'rounded-l-2xl'} ${isLastInGroup ? 'rounded-b-2xl' : ''} ${!isFirstInGroup && !isLastInGroup ? 'rounded-l-2xl rounded-r-md' : ''} ${isFirstInGroup && !isLastInGroup ? 'rounded-tr-md' : ''} ${!isFirstInGroup && isLastInGroup ? 'rounded-br-md' : ''}` :
                                         `${isFirstInGroup ? 'rounded-t-2xl rounded-br-2xl' : 'rounded-r-2xl'} ${isLastInGroup ? 'rounded-b-2xl' : ''} ${!isFirstInGroup && !isLastInGroup ? 'rounded-r-2xl rounded-l-md' : ''} ${isFirstInGroup && !isLastInGroup ? 'rounded-tl-md' : ''} ${!isFirstInGroup && isLastInGroup ? 'rounded-bl-md' : ''}`
                                     }`}
                                 >
@@ -200,16 +200,16 @@ const ChatPage = ({ currentUser }) => {
                 <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
                     {(previewUrl || selectedFile) && (
                         <div className="mb-2 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-between">
-                            {previewUrl ? <img src={previewUrl} alt="Preview" className="h-16 w-16 object-cover rounded" /> : <div className="flex items-center gap-2 text-gray-500"><FileText/><span>{selectedFile.name}</span></div> }
+                            {previewUrl ? <img src={previewUrl} alt="Preview" className="h-16 w-16 object-cover rounded" /> : <div className="flex items-center gap-2 text-gray-500"><FileText /><span>{selectedFile.name}</span></div>}
                             <button onClick={handleRemovePreview} className="text-gray-500 hover:text-red-500"><XCircle size={20} /></button>
                         </div>
                     )}
                     <div className="flex items-center gap-3">
-                         <div className="flex">
+                        <div className="flex">
                             <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
                             <input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" />
-                            <button onClick={() => fileInputRef.current.click()} className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"><Paperclip size={22}/></button>
-                            <button onClick={() => cameraInputRef.current.click()} className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"><Camera size={22}/></button>
+                            <button onClick={() => fileInputRef.current.click()} className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"><Paperclip size={22} /></button>
+                            <button onClick={() => cameraInputRef.current.click()} className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"><Camera size={22} /></button>
                         </div>
                         <input
                             type="text"
@@ -221,7 +221,7 @@ const ChatPage = ({ currentUser }) => {
                             disabled={isUploading}
                         />
                         <Button onClick={sendMessage} disabled={isUploading || (!currentMessage.trim() && !selectedFile)} className="!rounded-full !w-12 !h-12 !p-0">
-                            {isUploading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Send size={20}/>}
+                            {isUploading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Send size={20} />}
                         </Button>
                     </div>
                 </div>
@@ -288,7 +288,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     return (
         <div className="flex items-center justify-between pt-4 mt-auto border-t border-gray-200 dark:border-gray-700">
             <Button variant="secondary" onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className="!px-3 !py-1.5 text-sm">
-                 <ArrowLeft size={16} /> Previous
+                <ArrowLeft size={16} /> Previous
             </Button>
             <span className="text-sm text-gray-700 dark:text-gray-300">Page {currentPage} of {totalPages}</span>
             <Button variant="secondary" onClick={() => onPageChange(currentPage + 1)} disabled={currentPage >= totalPages} className="!px-3 !py-1.5 text-sm">
@@ -471,7 +471,7 @@ const UserBookingsPage = () => {
                 <div className="overflow-x-auto flex-grow">
                     {isLoading ? (<div className="text-center p-12 text-gray-500 dark:text-gray-400">Loading bookings...</div>) : bookings.length > 0 ? (
                         <table className="w-full text-left">
-                           <thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700">
+                            <thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700">
                                 <tr>
                                     <th className="p-3">Service</th><th className="p-3">Bike</th><th className="p-3">Date</th>
                                     <th className="p-3">Status</th><th className="p-3">Payment</th><th className="p-3 text-right">Cost</th>
@@ -523,19 +523,19 @@ const EditBookingPage = () => {
 
     useEffect(() => {
         const id = window.location.hash.split('/').pop();
-        
+
         const fetchInitialData = async () => {
             setIsLoading(true);
             try {
                 const servicesRes = await apiFetchUser('/services');
-                const {data: allServices} = await servicesRes.json();
+                const { data: allServices } = await servicesRes.json();
                 setServices(allServices || []);
 
                 const bookingRes = await apiFetchUser(`/bookings/${id}`);
                 const { data: booking } = await bookingRes.json();
 
                 if (booking) {
-                    if(booking.isPaid || booking.discountApplied || booking.status !== 'Pending') {
+                    if (booking.isPaid || booking.discountApplied || booking.status !== 'Pending') {
                         toast.error("This booking can no longer be edited.");
                         window.location.hash = '#/user/bookings';
                         return;
@@ -585,7 +585,7 @@ const EditBookingPage = () => {
     };
 
     if (isLoading) return <div className="text-center p-12">Loading...</div>;
-    
+
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
@@ -724,14 +724,14 @@ const MyPaymentsPage = ({ currentUser, loyaltyPoints, onDiscountApplied }) => {
             setIsLoading(false);
         }
     };
-    
+
     useEffect(() => {
         fetchData();
 
         const params = new URLSearchParams(window.location.search);
         const status = params.get('status');
         const message = params.get('message');
-        
+
         if (status && message) {
             if (status === 'success') {
                 toast.success(message);
@@ -758,7 +758,7 @@ const MyPaymentsPage = ({ currentUser, loyaltyPoints, onDiscountApplied }) => {
             toast.error(error.message || "Failed to apply discount.");
         }
     };
-    
+
     const handlePayment = async (booking, method) => {
         const amountToPay = booking.finalAmount ?? booking.totalCost;
 
@@ -879,7 +879,7 @@ const MyPaymentsPage = ({ currentUser, loyaltyPoints, onDiscountApplied }) => {
                                                 <span>Total: रु{booking.totalCost}</span>
                                             )}
                                         </div>
-                                         {booking.discountApplied && <p className="text-sm font-bold text-green-500">Discount: -रु{booking.discountAmount}</p>}
+                                        {booking.discountApplied && <p className="text-sm font-bold text-green-500">Discount: -रु{booking.discountAmount}</p>}
                                     </div>
                                     <div className="flex flex-wrap items-center gap-2">
                                         {loyaltyPoints >= 100 && !booking.discountApplied && (
@@ -922,8 +922,8 @@ const MyPaymentsPage = ({ currentUser, loyaltyPoints, onDiscountApplied }) => {
                                             <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel}</td>
                                             <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
                                             <td className="p-3 font-semibold">
-                                                 {booking.discountApplied && (<span className="text-xs text-red-500 line-through mr-1">रु{booking.totalCost}</span>)}
-                                                 रु{booking.finalAmount ?? booking.totalCost}
+                                                {booking.discountApplied && (<span className="text-xs text-red-500 line-through mr-1">रु{booking.totalCost}</span>)}
+                                                रु{booking.finalAmount ?? booking.totalCost}
                                             </td>
                                             <td className="p-3"><StatusBadge status={booking.paymentMethod} /></td>
                                         </tr>
@@ -937,7 +937,7 @@ const MyPaymentsPage = ({ currentUser, loyaltyPoints, onDiscountApplied }) => {
                         )
                     }
                 </div>
-                <LoadMoreControl 
+                <LoadMoreControl
                     onToggle={() => setShowAllHistory(!showAllHistory)}
                     isExpanded={showAllHistory}
                     hasMore={paidBookings.length > 10}
@@ -1022,7 +1022,7 @@ const UserProfilePage = ({ currentUser, setCurrentUser }) => {
             const updatedData = { ...data.data, address: data.data.address || '' };
             setProfile(updatedData);
             setInitialProfile(updatedData);
-            setCurrentUser(updatedData); 
+            setCurrentUser(updatedData);
             setIsEditing(false);
             toast.success(data.message || 'Profile updated successfully!');
         } catch (error) {
@@ -1135,11 +1135,15 @@ const UserSidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClos
                 <UserNavLink page="chat" icon={MessageSquare} activePage={activePage} onLinkClick={onLinkClick} badgeCount={unreadChatCount}>Chat</UserNavLink>
             </nav>
             <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-                <button onClick={onLogoutClick} className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">
+                <button
+                    onClick={onLogoutClick}
+                    className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-800"
+                >
                     <LogOut size={22} />
                     <span className="text-md">Logout</span>
                 </button>
             </div>
+
         </>
     );
 };
@@ -1182,14 +1186,14 @@ const UserDashboard = () => {
             const currentChatRoom = `chat-${currentUser._id}`;
             // Only increment count if the message is for this user and they are NOT in the chat room.
             if (data.room === currentChatRoom && window.location.hash !== '#/user/chat') {
-                 setUnreadChatCount(prevCount => prevCount + 1);
+                setUnreadChatCount(prevCount => prevCount + 1);
             }
         };
 
         const readListener = () => {
             setUnreadChatCount(0);
         };
-        
+
         socket.on('new_message_notification', notificationListener);
         socket.on('messages_read_by_user', readListener);
 

@@ -24,7 +24,7 @@ const apiFetch = async (endpoint, options = {}) => {
         const errorData = await response.json();
         throw new Error(errorData.message || 'An error occurred with the API request.');
     }
-    
+
     return response; // ALWAYS return the response object.
 };
 
@@ -37,7 +37,7 @@ const AdminChatPage = () => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
-    
+
     const chatBodyRef = useRef(null);
     const fileInputRef = useRef(null);
     const cameraInputRef = useRef(null);
@@ -93,7 +93,7 @@ const AdminChatPage = () => {
                 )
             );
         };
-        
+
         socket.on('receive_message', newMessageListener);
         socket.on('messages_read_by_admin', messagesReadListener);
 
@@ -109,7 +109,7 @@ const AdminChatPage = () => {
             const roomName = `chat-${activeConversation._id}`;
             const historyListener = (history) => {
                 if ((history.length > 0 && history[0].room === roomName) || (history.length === 0 && `chat-${activeConversation._id}` === roomName)) {
-                     setMessages(history);
+                    setMessages(history);
                 }
             };
             socket.on('chat_history', historyListener);
@@ -179,7 +179,7 @@ const AdminChatPage = () => {
             setCurrentMessage('');
         }
     };
-    
+
     const handleSelectConversation = (user) => {
         if (activeConversation?._id !== user._id) {
             setMessages([]);
@@ -191,7 +191,7 @@ const AdminChatPage = () => {
             });
         }
     };
-    
+
     const handleImageError = (e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(e.target.dataset.name || 'U')}&background=e2e8f0&color=4a5568&size=40`; };
 
     const renderFileContent = (msg) => {
@@ -204,7 +204,7 @@ const AdminChatPage = () => {
         }
         return (
             <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" download={msg.fileName}
-               className="flex items-center gap-3 bg-black/10 dark:bg-white/10 p-3 rounded-lg hover:bg-black/20 dark:hover:bg-white/20 transition-colors mt-1">
+                className="flex items-center gap-3 bg-black/10 dark:bg-white/10 p-3 rounded-lg hover:bg-black/20 dark:hover:bg-white/20 transition-colors mt-1">
                 <FileText size={32} className="flex-shrink-0" />
                 <span className="truncate font-medium">{msg.fileName || 'Download File'}</span>
             </a>
@@ -235,10 +235,10 @@ const AdminChatPage = () => {
                     {activeConversation ? (
                         <>
                             <div className="p-3 border-b dark:border-gray-700 flex items-center gap-3 shadow-sm">
-                                 <img src={activeConversation.profilePicture ? `http://localhost:5050/${activeConversation.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(activeConversation.fullName || 'U')}&background=0D8ABC&color=fff&size=40`} alt={activeConversation.fullName} className="w-10 h-10 rounded-full object-cover" data-name={activeConversation.fullName} onError={handleImageError} />
+                                <img src={activeConversation.profilePicture ? `http://localhost:5050/${activeConversation.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(activeConversation.fullName || 'U')}&background=0D8ABC&color=fff&size=40`} alt={activeConversation.fullName} className="w-10 h-10 rounded-full object-cover" data-name={activeConversation.fullName} onError={handleImageError} />
                                 <div><h3 className="font-semibold">{activeConversation.fullName}</h3><p className="text-sm text-gray-500">{activeConversation.email}</p></div>
                             </div>
-                            
+
                             <div className="flex-grow overflow-y-auto p-4 space-y-1" ref={chatBodyRef}>
                                 {messages.map((msg, index) => {
                                     const isAdmin = msg.authorId === 'admin_user';
@@ -251,13 +251,13 @@ const AdminChatPage = () => {
                                         <div key={index} className={`flex items-end gap-2 ${isAdmin ? 'justify-end' : 'justify-start'}`}>
                                             {!isAdmin && (
                                                 <div className="w-8 flex-shrink-0 self-end">
-                                                    {isLastInGroup && <img src={activeConversation.profilePicture ? `http://localhost:5050/${activeConversation.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(activeConversation.fullName || 'U')}&background=e2e8f0&color=4a5568&size=40`} alt="p" className="w-7 h-7 rounded-full object-cover"/>}
+                                                    {isLastInGroup && <img src={activeConversation.profilePicture ? `http://localhost:5050/${activeConversation.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(activeConversation.fullName || 'U')}&background=e2e8f0&color=4a5568&size=40`} alt="p" className="w-7 h-7 rounded-full object-cover" />}
                                                 </div>
                                             )}
                                             <div className={`py-2 px-3 max-w-md ${isAdmin ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white'} 
                                                 ${isFirstInGroup && isLastInGroup ? 'rounded-2xl' : ''}
-                                                ${isAdmin ? 
-                                                    `${isFirstInGroup ? 'rounded-t-2xl rounded-bl-2xl' : 'rounded-l-2xl'} ${isLastInGroup ? 'rounded-b-2xl' : ''} ${!isFirstInGroup && !isLastInGroup ? 'rounded-l-2xl rounded-r-md' : ''} ${isFirstInGroup && !isLastInGroup ? 'rounded-tr-md' : ''} ${!isFirstInGroup && isLastInGroup ? 'rounded-br-md' : ''}` : 
+                                                ${isAdmin ?
+                                                    `${isFirstInGroup ? 'rounded-t-2xl rounded-bl-2xl' : 'rounded-l-2xl'} ${isLastInGroup ? 'rounded-b-2xl' : ''} ${!isFirstInGroup && !isLastInGroup ? 'rounded-l-2xl rounded-r-md' : ''} ${isFirstInGroup && !isLastInGroup ? 'rounded-tr-md' : ''} ${!isFirstInGroup && isLastInGroup ? 'rounded-br-md' : ''}` :
                                                     `${isFirstInGroup ? 'rounded-t-2xl rounded-br-2xl' : 'rounded-r-2xl'} ${isLastInGroup ? 'rounded-b-2xl' : ''} ${!isFirstInGroup && !isLastInGroup ? 'rounded-r-2xl rounded-l-md' : ''} ${isFirstInGroup && !isLastInGroup ? 'rounded-tl-md' : ''} ${!isFirstInGroup && isLastInGroup ? 'rounded-bl-md' : ''}`
                                                 }`}
                                             >
@@ -275,7 +275,7 @@ const AdminChatPage = () => {
                             <div className="p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800">
                                 {(previewUrl || selectedFile) && (
                                     <div className="mb-2 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-between">
-                                        {previewUrl ? <img src={previewUrl} alt="Preview" className="h-16 w-16 object-cover rounded" /> : <div className="flex items-center gap-2 text-gray-500"><FileText/><span>{selectedFile.name}</span></div> }
+                                        {previewUrl ? <img src={previewUrl} alt="Preview" className="h-16 w-16 object-cover rounded" /> : <div className="flex items-center gap-2 text-gray-500"><FileText /><span>{selectedFile.name}</span></div>}
                                         <button onClick={handleRemovePreview} className="text-gray-500 hover:text-red-500"><XCircle size={20} /></button>
                                     </div>
                                 )}
@@ -283,8 +283,8 @@ const AdminChatPage = () => {
                                     <div className="flex">
                                         <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
                                         <input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" />
-                                        <button onClick={() => fileInputRef.current.click()} className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"><Paperclip size={22}/></button>
-                                        <button onClick={() => cameraInputRef.current.click()} className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"><Camera size={22}/></button>
+                                        <button onClick={() => fileInputRef.current.click()} className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"><Paperclip size={22} /></button>
+                                        <button onClick={() => cameraInputRef.current.click()} className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"><Camera size={22} /></button>
                                     </div>
                                     <input
                                         type="text"
@@ -296,7 +296,7 @@ const AdminChatPage = () => {
                                         disabled={isUploading}
                                     />
                                     <Button onClick={handleSendMessage} disabled={isUploading || (!currentMessage.trim() && !selectedFile)} className="!rounded-full !w-12 !h-12 !p-0">
-                                        {isUploading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Send size={20}/>}
+                                        {isUploading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Send size={20} />}
                                     </Button>
                                 </div>
                             </div>
@@ -533,7 +533,7 @@ const BookingsPage = () => {
                 <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
                     <div className="relative w-full md:w-auto">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                        <input type="text" placeholder="Search bookings..." value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}} className="w-full md:w-80 pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        <input type="text" placeholder="Search bookings..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-full md:w-80 pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                     </div>
                 </div>
                 <div className="overflow-x-auto flex-grow">
@@ -698,7 +698,7 @@ const UsersPage = () => {
             toast.error(error.message || 'Failed to save user.');
         }
     };
-    
+
     const handlePageChange = (newPage) => {
         if (newPage > 0 && newPage <= totalPages) {
             setCurrentPage(newPage);
@@ -717,7 +717,7 @@ const UsersPage = () => {
                 <div className="flex justify-between items-center mb-4">
                     <div className="relative w-full md:w-auto">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                        <input type="text" placeholder="Search users..." value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}} className="w-full md:w-80 pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        <input type="text" placeholder="Search users..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-full md:w-80 pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                     </div>
                 </div>
                 <div className="overflow-x-auto flex-grow">
@@ -800,7 +800,7 @@ const ServicesPage = () => {
             toast.error(error.message || 'Failed to save service.');
         }
     };
-    
+
     const handlePageChange = (newPage) => {
         if (newPage > 0 && newPage <= totalPages) {
             setCurrentPage(newPage);
@@ -836,7 +836,7 @@ const ServicesPage = () => {
                         </div>
                     )) : (<div className="col-span-full text-center py-10 text-gray-500">No services found.</div>)}
                 </div>
-                 <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+                <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
             </Card>
 
             <ServiceFormModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSave} service={editingService} />
@@ -978,7 +978,7 @@ const NavLink = ({ page, icon: Icon, children, activePage, onLinkClick, badgeCou
             <Icon size={22} />
             <span className="text-md">{children}</span>
             {badgeCount > 0 && (
-                 <span className="absolute right-3 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                     {badgeCount}
                 </span>
             )}
@@ -992,7 +992,7 @@ const SidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClose, t
             <a href="#/admin/dashboard" onClick={onLinkClick} className="flex items-center gap-3 cursor-pointer">
                 <img src="/motofix-removebg-preview.png" alt="MotoFix Logo" className="h-20 w-auto" />
             </a>
-            {onMenuClose && ( <button onClick={onMenuClose} className="lg:hidden text-gray-500 dark:text-gray-400"><X size={24} /></button> )}
+            {onMenuClose && (<button onClick={onMenuClose} className="lg:hidden text-gray-500 dark:text-gray-400"><X size={24} /></button>)}
         </div>
 
         <nav className="flex-1 px-4 py-6 space-y-2">
@@ -1005,11 +1005,15 @@ const SidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClose, t
         </nav>
 
         <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-            <button onClick={onLogoutClick} className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">
+            <button
+                onClick={onLogoutClick}
+                className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-800"
+            >
                 <LogOut size={22} />
                 <span className="text-md">Logout</span>
             </button>
         </div>
+
     </>
 );
 
@@ -1094,7 +1098,7 @@ const AdminDashboard = () => {
             case 'users': return <UsersPage />;
             case 'services': return <ServicesPage />;
             case 'profile': return <ProfilePage currentUser={currentUser} setCurrentUser={setCurrentUser} />;
-            case 'chat': return <AdminChatPage />; 
+            case 'chat': return <AdminChatPage />;
             default:
                 window.location.hash = '#/admin/dashboard';
                 return <DashboardPage />;
