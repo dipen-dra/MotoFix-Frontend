@@ -1430,9 +1430,7 @@ const LoadMoreControl = ({ onToggle, isExpanded, hasMore }) => {
         </div>
     );
 };
-// --- END: Helper Components ---
 
-// --- START: Page Specific Components ---
 
 const UserServiceHomePage = ({ currentUser }) => {
     const [services, setServices] = useState([]);
@@ -1477,7 +1475,7 @@ const UserServiceHomePage = ({ currentUser }) => {
                 */}
                 <div
                     className="absolute inset-0 bg-cover bg-center opacity-30"
-                    style={{ backgroundImage: "url('/moto.png')" }}
+                    style={{ backgroundImage: "url('/moto2.png')" }}
                 />
                 <div className="relative z-10 flex flex-col items-center">
                     <Bike size={64} className="mb-4 text-blue-400" />
@@ -1578,6 +1576,9 @@ const UserServiceHomePage = ({ currentUser }) => {
         </div>
     );
 };
+
+
+
 
 
 
