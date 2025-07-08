@@ -3321,6 +3321,10 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
 
 // --- START: Page Specific Components ---
 
+
+
+
+
 const AdminChatPage = () => {
     const [conversations, setConversations] = useState([]);
     const [activeConversation, setActiveConversation] = useState(null);
@@ -3334,65 +3338,102 @@ const AdminChatPage = () => {
     const chatBodyRef = useRef(null);
     const fileInputRef = useRef(null);
     const cameraInputRef = useRef(null);
+    
     const fetchConversations = async () => {
         try {
             const response = await apiFetch('/chat/users');
             const data = await response.json();
-            setConversations(data.data || []);
+            // The API response is already sorted, but a client-side sort is a good fallback.
+            const sortedData = (data.data || []).sort((a, b) => new Date(b.lastMessageTimestamp) - new Date(a.lastMessageTimestamp));
+            setConversations(sortedData);
         } catch (error) { toast.error('Failed to fetch chat conversations.'); }
     };
+
     useEffect(() => { fetchConversations(); }, []);
+
+    // UPDATED useEffect for socket listeners
     useEffect(() => {
         const newMessageListener = (data) => {
             const roomUserId = data.room.replace('chat-', '');
-            if (activeConversation?._id === roomUserId) {
+            const isChatActive = activeConversation?._id === roomUserId;
+            const isFromAdmin = data.authorId === 'admin_user';
+
+            // Add new message to the active chat window regardless of sender
+            if (isChatActive) {
                 setMessages((prev) => [...prev, data]);
-            } else {
-                setConversations(prevConvos => {
-                    let convoExists = false;
-                    const updatedConvos = prevConvos.map(convo => {
-                        if (convo._id === roomUserId) {
-                            convoExists = true;
-                            const lastMessageText = data.message || `Sent a ${data.fileType.split('/')[0]}`;
-                            return { ...convo, unreadCount: (convo.unreadCount || 0) + 1, lastMessage: lastMessageText, lastMessageTimestamp: new Date().toISOString() };
-                        }
-                        return convo;
-                    });
-                    if (!convoExists) {
-                        fetchConversations();
-                        return prevConvos;
-                    }
-                    updatedConvos.sort((a, b) => new Date(b.lastMessageTimestamp) - new Date(a.lastMessageTimestamp));
-                    return updatedConvos;
-                });
             }
+
+            // Update the conversations list on the left
+            setConversations(prevConvos => {
+                let convoExists = false;
+                
+                const updatedConvos = prevConvos.map(convo => {
+                    if (convo._id === roomUserId) {
+                        convoExists = true;
+                        return { 
+                            ...convo, 
+                            // If the message is from the admin, keep the existing lastMessage text.
+                            // If it's from the user, update it with the new message text.
+                            lastMessage: isFromAdmin 
+                                ? convo.lastMessage 
+                                : (data.message || `Sent a ${data.fileType ? data.fileType.split('/')[0] : 'file'}`),
+                            
+                            // Always update the timestamp to the latest activity time for sorting.
+                            lastMessageTimestamp: data.createdAt, 
+                            
+                            // Increment unread count only for new user messages in inactive chats.
+                            unreadCount: !isChatActive && !isFromAdmin ? (convo.unreadCount || 0) + 1 : convo.unreadCount
+                        };
+                    }
+                    return convo;
+                });
+
+                // If a new user messages for the first time, refetch to create their entry.
+                if (!convoExists) {
+                    fetchConversations();
+                    return prevConvos; // Return old state while fetching
+                }
+                
+                // Sort the conversations list to bring the most recent one to the top.
+                updatedConvos.sort((a, b) => new Date(b.lastMessageTimestamp) - new Date(a.lastMessageTimestamp));
+                return updatedConvos;
+            });
         };
+
         const messagesReadListener = (data) => {
             const roomUserId = data.room.replace('chat-', '');
             setConversations(prevConvos => prevConvos.map(convo => convo._id === roomUserId ? { ...convo, unreadCount: 0 } : convo));
         };
+
         socket.on('receive_message', newMessageListener);
         socket.on('messages_read_by_admin', messagesReadListener);
         return () => {
             socket.off('receive_message', newMessageListener);
             socket.off('messages_read_by_admin', messagesReadListener);
         };
-    }, [activeConversation]);
+    }, [activeConversation]); // Dependency ensures `isChatActive` is always current.
+
     useEffect(() => {
         if (activeConversation) {
             const roomName = `chat-${activeConversation._id}`;
             const historyListener = (history) => {
-                if ((history.length > 0 && history[0].room === roomName) || (history.length === 0 && `chat-${activeConversation._id}` === roomName)) {
+                // Ensure the history is for the currently selected chat
+                const firstMsgRoom = history.length > 0 ? history[0].room : `chat-${activeConversation._id}`;
+                if (firstMsgRoom === roomName) {
                     setMessages(history);
                 }
             };
             socket.on('chat_history', historyListener);
+            // Request chat history when a conversation is selected
+            socket.emit('join_room', { roomName: `chat-${activeConversation._id}`, userId: 'admin_user' });
             return () => { socket.off('chat_history', historyListener); };
         }
     }, [activeConversation]);
+
     useEffect(() => {
         if (chatBodyRef.current) { chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight; }
     }, [messages]);
+
     const handleFileChange = (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -3401,7 +3442,9 @@ const AdminChatPage = () => {
         }
         event.target.value = null;
     };
+    
     const handleRemovePreview = () => { setSelectedFile(null); setPreviewUrl(null); };
+
     const handleSendMessage = async () => {
         if (!activeConversation || (currentMessage.trim() === '' && !selectedFile)) return;
         if (selectedFile) {
@@ -3416,20 +3459,24 @@ const AdminChatPage = () => {
             catch (error) { toast.error(`File upload failed: ${error.message}`); }
             finally { setIsUploading(false); handleRemovePreview(); setCurrentMessage(''); }
         } else {
-            const messageData = { room: `chat-${activeConversation._id}`, author: 'Admin', authorId: 'admin_user', message: currentMessage };
-            await socket.emit('send_message', messageData);
+            const messageData = { room: `chat-${activeConversation._id}`, author: 'Admin', authorId: 'admin_user', message: currentMessage, createdAt: new Date().toISOString() };
+            socket.emit('send_message', messageData);
+            setMessages(prev => [...prev, messageData]); // Optimistically update UI
             setCurrentMessage('');
         }
     };
+
     const handleSelectConversation = (user) => {
         if (activeConversation?._id !== user._id) {
-            setMessages([]);
+            setMessages([]); // Clear previous messages
             setActiveConversation(user);
             handleRemovePreview();
-            socket.emit('join_room', { roomName: `chat-${user._id}`, userId: 'admin_user' });
+            // The join_room emit is now in the useEffect for activeConversation
         }
     };
+    
     const handleClearClick = (user) => { setItemToClear(user); setConfirmOpen(true); };
+
     const confirmClearChat = async () => {
         if (!itemToClear) return;
         try {
@@ -3439,15 +3486,19 @@ const AdminChatPage = () => {
                 setActiveConversation(null);
                 setMessages([]);
             }
-            fetchConversations();
+            fetchConversations(); // Refetch to remove the conversation from the list
         } catch (error) { toast.error(error.message || 'Failed to clear chat history.'); }
         finally { setConfirmOpen(false); setItemToClear(null); }
     };
+
     const handleImageError = (e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(e.target.dataset.name || 'U')}&background=e2e8f0&color=4a5568&size=40`; };
+    
     const renderFileContent = (msg) => {
         if (msg.fileType?.startsWith('image/')) { return (<a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" className="block"><img src={msg.fileUrl} alt={msg.fileName || 'Sent Image'} className="max-w-xs rounded-lg mt-1" /></a>); }
         return (<a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" download={msg.fileName} className="flex items-center gap-3 bg-black/10 dark:bg-white/10 p-3 rounded-lg hover:bg-black/20 dark:hover:bg-white/20 transition-colors mt-1"><FileText size={32} className="flex-shrink-0" /><span className="truncate font-medium">{msg.fileName || 'Download File'}</span></a>);
     };
+
+    // JSX (no significant changes, just ensuring it works with the state logic)
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Customer Chats</h1>
@@ -3486,12 +3537,12 @@ const AdminChatPage = () => {
                                     const isFirstInGroup = !prevMsg || prevMsg.authorId !== msg.authorId;
                                     const isLastInGroup = !nextMsg || nextMsg.authorId !== msg.authorId;
                                     return (
-                                        <div key={index} className={`flex items-end gap-2 ${isAdmin ? 'justify-end' : 'justify-start'}`}>
+                                        <div key={msg._id || index} className={`flex items-end gap-2 ${isAdmin ? 'justify-end' : 'justify-start'}`}>
                                             {!isAdmin && (<div className="w-8 flex-shrink-0 self-end">{isLastInGroup && <img src={activeConversation.profilePicture ? `http://localhost:5050/${activeConversation.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(activeConversation.fullName || 'U')}&background=e2e8f0&color=4a5568&size=40`} alt="p" className="w-7 h-7 rounded-full object-cover" />}</div>)}
                                             <div className={`py-2 px-3 max-w-md ${isAdmin ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white'} ${isFirstInGroup && isLastInGroup ? 'rounded-2xl' : ''} ${isAdmin ? `${isFirstInGroup ? 'rounded-t-2xl rounded-bl-2xl' : 'rounded-l-2xl'} ${isLastInGroup ? 'rounded-b-2xl' : ''} ${!isFirstInGroup && !isLastInGroup ? 'rounded-l-2xl rounded-r-md' : ''} ${isFirstInGroup && !isLastInGroup ? 'rounded-tr-md' : ''} ${!isFirstInGroup && isLastInGroup ? 'rounded-br-md' : ''}` : `${isFirstInGroup ? 'rounded-t-2xl rounded-br-2xl' : 'rounded-r-2xl'} ${isLastInGroup ? 'rounded-b-2xl' : ''} ${!isFirstInGroup && !isLastInGroup ? 'rounded-r-2xl rounded-l-md' : ''} ${isFirstInGroup && !isLastInGroup ? 'rounded-tl-md' : ''} ${!isFirstInGroup && isLastInGroup ? 'rounded-bl-md' : ''}`}`}>
                                                 {msg.fileUrl && renderFileContent(msg)}
                                                 {msg.message && <p className="text-md" style={{ overflowWrap: 'break-word' }}>{msg.message}</p>}
-                                                <p className={`text-xs text-right mt-1 opacity-70`}>{new Date(msg.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                                <p className={`text-xs text-right mt-1 opacity-70`}>{new Date(msg.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                                             </div>
                                         </div>
                                     );
@@ -3516,6 +3567,13 @@ const AdminChatPage = () => {
         </div>
     );
 };
+
+
+
+
+
+
+
 const DashboardPage = () => {
     const [analytics, setAnalytics] = useState({ totalRevenue: 0, totalBookings: 0, newUsers: 0, revenueData: [], servicesData: [] });
     const [recentBookings, setRecentBookings] = useState([]);
