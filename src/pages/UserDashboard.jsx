@@ -2595,28 +2595,28 @@ const ChatPage = ({ currentUser }) => {
     const room = currentUser?._id ? `chat-${currentUser._id}` : null;
     const authorName = currentUser?.fullName || 'Customer';
     const authorId = currentUser?._id || null;
-    
+
     useEffect(() => {
         if (!room || !authorId) return;
         setIsHistoryLoading(true);
         setMessageList([]);
         socket.emit("join_room", { roomName: room, userId: authorId });
-        
+
         const historyListener = (history) => {
             if ((history.length > 0 && history[0].room === room) || history.length === 0) {
                 setMessageList(history);
             }
             setIsHistoryLoading(false);
         };
-        
+
         socket.on("chat_history", historyListener);
-        
+
         const messageListener = (data) => {
             if (data.room === room) { setMessageList((list) => [...list, data]); }
         };
-        
+
         socket.on("receive_message", messageListener);
-        
+
         return () => {
             socket.off("chat_history", historyListener);
             socket.off("receive_message", messageListener);
@@ -2636,9 +2636,9 @@ const ChatPage = ({ currentUser }) => {
         }
         event.target.value = null;
     };
-    
+
     const handleRemovePreview = () => { setSelectedFile(null); setPreviewUrl(null); };
-    
+
     const sendMessage = async () => {
         if ((currentMessage.trim() === "" && !selectedFile) || !room || !authorId) return;
         if (selectedFile) {
@@ -2659,7 +2659,7 @@ const ChatPage = ({ currentUser }) => {
             setCurrentMessage("");
         }
     };
-    
+
     const handleClearChat = async () => {
         try {
             await apiFetchUser('/chat/clear', { method: 'PUT' });
@@ -2671,14 +2671,14 @@ const ChatPage = ({ currentUser }) => {
             setConfirmOpen(false);
         }
     };
-    
+
     const renderFileContent = (msg) => {
         if (msg.fileType?.startsWith('image/')) {
             return (<a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" className="block"><img src={msg.fileUrl} alt={msg.fileName || 'Sent Image'} className="max-w-xs rounded-lg mt-1" /></a>);
         }
         return (<a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" download={msg.fileName} className="flex items-center gap-3 bg-black/10 dark:bg-white/10 p-3 rounded-lg hover:bg-black/20 dark:hover:bg-white/20 transition-colors mt-1"><FileText size={32} className="flex-shrink-0" /><span className="truncate font-medium">{msg.fileName || 'Download File'}</span></a>);
     };
-    
+
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Live Chat with Admin</h1>
@@ -2748,9 +2748,52 @@ const UserDashboardPage = () => {
                 <a href="#/user/new-booking" className="md:col-span-1"><Card className="h-full flex flex-col items-center justify-center text-center bg-blue-50 dark:bg-blue-900/50 hover:bg-blue-100 dark:hover:bg-blue-900 border-2 border-dashed border-blue-400 hover:border-blue-600"><PlusCircle className="text-blue-600 dark:text-blue-400 mb-2" size={32} /><h3 className="text-xl font-semibold text-blue-800 dark:text-blue-300">Book a New Service</h3><p className="text-sm text-gray-500 dark:text-gray-400">Get your bike checked</p></Card></a>
             </div>
             <Card>
-                <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Recent Activity</h2>
-                <div className="overflow-x-auto">{recentBookings.length > 0 ? (<table className="w-full text-left"><thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700"><tr><th className="p-3">Service</th><th className="p-3">Bike Model</th><th className="p-3">Date</th><th className="p-3">Status</th><th className="p-3 text-right">Cost</th></tr></thead><tbody>{recentBookings.map(booking => (<tr key={booking._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50"><td className="p-3 font-medium text-gray-900 dark:text-white">{booking.serviceType}</td><td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel}</td><td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td><td className="p-3"><StatusBadge status={booking.status} /></td><td className="p-3 text-right font-medium text-gray-900 dark:text-white">रु{booking.finalAmount ?? booking.totalCost}</td></tr>))}</tbody></table>) : (<div className="text-center py-10"><p className="text-gray-500 dark:text-gray-400">You have no recent bookings.</p><Button className="mt-4" onClick={() => window.location.hash = '#/user/new-booking'}>Book Your First Service</Button></div>)}</div>
+                <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
+                    Recent Activity
+                </h2>
+                <div className="overflow-x-auto">
+                    {recentBookings.length > 0 ? (
+                        <table className="w-full text-left">
+                            <thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700">
+                                <tr>
+                                    <th className="p-3">Service</th>
+                                    <th className="p-3">Bike Model</th>
+                                    <th className="p-3">Date</th>
+                                    <th className="p-3">Status</th>
+                                    <th className="p-3 text-right">Cost</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {recentBookings.map(booking => (
+                                    <tr key={booking._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
+                                        <td className="p-3 font-medium text-gray-900 dark:text-white">{booking.serviceType}</td>
+                                        <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel}</td>
+                                        <td className="p-3 text-gray-600 dark:text-gray-300">
+                                            {new Date(booking.date).toLocaleDateString()}
+                                        </td>
+                                        <td className="p-3">
+                                            <StatusBadge status={booking.status} />
+                                        </td>
+                                        <td className="p-3 text-right font-medium text-gray-900 dark:text-white">
+                                            रु{booking.finalAmount ?? booking.totalCost}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-10 text-center">
+                            <p className="text-gray-500 dark:text-gray-400">
+                                You have no recent bookings.
+                            </p>
+                            <Button className="mt-4" onClick={() => window.location.hash = '#/user/new-booking'}>
+                                Book Your First Service
+                            </Button>
+                        </div>
+                    )}
+                </div>
             </Card>
+
         </div>
     );
 };
@@ -3169,12 +3212,12 @@ const UserDashboard = () => {
     }, [currentUser]);
 
     useEffect(() => { document.title = unreadChatCount > 0 ? `(${unreadChatCount}) MotoFix Customer` : 'MotoFix Customer'; }, [unreadChatCount]);
-    
+
     useEffect(() => {
         document.documentElement.classList.toggle('dark', isDarkMode);
         localStorage.setItem('userTheme', isDarkMode ? 'dark' : 'light');
     }, [isDarkMode]);
-    
+
     useEffect(() => {
         const handleHashChange = () => {
             const path = window.location.hash.replace('#/user/', '').split('?')[0];
@@ -3187,15 +3230,15 @@ const UserDashboard = () => {
         handleHashChange();
         return () => window.removeEventListener('hashchange', handleHashChange);
     }, []);
-    
+
     const handleDiscountApplied = async (newPoints) => {
         const response = await apiFetchUser('/profile');
         const data = await response.json();
         setCurrentUser(data.data);
     };
-    
+
     const handleLogoutConfirm = () => { localStorage.clear(); window.location.href = '/login'; };
-    
+
     const renderPage = () => {
         if (!currentUser) { return <div className="text-center p-12">Loading User Data...</div>; }
         switch (activePage) {
