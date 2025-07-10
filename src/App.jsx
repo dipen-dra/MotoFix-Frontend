@@ -1,6 +1,3 @@
-
-
-
 // import React, { useContext } from 'react';
 // // 💡 We only need these imports from react-router-dom in this file
 // import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
@@ -30,21 +27,20 @@
 
 //   // Redirect to the correct dashboard root based on user role
 //   if (user.data.role === 'admin') {
-//     // Admin dashboard uses hash-based routing, so we navigate to its root hash
 //     return <Navigate to="/admin" replace />;
 //   }
-  
+
 //   return <Navigate to="/user" replace />;
 // };
-
 
 // function App() {
 //   const { user } = useContext(AuthContext);
 //   const location = useLocation();
 
 //   // Determine if the header and footer should be shown.
-//   // They should NOT appear on any dashboard pages.
 //   const isDashboardRoute = location.pathname.startsWith('/admin') || location.pathname.startsWith('/user');
+//   const hideFooterRoutes = ['/login', '/register', '/forgot-password'];
+//   const shouldShowFooter = !isDashboardRoute && !hideFooterRoutes.includes(location.pathname);
 
 //   return (
 //     <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black">
@@ -60,7 +56,7 @@
 //         pauseOnHover
 //         theme="colored"
 //       />
-      
+
 //       {!isDashboardRoute && !user && <Header />}
 
 //       <main className="flex-grow w-full">
@@ -71,18 +67,15 @@
 //           <Route path="/register" element={!user ? <AuthPage /> : <DashboardRedirect />} />
 //           <Route path="/forgot-password" element={!user ? <ForgotPasswordPage /> : <DashboardRedirect />} />
 //           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-          
-//           {/* A generic /dashboard route to redirect users correctly */}
+
+//           {/* Redirect users based on role */}
 //           <Route path="/dashboard" element={<ProtectedRoute><DashboardRedirect /></ProtectedRoute>} />
-          
-//           {/* The wildcard '*' is crucial. It tells React Router that AdminDashboard and UserDashboard
-//             will handle all routes that start with /admin/ and /user/ respectively.
-//             This allows their internal hash-based navigation to work.
-//           */}
+
+//           {/* Role-specific dashboard routes */}
 //           <Route path="/admin/*" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
 //           <Route path="/user/*" element={<ProtectedRoute requiredRole="user"><UserDashboard /></ProtectedRoute>} />
 
-//           {/* Payment Routes */}
+//           {/* Payment Result Routes */}
 //           <Route path="/payment/esewa/success" element={<ProtectedRoute><EsewaSuccess /></ProtectedRoute>} />
 //           <Route path="/payment/esewa/failure" element={<ProtectedRoute><EsewaFailure /></ProtectedRoute>} />
 
@@ -90,17 +83,14 @@
 //           <Route path="*" element={<Navigate to="/" replace />} />
 //         </Routes>
 //       </main>
-      
-//       {!isDashboardRoute && !user && <Footer />}
 
+//       {shouldShowFooter && <Footer />}
 //     </div>
 //   );
 // }
 
 // // We export App directly. The Router should be in your main.jsx file.
 // export default App;
-
-
 
 
 
@@ -125,6 +115,7 @@ import EsewaSuccess from './pages/EsewaSuccess';
 import EsewaFailure from './pages/EsewaFailure';
 import ForgotPasswordPage from './pages/ForgetPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import NotFoundPage from './pages/NotFoundPage'; // Import the new NotFoundPage component
 
 // A component to determine which dashboard to show upon login or when accessing /dashboard
 const DashboardRedirect = () => {
@@ -188,8 +179,8 @@ function App() {
           <Route path="/payment/esewa/success" element={<ProtectedRoute><EsewaSuccess /></ProtectedRoute>} />
           <Route path="/payment/esewa/failure" element={<ProtectedRoute><EsewaFailure /></ProtectedRoute>} />
 
-          {/* Fallback Route */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* Fallback Route for 404 Not Found */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
 
