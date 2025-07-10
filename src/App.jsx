@@ -95,10 +95,7 @@
 
 
 
-
-
 import React, { useContext } from 'react';
-// 💡 We only need these imports from react-router-dom in this file
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -115,7 +112,7 @@ import EsewaSuccess from './pages/EsewaSuccess';
 import EsewaFailure from './pages/EsewaFailure';
 import ForgotPasswordPage from './pages/ForgetPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-import NotFoundPage from './pages/NotFoundPage'; // Import the new NotFoundPage component
+import NotFoundPage from './pages/NotFoundPage';
 
 // A component to determine which dashboard to show upon login or when accessing /dashboard
 const DashboardRedirect = () => {
@@ -139,8 +136,12 @@ function App() {
 
   // Determine if the header and footer should be shown.
   const isDashboardRoute = location.pathname.startsWith('/admin') || location.pathname.startsWith('/user');
-  const hideFooterRoutes = ['/login', '/register', '/forgot-password'];
-  const shouldShowFooter = !isDashboardRoute && !hideFooterRoutes.includes(location.pathname);
+  
+  // Add the paths for the 404 and reset password pages to the list of routes that hide the footer.
+  const hideFooterRoutes = ['/login', '/register', '/forgot-password', '/reset-password', '/404'];
+  
+  // Check if the current path starts with any of the paths that should hide the footer.
+  const shouldShowFooter = !isDashboardRoute && !hideFooterRoutes.some(path => location.pathname.startsWith(path));
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black">
@@ -178,9 +179,12 @@ function App() {
           {/* Payment Result Routes */}
           <Route path="/payment/esewa/success" element={<ProtectedRoute><EsewaSuccess /></ProtectedRoute>} />
           <Route path="/payment/esewa/failure" element={<ProtectedRoute><EsewaFailure /></ProtectedRoute>} />
+          
+          {/* Explicit 404 route */}
+          <Route path="/404" element={<NotFoundPage />} />
 
-          {/* Fallback Route for 404 Not Found */}
-          <Route path="*" element={<NotFoundPage />} />
+          {/* Fallback Route now redirects to the explicit 404 page */}
+          <Route path="*" element={<Navigate to="/404" replace />} />
         </Routes>
       </main>
 
@@ -189,5 +193,4 @@ function App() {
   );
 }
 
-// We export App directly. The Router should be in your main.jsx file.
 export default App;
