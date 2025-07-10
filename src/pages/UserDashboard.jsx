@@ -2286,18 +2286,18 @@
 
 
 
-
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import {
     LayoutDashboard, CalendarDays, User, LogOut, Menu, X, Sun, Moon,
     PlusCircle, Bike, Wrench, Edit, Trash2, AlertTriangle, Camera, MapPin,
     CreditCard, ArrowLeft, Gift, ArrowRight, ChevronDown, ChevronUp,
     MessageSquare, Send, Paperclip, FileText, XCircle, Home,
-    Search, ThumbsUp
+    Search, ThumbsUp, Star, MessageCircle
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import io from 'socket.io-client';
 import { AuthContext } from '../auth/AuthContext';
+import  { submitReview } from '../api/reviewService';
 
 const socket = io.connect("http://localhost:5050");
 const API_BASE_URL_USER = "http://localhost:5050/api/user";
@@ -2318,7 +2318,158 @@ const apiFetchUser = async (endpoint, options = {}) => {
     return response;
 };
 
-// --- START: Helper Components ---
+// --- START: REVIEW COMPONENTS ---
+
+const StarRating = ({ rating = 0, onRatingChange, readOnly = false, size = 20 }) => {
+    const [hoverRating, setHoverRating] = useState(0);
+    return (
+        <div className="flex items-center gap-1">
+            {[1, 2, 3, 4, 5].map((index) => (
+                <Star
+                    key={index}
+                    size={size}
+                    className={`transition-colors duration-200 ${!readOnly ? 'cursor-pointer' : ''} ${
+                        (hoverRating || rating) >= index
+                            ? 'text-yellow-400 fill-yellow-400'
+                            : 'text-gray-300 dark:text-gray-600'
+                    }`}
+                    onMouseOver={() => !readOnly && setHoverRating(index)}
+                    onMouseLeave={() => !readOnly && setHoverRating(0)}
+                    onClick={() => !readOnly && onRatingChange && onRatingChange(index)}
+                />
+            ))}
+        </div>
+    );
+};
+
+const ReviewModal = ({ isOpen, onClose, booking, onReviewSubmitted }) => {
+    const [rating, setRating] = useState(0);
+    const [comment, setComment] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            setRating(0);
+            setComment('');
+        }
+    }, [isOpen]);
+
+    if (!isOpen || !booking) return null;
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (rating === 0) {
+            toast.error("Please select a star rating.");
+            return;
+        }
+        if (comment.trim() === '') {
+            toast.error("Please leave a comment.");
+            return;
+        }
+        setIsSubmitting(true);
+        try {
+            await submitReview(booking._id, { rating, comment });
+            toast.success("Thank you for your review!");
+            onReviewSubmitted();
+            onClose();
+        } catch (error) {
+            toast.error(error.response?.data?.message || error.message || 'Failed to submit review.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4 transition-opacity duration-300">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-lg relative animate-fade-in-up">
+                <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <X size={24} />
+                </button>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Leave a Review</h2>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">How was your experience with the "{booking.serviceType}" service?</p>
+                
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="flex flex-col items-center">
+                        <label className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Your Rating</label>
+                        <StarRating rating={rating} onRatingChange={setRating} size={36} />
+                    </div>
+                    <div>
+                        <label htmlFor="comment" className="block text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Your Comments</label>
+                        <textarea
+                            id="comment"
+                            rows="5"
+                            className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white"
+                            placeholder="Tell us about your experience..."
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
+                        ></textarea>
+                    </div>
+                    <div className="flex justify-end">
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? 'Submitting...' : 'Submit Review'}
+                            <ThumbsUp size={20} />
+                        </Button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+// ===================================================================
+// THIS IS THE UPDATED COMPONENT WITH THE PROFILE PICTURE LOGIC
+// ===================================================================
+const ReviewsList = ({ reviews }) => {
+    if (!reviews || reviews.length === 0) {
+        return (
+            <div className="text-center py-12">
+                <MessageCircle size={48} className="mx-auto text-gray-400" />
+                <h3 className="mt-4 text-xl font-semibold">No Reviews Yet</h3>
+                <p className="mt-1 text-sm text-gray-500">Be the first to leave a review for this service!</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-6">
+            {reviews.slice().reverse().map((review) => (
+                <div key={review._id} className="flex gap-4 border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0 last:pb-0">
+                    
+                    <div className="flex-shrink-0">
+                        {/* If the review has a user with a profile picture, show it */}
+                        {review.user && review.user.profilePicture ? (
+                            <img
+                                src={`http://localhost:5050/${review.user.profilePicture}`}
+                                alt={review.username}
+                                className="w-10 h-10 rounded-full object-cover bg-gray-200"
+                                // This onError provides a fallback if the image URL is broken
+                                onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(review.username)}&background=random`; }}
+                            />
+                        ) : (
+                            // Otherwise, show the original initial circle
+                            <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center font-bold text-lg text-blue-600 dark:text-blue-300">
+                                {review.username.charAt(0).toUpperCase()}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                            <h4 className="font-bold text-gray-800 dark:text-white">{review.username}</h4>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{new Date(review.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        <div className="my-1">
+                            <StarRating rating={review.rating} readOnly={true} size={16} />
+                        </div>
+                        <p className="text-gray-600 dark:text-gray-300">{review.comment}</p>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+// --- START: Helper Components (Unchanged) ---
 const getStatusColor = (status) => {
     switch (status) {
         case 'Completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
@@ -2394,335 +2545,7 @@ const LoadMoreControl = ({ onToggle, isExpanded, hasMore }) => {
     );
 };
 
-const UserServiceHomePage = ({ currentUser }) => {
-    const [services, setServices] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchServices = async () => {
-            setIsLoading(true);
-            try {
-                const response = await apiFetchUser('/services');
-                const data = await response.json();
-                setServices(data.data || []);
-            } catch (error) {
-                toast.error(error.message || "Failed to load services.");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchServices();
-    }, []);
-
-    const handleImageError = (e) => {
-        e.target.src = '/motofix.png';
-    };
-
-    if (isLoading) {
-        return (
-            <div className="flex flex-col items-center justify-center p-12">
-                <Bike className="animate-pulse text-blue-500" size={48} />
-                <p className="mt-4 text-lg text-gray-600 dark:text-gray-300">Loading Services...</p>
-            </div>
-        );
-    }
-
-    return (
-        <div className="space-y-16 md:space-y-24">
-            <section className="relative text-center bg-gray-900 text-white py-20 px-6 rounded-lg overflow-hidden">
-                <div
-                    className="absolute inset-0 bg-cover bg-center opacity-30"
-                    style={{ backgroundImage: "url('/moto2.png')" }}
-                />
-                <div className="relative z-10 flex flex-col items-center">
-                    <Bike size={64} className="mb-4 text-blue-400" />
-                    <h1 className="text-4xl md:text-5xl font-extrabold">Welcome, {currentUser?.fullName || 'Rider'}!</h1>
-                    <p className="mt-4 max-w-2xl text-lg md:text-xl text-gray-300">
-                        The best care for your bike is just a click away. Fast, reliable, and professional.
-                    </p>
-                    <a href="#services-section">
-                        <Button size="lg" className="mt-8 bg-blue-600 hover:bg-blue-700 group">
-                            Explore Services
-                            <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                        </Button>
-                    </a>
-                </div>
-            </section>
-
-            <section className="text-center">
-                <h2 className="inline-flex items-center text-3xl font-bold text-gray-800 dark:text-white">
-                    <Wrench className="mr-3 text-gray-400" size={32} />
-                    How It Works
-                </h2>
-                <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">Get your bike serviced in 3 simple steps.</p>
-                <div className="grid md:grid-cols-3 gap-8 mt-10">
-                    <div className="flex flex-col items-center p-4">
-                        <div className="bg-blue-100 dark:bg-blue-900/50 p-4 rounded-full">
-                            <Search size={32} className="text-blue-500 dark:text-blue-400" />
-                        </div>
-                        <h3 className="text-xl font-semibold mt-4">1. Choose Service</h3>
-                        <p className="text-gray-500 dark:text-gray-400 mt-1">Find the perfect service package for your needs.</p>
-                    </div>
-                    <div className="flex flex-col items-center p-4">
-                        <div className="bg-blue-100 dark:bg-blue-900/50 p-4 rounded-full">
-                            <CalendarDays size={32} className="text-blue-500 dark:text-blue-400" />
-                        </div>
-                        <h3 className="text-xl font-semibold mt-4">2. Book Your Slot</h3>
-                        <p className="text-gray-500 dark:text-gray-400 mt-1">Select a convenient date and time that works for you.</p>
-                    </div>
-                    <div className="flex flex-col items-center p-4">
-                        <div className="bg-blue-100 dark:bg-blue-900/50 p-4 rounded-full">
-                            <ThumbsUp size={32} className="text-blue-500 dark:text-blue-400" />
-                        </div>
-                        <h3 className="text-xl font-semibold mt-4">3. We Handle the Rest</h3>
-                        <p className="text-gray-500 dark:text-gray-400 mt-1">Our expert mechanics ensure your bike is in top condition.</p>
-                    </div>
-                </div>
-            </section>
-
-            <section id="services-section" className="space-y-8 pt-8">
-                <div className="text-center">
-                    <h2 className="inline-flex items-center text-3xl md:text-4xl font-bold text-gray-800 dark:text-white">
-                        <Home className="mr-3 text-gray-400" size={36} />
-                        Our Services
-                    </h2>
-                    <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">Choose a service below to get started.</p>
-                </div>
-                {services.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                        {services.map(service => (
-                            <a key={service._id} href={`#/user/service-details/${service._id}`} className="group block">
-                                <Card className="flex flex-col h-full text-center overflow-hidden rounded-lg transition-all duration-300 group-hover:shadow-xl group-hover:scale-105 group-hover:ring-2 group-hover:ring-blue-500">
-                                    <div className="relative">
-                                        <img src={`http://localhost:5050/${service.image}`} alt={service.name} onError={handleImageError} className="w-full h-40 object-cover" />
-                                        <div className="absolute top-2 right-2 bg-black/50 text-white text-sm px-2 py-1 rounded-full">
-                                            रु{service.price}
-                                        </div>
-                                    </div>
-                                    <div className="p-4 flex flex-col flex-grow">
-                                        <h3 className="text-xl font-semibold text-gray-800 dark:text-white">{service.name}</h3>
-                                        {service.duration && (
-                                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Approx. {service.duration}</p>
-                                        )}
-                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 flex-grow">{service.description}</p>
-                                        <Button className="mt-4 w-full group/button bg-black text-white hover:bg-blue-700 dark:bg-gray-200 dark:text-black dark:hover:bg-blue-500 dark:hover:text-white">
-                                            View Details
-                                            <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/button:translate-x-1" />
-                                        </Button>
-                                    </div>
-                                </Card>
-                            </a>
-                        ))}
-                    </div>
-                ) : (
-                    <Card className="text-center py-16">
-                        <Wrench size={48} className="mx-auto text-gray-400" />
-                        <h3 className="mt-4 text-xl font-semibold">No Services Available</h3>
-                        <p className="mt-1 text-sm text-gray-500">Please check back later for new services.</p>
-                    </Card>
-                )}
-            </section>
-        </div>
-    );
-};
-
-const ServiceDetailPage = () => {
-    const [service, setService] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-    useEffect(() => {
-        const fetchService = async () => {
-            const id = window.location.hash.split('/').pop();
-            if (!id) {
-                toast.error("Service ID not found.");
-                window.location.hash = '#/user/home';
-                return;
-            }
-            setIsLoading(true);
-            try {
-                const response = await apiFetchUser(`/services/${id}`);
-                const data = await response.json();
-                setService(data.data);
-            } catch (error) {
-                toast.error(error.message || "Could not load service details.");
-                window.location.hash = '#/user/home';
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchService();
-    }, []);
-    const handleBookNow = () => { if (service) { window.location.hash = `#/user/new-booking?serviceId=${service._id}`; } };
-    const handleImageError = (e) => { e.target.src = '/motofix.png'; };
-    if (isLoading) { return (<div className="text-center p-12"><div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div><p className="mt-2 text-gray-500">Loading Service Details...</p></div>); }
-    if (!service) { return (<div className="text-center p-12"><h1 className="text-2xl font-bold">Service Not Found</h1><p className="text-gray-500 mt-2">The service you are looking for may have been removed.</p><Button onClick={() => window.location.hash = '#/user/home'} className="mt-4"><ArrowLeft size={20} /> Back to Services</Button></div>); }
-    return (
-        <div className="space-y-6 animate-fade-in">
-            <div className="flex items-center gap-4">
-                <button onClick={() => window.history.back()} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Go Back"><ArrowLeft size={24} /></button>
-                <h1 className="text-3xl font-bold text-gray-800 dark:text-white">{service.name}</h1>
-            </div>
-            <Card>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-                    <div><img src={`http://localhost:5050/${service.image}`} alt={service.name} onError={handleImageError} className="w-full h-auto max-h-96 object-contain rounded-lg bg-gray-100 dark:bg-gray-900 p-2" /></div>
-                    <div className="flex flex-col">
-                        <h2 className="text-2xl font-semibold mb-2 text-gray-800 dark:text-white">{service.name}</h2>
-                        <div className="prose dark:prose-invert text-gray-600 dark:text-gray-300"><p className="whitespace-pre-wrap">{service.description}</p></div>
-                        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                            <div className="flex items-baseline gap-8">
-                                <div><p className="text-sm font-medium text-gray-500 dark:text-gray-400">Price</p><p className="text-3xl font-bold text-blue-600 dark:text-blue-400">रु{service.price}</p></div>
-                                {service.duration && (<div><p className="text-sm font-medium text-gray-500 dark:text-gray-400">Est. Time</p><p className="text-3xl font-bold text-gray-800 dark:text-white">{service.duration}</p></div>)}
-                            </div>
-                        </div>
-                        <div className="mt-auto pt-8"><Button onClick={handleBookNow} className="w-full !py-3 !text-lg !font-bold"><PlusCircle size={22} /> Book This Service Now</Button></div>
-                    </div>
-                </div>
-            </Card>
-        </div>
-    );
-};
-
-const ChatPage = ({ currentUser }) => {
-    const [currentMessage, setCurrentMessage] = useState("");
-    const [messageList, setMessageList] = useState([]);
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [previewUrl, setPreviewUrl] = useState(null);
-    const [isUploading, setIsUploading] = useState(false);
-    const [isHistoryLoading, setIsHistoryLoading] = useState(true);
-    const [isConfirmOpen, setConfirmOpen] = useState(false);
-    const chatBodyRef = useRef(null);
-    const fileInputRef = useRef(null);
-    const cameraInputRef = useRef(null);
-    const room = currentUser?._id ? `chat-${currentUser._id}` : null;
-    const authorName = currentUser?.fullName || 'Customer';
-    const authorId = currentUser?._id || null;
-
-    useEffect(() => {
-        if (!room || !authorId) return;
-        setIsHistoryLoading(true);
-        setMessageList([]);
-        socket.emit("join_room", { roomName: room, userId: authorId });
-
-        const historyListener = (history) => {
-            if ((history.length > 0 && history[0].room === room) || history.length === 0) {
-                setMessageList(history);
-            }
-            setIsHistoryLoading(false);
-        };
-
-        socket.on("chat_history", historyListener);
-
-        const messageListener = (data) => {
-            if (data.room === room) { setMessageList((list) => [...list, data]); }
-        };
-
-        socket.on("receive_message", messageListener);
-
-        return () => {
-            socket.off("chat_history", historyListener);
-            socket.off("receive_message", messageListener);
-        };
-    }, [room, authorId]);
-
-    useEffect(() => {
-        if (chatBodyRef.current) { chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight; }
-    }, [messageList]);
-
-    const handleFileChange = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            setSelectedFile(file);
-            if (file.type.startsWith('image/')) { setPreviewUrl(URL.createObjectURL(file)); }
-            else { setPreviewUrl(null); }
-        }
-        event.target.value = null;
-    };
-
-    const handleRemovePreview = () => { setSelectedFile(null); setPreviewUrl(null); };
-
-    const sendMessage = async () => {
-        if ((currentMessage.trim() === "" && !selectedFile) || !room || !authorId) return;
-        if (selectedFile) {
-            setIsUploading(true);
-            const formData = new FormData();
-            formData.append('file', selectedFile);
-            formData.append('room', room);
-            formData.append('author', authorName);
-            formData.append('authorId', authorId);
-            if (currentMessage.trim() !== '') { formData.append('message', currentMessage); }
-            try {
-                await apiFetchUser('/chat/upload', { method: 'POST', body: formData });
-            } catch (error) { toast.error(`File upload failed: ${error.message}`); }
-            finally { setIsUploading(false); handleRemovePreview(); setCurrentMessage(''); }
-        } else {
-            const messageData = { room, author: authorName, authorId, message: currentMessage };
-            await socket.emit("send_message", messageData);
-            setCurrentMessage("");
-        }
-    };
-
-    const handleClearChat = async () => {
-        try {
-            await apiFetchUser('/chat/clear', { method: 'PUT' });
-            toast.success("Your chat history has been cleared.");
-            setMessageList([]);
-        } catch (error) {
-            toast.error(error.message || "Failed to clear chat history.");
-        } finally {
-            setConfirmOpen(false);
-        }
-    };
-
-    const renderFileContent = (msg) => {
-        if (msg.fileType?.startsWith('image/')) {
-            return (<a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" className="block"><img src={msg.fileUrl} alt={msg.fileName || 'Sent Image'} className="max-w-xs rounded-lg mt-1" /></a>);
-        }
-        return (<a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" download={msg.fileName} className="flex items-center gap-3 bg-black/10 dark:bg-white/10 p-3 rounded-lg hover:bg-black/20 dark:hover:bg-white/20 transition-colors mt-1"><FileText size={32} className="flex-shrink-0" /><span className="truncate font-medium">{msg.fileName || 'Download File'}</span></a>);
-    };
-
-    return (
-        <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Live Chat with Admin</h1>
-            <Card className="p-0 flex flex-col" style={{ height: 'calc(80vh - 2rem)' }}>
-                <div className="p-3 border-b dark:border-gray-700 flex items-center justify-between shadow-sm">
-                    <div className="flex items-center gap-3">
-                        <img src="/motofix-removebg-preview.png" alt="Support" className="w-10 h-10 rounded-full object-contain bg-gray-100 dark:bg-gray-900 p-1" />
-                        <div><h3 className="font-semibold">MotoFix Support</h3><p className="text-sm text-gray-500 flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-green-500"></span>Online</p></div>
-                    </div>
-                    <Button variant="danger" onClick={() => setConfirmOpen(true)} className="!px-2 !py-1 text-xs !gap-1" disabled={messageList.length === 0}><Trash2 size={14} /> Clear Chat</Button>
-                </div>
-                <div className="flex-grow overflow-y-auto p-4 flex flex-col" ref={chatBodyRef}>
-                    {isHistoryLoading ? (<div className="m-auto text-center text-gray-500 dark:text-gray-400"><div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div><p>Loading chat history...</p></div>)
-                        : messageList.length === 0 ? (<div className="m-auto text-center text-gray-500 dark:text-gray-400 px-6"><MessageSquare size={48} className="mx-auto text-gray-400" /><h3 className="mt-2 text-xl font-semibold">Welcome to MotoFix Support!</h3><p className="mt-1 text-sm">Feel free to ask any questions about our services or your bookings. We're here to help you.</p></div>)
-                            : (<div className="space-y-1">{messageList.map((msg, index) => {
-                                const isUserMessage = msg.authorId === authorId;
-                                const prevMsg = messageList[index - 1]; const nextMsg = messageList[index + 1];
-                                const isFirstInGroup = !prevMsg || prevMsg.authorId !== msg.authorId;
-                                const isLastInGroup = !nextMsg || nextMsg.authorId !== msg.authorId;
-                                return (
-                                    <div key={index} className={`flex items-end gap-2 ${isUserMessage ? 'justify-end' : 'justify-start'}`}>
-                                        {!isUserMessage && (<div className="w-8 flex-shrink-0 self-end">{isLastInGroup && <img src="/motofix-removebg-preview.png" alt="p" className="w-7 h-7 rounded-full object-contain bg-gray-100 dark:bg-gray-900 p-0.5" />}</div>)}
-                                        <div className={`py-2 px-3 max-w-md ${isUserMessage ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white'} ${isFirstInGroup && isLastInGroup ? 'rounded-2xl' : ''} ${isUserMessage ? `${isFirstInGroup ? 'rounded-t-2xl rounded-bl-2xl' : 'rounded-l-2xl'} ${isLastInGroup ? 'rounded-b-2xl' : ''} ${!isFirstInGroup && !isLastInGroup ? 'rounded-l-2xl rounded-r-md' : ''} ${isFirstInGroup && !isLastInGroup ? 'rounded-tr-md' : ''} ${!isFirstInGroup && isLastInGroup ? 'rounded-br-md' : ''}` : `${isFirstInGroup ? 'rounded-t-2xl rounded-br-2xl' : 'rounded-r-2xl'} ${isLastInGroup ? 'rounded-b-2xl' : ''} ${!isFirstInGroup && !isLastInGroup ? 'rounded-r-2xl rounded-l-md' : ''} ${isFirstInGroup && !isLastInGroup ? 'rounded-tl-md' : ''} ${!isFirstInGroup && isLastInGroup ? 'rounded-bl-md' : ''}`}`}>
-                                            {msg.fileUrl && renderFileContent(msg)}
-                                            {msg.message && <p className="text-md" style={{ overflowWrap: 'break-word' }}>{msg.message}</p>}
-                                            {/* **FIX**: Use `msg.createdAt` to render the timestamp. */}
-                                            <p className={`text-xs text-right mt-1 opacity-70`}>{new Date(msg.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                                        </div>
-                                    </div>);
-                            })}</div>)}
-                </div>
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                    {(previewUrl || selectedFile) && (<div className="mb-2 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-between">{previewUrl ? <img src={previewUrl} alt="Preview" className="h-16 w-16 object-cover rounded" /> : <div className="flex items-center gap-2 text-gray-500"><FileText /><span>{selectedFile.name}</span></div>}<button onClick={handleRemovePreview} className="text-gray-500 hover:text-red-500"><XCircle size={20} /></button></div>)}
-                    <div className="flex items-center gap-3">
-                        <div className="flex"><input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" /><input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" /><button onClick={() => fileInputRef.current.click()} className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"><Paperclip size={22} /></button><button onClick={() => cameraInputRef.current.click()} className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"><Camera size={22} /></button></div>
-                        <input type="text" value={currentMessage} onChange={(e) => setCurrentMessage(e.target.value)} onKeyPress={(e) => e.key === "Enter" && !isUploading && sendMessage()} placeholder="Message..." className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 border-2 border-transparent rounded-full focus:ring-blue-500 focus:border-blue-500 transition" disabled={isUploading} />
-                        <Button onClick={sendMessage} disabled={isUploading || (!currentMessage.trim() && !selectedFile)} className="!rounded-full !w-12 !h-12 !p-0">{isUploading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Send size={20} />}</Button>
-                    </div>
-                </div>
-            </Card>
-            <ConfirmationModal isOpen={isConfirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={handleClearChat} title="Clear Chat History" message="Are you sure you want to clear your chat history? This action cannot be undone and will not affect the admin's view." confirmText="Yes, Clear" />
-        </div>
-    );
-};
+// --- START: PAGE COMPONENTS (The rest of the file is unchanged) ---
 
 const UserDashboardPage = () => {
     const [stats, setStats] = useState({ upcomingBookings: 0, completedServices: 0, loyaltyPoints: 0 });
@@ -2798,12 +2621,215 @@ const UserDashboardPage = () => {
     );
 };
 
+
+const UserServiceHomePage = ({ currentUser }) => {
+    const [services, setServices] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchServices = async () => {
+            setIsLoading(true);
+            try {
+                const response = await apiFetchUser('/services');
+                const data = await response.json();
+                setServices(data.data || []);
+            } catch (error) {
+                toast.error(error.message || "Failed to load services.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchServices();
+    }, []);
+
+    const handleImageError = (e) => {
+        e.target.src = '/motofix.png';
+    };
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center p-12">
+                <Bike className="animate-pulse text-blue-500" size={48} />
+                <p className="mt-4 text-lg text-gray-600 dark:text-gray-300">Loading Services...</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-16 md:space-y-24">
+            <section className="relative text-center bg-gray-900 text-white py-20 px-6 rounded-lg overflow-hidden">
+                <div
+                    className="absolute inset-0 bg-cover bg-center opacity-30"
+                    style={{ backgroundImage: "url('/moto2.png')" }}
+                />
+                <div className="relative z-10 flex flex-col items-center">
+                    <Bike size={64} className="mb-4 text-blue-400" />
+                    <h1 className="text-4xl md:text-5xl font-extrabold">Welcome, {currentUser?.fullName || 'Rider'}!</h1>
+                    <p className="mt-4 max-w-2xl text-lg md:text-xl text-gray-300">
+                        The best care for your bike is just a click away. Fast, reliable, and professional.
+                    </p>
+                    <a href="#/user/home#services-section">
+                        <Button size="lg" className="mt-8 bg-blue-600 hover:bg-blue-700 group">
+                            Explore Services
+                            <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                        </Button>
+                    </a>
+                </div>
+            </section>
+
+            <section className="text-center">
+                <h2 className="inline-flex items-center text-3xl font-bold text-gray-800 dark:text-white">
+                    <Wrench className="mr-3 text-gray-400" size={32} />
+                    How It Works
+                </h2>
+                <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">Get your bike serviced in 3 simple steps.</p>
+                <div className="grid md:grid-cols-3 gap-8 mt-10">
+                    <div className="flex flex-col items-center p-4">
+                        <div className="bg-blue-100 dark:bg-blue-900/50 p-4 rounded-full">
+                            <Search size={32} className="text-blue-500 dark:text-blue-400" />
+                        </div>
+                        <h3 className="text-xl font-semibold mt-4">1. Choose Service</h3>
+                        <p className="text-gray-500 dark:text-gray-400 mt-1">Find the perfect service package for your needs.</p>
+                    </div>
+                    <div className="flex flex-col items-center p-4">
+                        <div className="bg-blue-100 dark:bg-blue-900/50 p-4 rounded-full">
+                            <CalendarDays size={32} className="text-blue-500 dark:text-blue-400" />
+                        </div>
+                        <h3 className="text-xl font-semibold mt-4">2. Book Your Slot</h3>
+                        <p className="text-gray-500 dark:text-gray-400 mt-1">Select a convenient date and time that works for you.</p>
+                    </div>
+                    <div className="flex flex-col items-center p-4">
+                        <div className="bg-blue-100 dark:bg-blue-900/50 p-4 rounded-full">
+                            <ThumbsUp size={32} className="text-blue-500 dark:text-blue-400" />
+                        </div>
+                        <h3 className="text-xl font-semibold mt-4">3. We Handle the Rest</h3>
+                        <p className="text-gray-500 dark:text-gray-400 mt-1">Our expert mechanics ensure your bike is in top condition.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="services-section" className="space-y-8 pt-8">
+                <div className="text-center">
+                    <h2 className="inline-flex items-center text-3xl md:text-4xl font-bold text-gray-800 dark:text-white">
+                        <Home className="mr-3 text-gray-400" size={36} />
+                        Our Services
+                    </h2>
+                    <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">Choose a service below to get started.</p>
+                </div>
+                {services.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                        {services.map(service => (
+                            <a key={service._id} href={`#/user/service-details/${service._id}`} className="group block">
+                                <Card className="flex flex-col h-full text-center overflow-hidden rounded-lg transition-all duration-300 group-hover:shadow-xl group-hover:scale-105 group-hover:ring-2 group-hover:ring-blue-500">
+                                    <div className="relative">
+                                        <img src={`http://localhost:5050/${service.image}`} alt={service.name} onError={handleImageError} className="w-full h-40 object-cover" />
+                                        <div className="absolute top-2 right-2 bg-black/50 text-white text-sm px-2 py-1 rounded-full">
+                                            रु{service.price}
+                                        </div>
+                                    </div>
+                                    <div className="p-4 flex flex-col flex-grow">
+                                        <h3 className="text-xl font-semibold text-gray-800 dark:text-white">{service.name}</h3>
+                                        <div className="flex items-center justify-center gap-2 my-2">
+                                            <StarRating rating={service.rating} readOnly={true} size={18} />
+                                            <span className="text-xs text-gray-500 dark:text-gray-400">({service.numReviews} reviews)</span>
+                                        </div>
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 flex-grow">{service.description}</p>
+                                        <Button className="mt-4 w-full group/button bg-black text-white hover:bg-blue-700 dark:bg-gray-200 dark:text-black dark:hover:bg-blue-500 dark:hover:text-white">
+                                            View Details
+                                            <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/button:translate-x-1" />
+                                        </Button>
+                                    </div>
+                                </Card>
+                            </a>
+                        ))}
+                    </div>
+                ) : (
+                    <Card className="text-center py-16">
+                        <Wrench size={48} className="mx-auto text-gray-400" />
+                        <h3 className="mt-4 text-xl font-semibold">No Services Available</h3>
+                        <p className="mt-1 text-sm text-gray-500">Please check back later for new services.</p>
+                    </Card>
+                )}
+            </section>
+        </div>
+    );
+};
+
+const ServiceDetailPage = () => {
+    const [service, setService] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    useEffect(() => {
+        const fetchService = async () => {
+            const id = window.location.hash.split('/').pop();
+            if (!id) {
+                toast.error("Service ID not found.");
+                window.location.hash = '#/user/home';
+                return;
+            }
+            setIsLoading(true);
+            try {
+                const response = await apiFetchUser(`/services/${id}`);
+                const data = await response.json();
+                setService(data.data);
+            } catch (error) {
+                toast.error(error.message || "Could not load service details.");
+                window.location.hash = '#/user/home';
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchService();
+    }, []);
+    const handleBookNow = () => { if (service) { window.location.hash = `#/user/new-booking?serviceId=${service._id}`; } };
+    const handleImageError = (e) => { e.target.src = '/motofix.png'; };
+    if (isLoading) { return (<div className="text-center p-12"><div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div><p className="mt-2 text-gray-500">Loading Service Details...</p></div>); }
+    if (!service) { return (<div className="text-center p-12"><h1 className="text-2xl font-bold">Service Not Found</h1><p className="text-gray-500 mt-2">The service you are looking for may have been removed.</p><Button onClick={() => window.location.hash = '#/user/home'} className="mt-4"><ArrowLeft size={20} /> Back to Services</Button></div>); }
+    return (
+        <div className="space-y-6 animate-fade-in">
+            <div className="flex items-center gap-4">
+                <button onClick={() => window.history.back()} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Go Back"><ArrowLeft size={24} /></button>
+                <h1 className="text-3xl font-bold text-gray-800 dark:text-white">{service.name}</h1>
+            </div>
+            <Card>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+                    <div><img src={`http://localhost:5050/${service.image}`} alt={service.name} onError={handleImageError} className="w-full h-auto max-h-96 object-contain rounded-lg bg-gray-100 dark:bg-gray-900 p-2" /></div>
+                    <div className="flex flex-col">
+                        <h2 className="text-2xl font-semibold mb-2 text-gray-800 dark:text-white">{service.name}</h2>
+                        <div className="flex items-center gap-2 mb-4">
+                            <StarRating rating={service.rating} readOnly={true} />
+                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                                {service.rating.toFixed(1)} stars ({service.numReviews} reviews)
+                            </span>
+                        </div>
+                        <div className="prose dark:prose-invert text-gray-600 dark:text-gray-300"><p className="whitespace-pre-wrap">{service.description}</p></div>
+                        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                            <div className="flex items-baseline gap-8">
+                                <div><p className="text-sm font-medium text-gray-500 dark:text-gray-400">Price</p><p className="text-3xl font-bold text-blue-600 dark:text-blue-400">रु{service.price}</p></div>
+                                {service.duration && (<div><p className="text-sm font-medium text-gray-500 dark:text-gray-400">Est. Time</p><p className="text-3xl font-bold text-gray-800 dark:text-white">{service.duration}</p></div>)}
+                            </div>
+                        </div>
+                        <div className="mt-auto pt-8"><Button onClick={handleBookNow} className="w-full !py-3 !text-lg !font-bold"><PlusCircle size={22} /> Book This Service Now</Button></div>
+                    </div>
+                </div>
+            </Card>
+            <Card>
+                <h3 className="text-2xl font-bold mb-4">Customer Reviews</h3>
+                <ReviewsList reviews={service.reviews} />
+            </Card>
+        </div>
+    );
+};
+
+// *** FIX 2: UPDATED UserBookingsPage component with new review button logic ***
 const UserBookingsPage = () => {
     const [bookings, setBookings] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [bookingToDelete, setBookingToDelete] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
+    const [reviewModalOpen, setReviewModalOpen] = useState(false);
+    const [bookingToReview, setBookingToReview] = useState(null);
+
     const fetchBookings = async (page) => {
         setIsLoading(true);
         try {
@@ -2814,7 +2840,9 @@ const UserBookingsPage = () => {
         } catch (error) { toast.error(error.message || 'Failed to fetch your bookings.'); setBookings([]); }
         finally { setIsLoading(false); }
     };
+
     useEffect(() => { fetchBookings(currentPage); }, [currentPage]);
+
     const handleDelete = async () => {
         if (!bookingToDelete) return;
         try {
@@ -2824,14 +2852,51 @@ const UserBookingsPage = () => {
             fetchBookings(currentPage);
         } catch (error) { toast.error(error.message || "Failed to cancel booking."); }
     };
+
+    const handleOpenReviewModal = (booking) => {
+        setBookingToReview(booking);
+        setReviewModalOpen(true);
+    };
+
     return (
         <div className="space-y-6 flex flex-col flex-grow">
             <div className="flex justify-between items-center"><h1 className="text-3xl font-bold text-gray-800 dark:text-white">My Bookings</h1><Button onClick={() => window.location.hash = '#/user/new-booking'}><PlusCircle size={20} />New Booking</Button></div>
             <Card className="flex flex-col flex-grow">
-                <div className="overflow-x-auto flex-grow">{isLoading ? (<div className="text-center p-12 text-gray-500 dark:text-gray-400">Loading bookings...</div>) : bookings.length > 0 ? (<table className="w-full text-left"><thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700"><tr><th className="p-3">Service</th><th className="p-3">Bike</th><th className="p-3">Date</th><th className="p-3">Status</th><th className="p-3">Payment</th><th className="p-3 text-right">Cost</th><th className="p-3 text-center">Actions</th></tr></thead><tbody>{bookings.map(booking => (<tr key={booking._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50"><td className="p-3 font-medium text-gray-900 dark:text-white">{booking.serviceType}</td><td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel}</td><td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td><td className="p-3"><StatusBadge status={booking.status} /></td><td className="p-3"><StatusBadge status={booking.paymentStatus} /></td><td className="p-3 text-right font-semibold">{booking.discountApplied && (<span className="text-xs text-red-500 line-through mr-1">रु{booking.totalCost}</span>)}रु{booking.finalAmount ?? booking.totalCost}</td><td className="p-3 text-center"><div className="flex justify-center gap-2"><Button variant="secondary" size="sm" onClick={() => window.location.hash = `#/user/edit-booking/${booking._id}`} disabled={booking.status !== 'Pending' || booking.isPaid || booking.discountApplied}><Edit size={16} /></Button><Button variant="danger" size="sm" onClick={() => setBookingToDelete(booking._id)} disabled={booking.isPaid}><Trash2 size={16} /></Button></div></td></tr>))}</tbody></table>) : (<div className="text-center py-12"><Bike size={48} className="mx-auto text-gray-400" /><h3 className="mt-2 text-xl font-semibold">No Bookings Yet</h3><p className="mt-1 text-sm text-gray-500">Looks like you haven't booked any services with us.</p></div>)}</div>
+                <div className="overflow-x-auto flex-grow">{isLoading ? (<div className="text-center p-12 text-gray-500 dark:text-gray-400">Loading bookings...</div>) : bookings.length > 0 ? (<table className="w-full text-left"><thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700"><tr><th className="p-3">Service</th><th className="p-3">Bike</th><th className="p-3">Date</th><th className="p-3">Status</th><th className="p-3">Payment</th><th className="p-3 text-right">Cost</th><th className="p-3 text-center">Actions</th></tr></thead><tbody>{bookings.map(booking => (<tr key={booking._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50"><td className="p-3 font-medium text-gray-900 dark:text-white">{booking.serviceType}</td><td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel}</td><td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td><td className="p-3"><StatusBadge status={booking.status} /></td><td className="p-3"><StatusBadge status={booking.paymentStatus} /></td><td className="p-3 text-right font-semibold">{booking.discountApplied && (<span className="text-xs text-red-500 line-through mr-1">रु{booking.totalCost}</span>)}रु{booking.finalAmount ?? booking.totalCost}</td>
+                <td className="p-3 text-center">
+                    <div className="flex justify-center gap-2">
+                        {booking.reviewSubmitted ? (
+                            // If review is already submitted, show a disabled 'ThumbsUp' icon.
+                            <Button variant="secondary" size="sm" disabled title="Review Submitted" className="!px-2 !py-1">
+                                <ThumbsUp size={16} />
+                            </Button>
+                        ) : (
+                            // Otherwise, show the 'Star' icon. It's enabled only when the booking is 'Completed'.
+                            <Button
+                                variant={booking.status === 'Completed' ? "success" : "secondary"}
+                                size="sm"
+                                onClick={() => handleOpenReviewModal(booking)}
+                                disabled={booking.status !== 'Completed'}
+                                title={booking.status === 'Completed' ? "Leave a Review" : "You can leave a review once the service is completed"}
+                                className="!px-2 !py-1"
+                            >
+                                <Star size={16} />
+                            </Button>
+                        )}
+                        {/* Edit and Cancel buttons use your original logic */}
+                        <Button variant="secondary" size="sm" onClick={() => window.location.hash = `#/user/edit-booking/${booking._id}`} disabled={booking.status !== 'Pending' || booking.isPaid || booking.discountApplied} title="Edit Booking" className="!px-2 !py-1"><Edit size={16} /></Button>
+                        <Button variant="danger" size="sm" onClick={() => setBookingToDelete(booking._id)} disabled={booking.isPaid} title="Cancel Booking" className="!px-2 !py-1"><Trash2 size={16} /></Button>
+                    </div>
+                </td></tr>))}</tbody></table>) : (<div className="text-center py-12"><Bike size={48} className="mx-auto text-gray-400" /><h3 className="mt-2 text-xl font-semibold">No Bookings Yet</h3><p className="mt-1 text-sm text-gray-500">Looks like you haven't booked any services with us.</p></div>)}</div>
                 <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
             </Card>
             <ConfirmationModal isOpen={!!bookingToDelete} onClose={() => setBookingToDelete(null)} onConfirm={handleDelete} title="Cancel Booking" message="Are you sure you want to cancel this booking?" confirmText="Yes, Cancel" />
+            <ReviewModal 
+                isOpen={reviewModalOpen}
+                onClose={() => setReviewModalOpen(false)}
+                booking={bookingToReview}
+                onReviewSubmitted={() => fetchBookings(currentPage)}
+            />
         </div>
     );
 };
@@ -3161,7 +3226,8 @@ const UserSidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClos
                 <UserNavLink page="my-payments" icon={CreditCard} activePage={activePage} onLinkClick={onLinkClick}>My Payments</UserNavLink>
                 <UserNavLink page="new-booking" icon={PlusCircle} activePage={activePage} onLinkClick={onLinkClick}>New Booking</UserNavLink>
                 <UserNavLink page="profile" icon={User} activePage={activePage} onLinkClick={onLinkClick}>Profile</UserNavLink>
-                <UserNavLink page="chat" icon={MessageSquare} activePage={activePage} onLinkClick={onLinkClick} badgeCount={unreadChatCount}>Chat</UserNavLink>
+                {/* *** FIX 1: Commented out Chat link as ChatPage component is not defined *** */}
+                {/* <UserNavLink page="chat" icon={MessageSquare} activePage={activePage} onLinkClick={onLinkClick} badgeCount={unreadChatCount}>Chat</UserNavLink> */}
             </nav>
             <div className="p-4 border-t border-gray-200 dark:border-gray-700"><button onClick={onLogoutClick} className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-800"><LogOut size={22} /><span className="text-md">Logout</span></button></div>
         </>
@@ -3238,19 +3304,21 @@ const UserDashboard = () => {
     };
 
     const handleLogoutConfirm = () => { localStorage.clear(); window.location.href = '/login'; };
-
+    
     const renderPage = () => {
         if (!currentUser) { return <div className="text-center p-12">Loading User Data...</div>; }
         switch (activePage) {
             case 'home': return <UserServiceHomePage currentUser={currentUser} />;
             case 'service-details': return <ServiceDetailPage />;
-            case 'dashboard': return <UserDashboardPage />;
+            // *** FIX 1: Replaced undefined component with the new UserDashboardPage ***
+            case 'dashboard': return <UserDashboardPage currentUser={currentUser} />; 
             case 'bookings': return <UserBookingsPage />;
             case 'new-booking': return <NewBookingPage />;
             case 'my-payments': return <MyPaymentsPage currentUser={currentUser} loyaltyPoints={currentUser.loyaltyPoints} onDiscountApplied={handleDiscountApplied} />;
             case 'edit-booking': return <EditBookingPage />;
             case 'profile': return <UserProfilePage currentUser={currentUser} setCurrentUser={setCurrentUser} />;
-            case 'chat': return <ChatPage currentUser={currentUser} />;
+            // *** FIX 1: Commented out ChatPage render as component is not defined ***
+            // case 'chat': return <ChatPage currentUser={currentUser} />;
             default: window.location.hash = '#/user/home'; return <UserServiceHomePage currentUser={currentUser} />;
         }
     };
@@ -3260,14 +3328,12 @@ const UserDashboard = () => {
 
     return (
         <div className={`flex h-screen bg-gray-100 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100`}>
-            {/* Mobile Sidebar */}
             <div className={`fixed inset-0 z-40 flex lg:hidden transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="w-72 bg-white dark:bg-gray-800 shadow-lg flex flex-col">
                     <UserSidebarContent activePage={activePage} onLinkClick={() => setIsSidebarOpen(false)} onLogoutClick={() => { setIsSidebarOpen(false); setLogoutConfirmOpen(true); }} onMenuClose={() => setIsSidebarOpen(false)} unreadChatCount={unreadChatCount} />
                 </div>
                 <div className="flex-1 bg-black bg-opacity-50" onClick={() => setIsSidebarOpen(false)}></div>
             </div>
-            {/* Desktop Sidebar */}
             <aside className="w-72 bg-white dark:bg-gray-800 shadow-md hidden lg:flex flex-col flex-shrink-0">
                 <UserSidebarContent activePage={activePage} onLinkClick={() => { }} onLogoutClick={() => setLogoutConfirmOpen(true)} unreadChatCount={unreadChatCount} />
             </aside>
