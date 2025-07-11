@@ -1681,10 +1681,19 @@ const BookingsPage = () => {
         </div>
     );
 };
+
+
+import { FileText as DownloadIcon } from 'lucide-react'; // Using FileText as a download icon
+
+// NOTE: Your other imports like Card, StatusBadge, Button, and apiFetch are assumed to be here.
+
 const BookingDetailsPage = ({ bookingId }) => {
     const [booking, setBooking] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    // --- NEW: State to manage the download button's loading status ---
+    const [isDownloading, setIsDownloading] = useState(false);
+
     useEffect(() => {
         const fetchBooking = async () => {
             setLoading(true);
@@ -1692,27 +1701,144 @@ const BookingDetailsPage = ({ bookingId }) => {
                 const response = await apiFetch(`/bookings/${bookingId}`);
                 const data = await response.json();
                 setBooking(data.data);
-            } catch (err) { setError(err.message); toast.error(err.message || 'Failed to fetch booking details.'); }
-            finally { setLoading(false); }
+            } catch (err) {
+                setError(err.message);
+                toast.error(err.message || 'Failed to fetch booking details.');
+            } finally {
+                setLoading(false);
+            }
         };
-        if (bookingId) { fetchBooking(); }
+        if (bookingId) {
+            fetchBooking();
+        }
     }, [bookingId]);
+
+    // --- NEW: Handler to download the PDF invoice securely ---
+    const handleDownloadInvoice = async () => {
+        setIsDownloading(true);
+        toast.info('Generating your invoice...');
+        try {
+            // Use the existing apiFetch which includes the auth token in the headers
+            const response = await apiFetch(`/bookings/${booking._id}/invoice`);
+            
+            // Get the response as a binary object (a "blob")
+            const blob = await response.blob();
+            
+            // Create a temporary URL for the blob object
+            const url = window.URL.createObjectURL(blob);
+            
+            // Create a temporary link element to trigger the download
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `invoice-${booking._id}.pdf`); // Set the filename
+            document.body.appendChild(link);
+            
+            // Programmatically click the link to start the download
+            link.click();
+            
+            // Clean up by removing the temporary link and URL
+            link.parentNode.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+        } catch (err) {
+            toast.error('Failed to download invoice. Please try again.');
+            console.error(err);
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
     if (loading) return <div className="text-center py-10">Loading booking details...</div>;
     if (error) return <div className="text-center py-10 text-red-500">Error: {error}</div>;
     if (!booking) return <div className="text-center py-10">Booking not found.</div>;
+
     return (
         <div className="space-y-6">
-            <div className="flex items-center gap-4"><a href="#/admin/bookings" className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><ArrowLeft size={22} /></a><h1 className="text-3xl font-bold text-gray-800 dark:text-white">Booking Details</h1></div>
+            <div className="flex justify-between items-center gap-4">
+                <div className="flex items-center gap-4">
+                    <a href="#/admin/bookings" className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                        <ArrowLeft size={22} />
+                    </a>
+                    <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Booking Details</h1>
+                </div>
+                {/* --- NEW: Conditionally render the download button for paid bookings --- */}
+                {booking.isPaid && (
+                    <Button 
+                        onClick={handleDownloadInvoice} 
+                        disabled={isDownloading}
+                        variant="primary"
+                    >
+                        <DownloadIcon size={18} />
+                        {isDownloading ? 'Generating...' : 'Download Invoice'}
+                    </Button>
+                )}
+            </div>
+            
             <Card>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
-                    <div><h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 border-b pb-2">Customer Information</h2><div className="space-y-2 mt-4 text-gray-600 dark:text-gray-400"><p><strong>Name:</strong> {booking.customer?.fullName || 'N/A'}</p><p><strong>Email:</strong> {booking.customer?.email || 'N/A'}</p><p><strong>Phone:</strong> {booking.customer?.phone || 'N/A'}</p><p><strong>Address:</strong> {booking.customer?.address || 'N/A'}</p></div></div>
-                    <div><h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 border-b pb-2">Booking Information</h2><div className="space-y-2 mt-4 text-gray-600 dark:text-gray-400"><p><strong>Service:</strong> {booking.serviceType || 'N/A'}</p><p><strong>Date:</strong> {new Date(booking.date).toLocaleDateString()}</p><p><strong>Total Cost:</strong> रु{booking.totalCost}</p><p><strong>Status:</strong> <StatusBadge status={booking.status} /></p></div></div>
+                    <div>
+                        <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 border-b pb-2">Customer Information</h2>
+                        <div className="space-y-2 mt-4 text-gray-600 dark:text-gray-400">
+                            <p><strong>Name:</strong> {booking.customer?.fullName || 'N/A'}</p>
+                            <p><strong>Email:</strong> {booking.customer?.email || 'N/A'}</p>
+                            <p><strong>Phone:</strong> {booking.customer?.phone || 'N/A'}</p>
+                            <p><strong>Address:</strong> {booking.customer?.address || 'N/A'}</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 border-b pb-2">Booking Information</h2>
+                        <div className="space-y-2 mt-4 text-gray-600 dark:text-gray-400">
+                            <p><strong>Service:</strong> {booking.serviceType || 'N/A'}</p>
+                            <p><strong>Date:</strong> {new Date(booking.date).toLocaleDateString()}</p>
+                            <p><strong>Final Amount:</strong> रु{booking.finalAmount}</p>
+                            <p><strong>Status:</strong> <StatusBadge status={booking.status} /></p>
+                            <p><strong>Payment:</strong> {booking.isPaid ? `Paid via ${booking.paymentMethod}` : 'Pending'}</p>
+                        </div>
+                    </div>
                 </div>
-                <div className="p-6"><h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 border-b pb-2">Problem & Vehicle Details</h2><div className="space-y-2 mt-4 text-gray-600 dark:text-gray-400"><p><strong>Vehicle Details:</strong> {booking.bikeModel || 'Not provided'}</p><p><strong>Problem Description:</strong> {booking.notes || 'Not provided'}</p></div></div>
+                <div className="p-6 border-t border-gray-200 dark:border-gray-700">
+                    <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 border-b pb-2">Problem & Vehicle Details</h2>
+                    <div className="space-y-2 mt-4 text-gray-600 dark:text-gray-400">
+                        <p><strong>Vehicle Details:</strong> {booking.bikeModel || 'Not provided'}</p>
+                        <p><strong>Problem Description:</strong> {booking.notes || 'Not provided'}</p>
+                    </div>
+                </div>
             </Card>
         </div>
     );
 };
+// const BookingDetailsPage = ({ bookingId }) => {
+//     const [booking, setBooking] = useState(null);
+//     const [loading, setLoading] = useState(true);
+//     const [error, setError] = useState(null);
+//     useEffect(() => {
+//         const fetchBooking = async () => {
+//             setLoading(true);
+//             try {
+//                 const response = await apiFetch(`/bookings/${bookingId}`);
+//                 const data = await response.json();
+//                 setBooking(data.data);
+//             } catch (err) { setError(err.message); toast.error(err.message || 'Failed to fetch booking details.'); }
+//             finally { setLoading(false); }
+//         };
+//         if (bookingId) { fetchBooking(); }
+//     }, [bookingId]);
+//     if (loading) return <div className="text-center py-10">Loading booking details...</div>;
+//     if (error) return <div className="text-center py-10 text-red-500">Error: {error}</div>;
+//     if (!booking) return <div className="text-center py-10">Booking not found.</div>;
+//     return (
+//         <div className="space-y-6">
+//             <div className="flex items-center gap-4"><a href="#/admin/bookings" className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><ArrowLeft size={22} /></a><h1 className="text-3xl font-bold text-gray-800 dark:text-white">Booking Details</h1></div>
+//             <Card>
+//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
+//                     <div><h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 border-b pb-2">Customer Information</h2><div className="space-y-2 mt-4 text-gray-600 dark:text-gray-400"><p><strong>Name:</strong> {booking.customer?.fullName || 'N/A'}</p><p><strong>Email:</strong> {booking.customer?.email || 'N/A'}</p><p><strong>Phone:</strong> {booking.customer?.phone || 'N/A'}</p><p><strong>Address:</strong> {booking.customer?.address || 'N/A'}</p></div></div>
+//                     <div><h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 border-b pb-2">Booking Information</h2><div className="space-y-2 mt-4 text-gray-600 dark:text-gray-400"><p><strong>Service:</strong> {booking.serviceType || 'N/A'}</p><p><strong>Date:</strong> {new Date(booking.date).toLocaleDateString()}</p><p><strong>Total Cost:</strong> रु{booking.totalCost}</p><p><strong>Status:</strong> <StatusBadge status={booking.status} /></p></div></div>
+//                 </div>
+//                 <div className="p-6"><h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 border-b pb-2">Problem & Vehicle Details</h2><div className="space-y-2 mt-4 text-gray-600 dark:text-gray-400"><p><strong>Vehicle Details:</strong> {booking.bikeModel || 'Not provided'}</p><p><strong>Problem Description:</strong> {booking.notes || 'Not provided'}</p></div></div>
+//             </Card>
+//         </div>
+//     );
+// };
 const UsersPage = ({ onSave: parentOnSave }) => {
     const [users, setUsers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
