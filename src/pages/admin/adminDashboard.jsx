@@ -1357,9 +1357,17 @@ const AdminChatPage = () => {
             const isChatActive = activeConversation?._id === roomUserId;
             const isFromAdmin = data.authorId === 'admin_user';
 
-            if (isChatActive) {
-                setMessages((prev) => [...prev, data]);
-            }
+            // if (isChatActive) {
+            //     setMessages((prev) => [...prev, data]);
+            // }
+
+
+            if (isFromAdmin && isChatActive) {
+            // We only need to update the conversation list, not the active messages.
+        } else if (isChatActive) {
+            // Add message to the active chat window only if it's from the user.
+            setMessages((prev) => [...prev, data]);
+        }
 
             setConversations(prevConvos => {
                 let convoExists = false;
