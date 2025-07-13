@@ -320,7 +320,7 @@ const UserDashboardPage = () => {
     );
 };
 
-// --- START: UPDATED UserServiceHomePage ---
+
 const UserServiceHomePage = ({ currentUser }) => {
     const [services, setServices] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -512,6 +512,7 @@ const UserServiceHomePage = ({ currentUser }) => {
 const ServiceDetailPage = () => {
     const [service, setService] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+
     useEffect(() => {
         const fetchService = async () => {
             const id = window.location.hash.split('/').pop();
@@ -534,6 +535,7 @@ const ServiceDetailPage = () => {
         };
         fetchService();
     }, []);
+
     const handleBookNow = () => {
         if (service && service.workshop) {
             window.location.hash = `#/user/new-booking?serviceId=${service._id}&workshopId=${service.workshop._id}`;
@@ -541,32 +543,76 @@ const ServiceDetailPage = () => {
             toast.error("Service workshop information is missing. Cannot book.");
         }
     };
+
     const handleImageError = (e) => { e.target.src = '/motofix.png'; };
-    if (isLoading) { return (<div className="text-center p-12"><div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div><p className="mt-2 text-gray-500">Loading Service Details...</p></div>); }
-    if (!service) { return (<div className="text-center p-12"><h1 className="text-2xl font-bold">Service Not Found</h1><p className="text-gray-500 mt-2">The service you are looking for may have been removed.</p><Button onClick={() => window.location.hash = '#/user/home'} className="mt-4"><ArrowLeft size={20} /> Back to Services</Button></div>); }
+
+    if (isLoading) {
+        return (
+            <div className="text-center p-12">
+                <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                <p className="mt-2 text-gray-500">Loading Service Details...</p>
+            </div>
+        );
+    }
+
+    if (!service) {
+        return (
+            <div className="text-center p-12">
+                <h1 className="text-2xl font-bold">Service Not Found</h1>
+                <p className="text-gray-500 mt-2">The service you are looking for may have been removed.</p>
+                <Button onClick={() => window.location.hash = '#/user/home'} className="mt-4">
+                    <ArrowLeft size={20} /> Back to Services
+                </Button>
+            </div>
+        );
+    }
+
+    // Defensive handling for potential undefined values
+    const displayedRating = service.rating ?? 0;
+    const displayedNumReviews = service.numReviews ?? 0;
+    const displayedDistance = service.distance != null ? service.distance.toFixed(1) : null;
+
     return (
         <div className="space-y-6 animate-fade-in">
-            <div className="flex items-center gap-4"><button onClick={() => window.history.back()} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Go Back"><ArrowLeft size={24} /></button><h1 className="text-3xl font-bold text-gray-800 dark:text-white">{service.name}</h1></div>
+            <div className="flex items-center gap-4">
+                <button onClick={() => window.history.back()} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Go Back">
+                    <ArrowLeft size={24} />
+                </button>
+                <h1 className="text-3xl font-bold text-gray-800 dark:text-white">{service.name}</h1>
+            </div>
             <Card>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-                    <div><img src={`http://localhost:5050/${service.image}`} alt={service.name} onError={handleImageError} className="w-full h-auto max-h-96 object-contain rounded-lg bg-gray-100 dark:bg-gray-900 p-2" /></div>
+                    <div>
+                        <img src={`http://localhost:5050/${service.image}`} alt={service.name} onError={handleImageError} className="w-full h-auto max-h-96 object-contain rounded-lg bg-gray-100 dark:bg-gray-900 p-2" />
+                    </div>
                     <div className="flex flex-col">
                         <h2 className="text-2xl font-semibold mb-2 text-gray-800 dark:text-white">{service.name}</h2>
                         {service.workshop && (
                             <p className="text-md text-gray-600 dark:text-gray-400 mb-2 flex items-center gap-1">
                                 <MapPin size={16} /> From <strong>{service.workshop.workshopName}</strong>
-                                {service.distance !== null && ` (${service.distance.toFixed(1)} km away)`}
+                                {displayedDistance != null && ` (${displayedDistance} km away)`}
                             </p>
                         )}
-                        <div className="flex items-center gap-2 mb-4"><StarRating rating={service.rating} readOnly={true} /><span className="text-sm text-gray-600 dark:text-gray-400">{service.rating.toFixed(1)} stars ({service.numReviews} reviews)</span></div>
-                        <div className="prose dark:prose-invert text-gray-600 dark:text-gray-300"><p className="whitespace-pre-wrap">{service.description}</p></div>
+                        <div className="flex items-center gap-2 mb-4">
+                            <StarRating rating={displayedRating} readOnly={true} />
+                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                                {displayedRating.toFixed(1)} stars ({displayedNumReviews} reviews)
+                            </span>
+                        </div>
+                        <div className="prose dark:prose-invert text-gray-600 dark:text-gray-300">
+                            <p className="whitespace-pre-wrap">{service.description}</p>
+                        </div>
                         <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                             <div className="flex items-baseline gap-8">
                                 <div><p className="text-sm font-medium text-gray-500 dark:text-gray-400">Price</p><p className="text-3xl font-bold text-blue-600 dark:text-blue-400">रु{service.price}</p></div>
                                 {service.duration && (<div><p className="text-sm font-medium text-gray-500 dark:text-gray-400">Est. Time</p><p className="text-3xl font-bold text-gray-800 dark:text-white">{service.duration}</p></div>)}
                             </div>
                         </div>
-                        <div className="mt-auto pt-8"><Button onClick={handleBookNow} className="w-full !py-3 !text-lg !font-bold"><PlusCircle size={22} /> Book This Service Now</Button></div>
+                        <div className="mt-auto pt-8">
+                            <Button onClick={handleBookNow} className="w-full !py-3 !text-lg !font-bold">
+                                <PlusCircle size={22} /> Book This Service Now
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </Card>
@@ -577,6 +623,263 @@ const ServiceDetailPage = () => {
         </div>
     );
 };
+// --- START: UPDATED UserServiceHomePage ---
+// const UserServiceHomePage = ({ currentUser }) => {
+//     const [services, setServices] = useState([]);
+//     const [isLoading, setIsLoading] = useState(true);
+//     const [userLocation, setUserLocation] = useState({ lat: null, lon: null });
+//     const [searchRadius, setSearchRadius] = useState(10);
+//     const [isLocationSet, setIsLocationSet] = useState(false);
+
+//     // This function now handles scrolling to the services section after fetching data.
+//     const fetchServices = async (lat, lon, radius) => {
+//         setIsLoading(true);
+//         try {
+//             let endpoint = '/services';
+//             if (lat && lon && radius) {
+//                 endpoint += `?lat=${lat}&lon=${lon}&radiusKm=${radius}`;
+//             }
+//             const response = await apiFetchUser(endpoint);
+//             const data = await response.json();
+//             setServices(data.data || []);
+//         } catch (error) {
+//             toast.error(error.message || "Failed to load services.");
+//             setServices([]);
+//         } finally {
+//             setIsLoading(false);
+//             // This is the new part that solves the scroll issue.
+//             // It runs after any service fetch is complete (filter, clear, or initial load).
+//             const servicesSection = document.getElementById('services-section');
+//             if (servicesSection) {
+//                 // We use a small timeout to ensure the DOM has updated before scrolling.
+//                 setTimeout(() => {
+//                     servicesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+//                 }, 100);
+//             }
+//         }
+//     };
+
+//     // This useEffect handles the initial data load when the component mounts or user changes.
+//     useEffect(() => {
+//         if (currentUser?.location?.coordinates && (currentUser.location.coordinates[0] !== 0 || currentUser.location.coordinates[1] !== 0)) {
+//             const [lon, lat] = currentUser.location.coordinates;
+//             setUserLocation({ lat, lon });
+//             setIsLocationSet(true);
+//             fetchServices(lat, lon, searchRadius);
+//         } else {
+//             if (navigator.geolocation) {
+//                 navigator.geolocation.getCurrentPosition(
+//                     (position) => {
+//                         const { latitude, longitude } = position.coords;
+//                         setUserLocation({ lat: latitude, lon: longitude });
+//                         setIsLocationSet(true);
+//                         fetchServices(latitude, longitude, searchRadius);
+//                         toast.info("Auto-detected your location. Services filtered by proximity.");
+//                     },
+//                     () => {
+//                         fetchServices(null, null, null);
+//                         toast.info("Could not auto-detect location. Showing all services. You can set it in profile.");
+//                     },
+//                     { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+//                 );
+//             } else {
+//                 fetchServices(null, null, null);
+//                 toast.info("Geolocation not supported. Showing all services.");
+//             }
+//         }
+//     }, [currentUser]); // This now correctly only depends on `currentUser`.
+
+//     const handleApplyFilter = () => {
+//         if (userLocation.lat && userLocation.lon) {
+//             // This now implicitly handles the scrolling via the modified fetchServices function.
+//             fetchServices(userLocation.lat, userLocation.lon, searchRadius);
+//         } else {
+//             toast.error("Please set your location in profile to filter services by proximity.");
+//         }
+//     };
+
+//     const handleClearFilter = () => {
+//         // Calling fetchServices with null parameters will clear the filter and scroll to the top of the list.
+//         fetchServices(null, null, null);
+//         toast.info("Location filter cleared. Showing all services.");
+//     };
+
+//     const handleImageError = (e) => { e.target.src = '/motofix.png'; };
+
+//     // Improved loading state check
+//     if (isLoading && services.length === 0) {
+//         return (
+//             <div className="flex flex-col items-center justify-center p-12">
+//                 <Bike className="animate-pulse text-blue-500" size={48} />
+//                 <p className="mt-4 text-lg text-gray-600 dark:text-gray-300">Loading Services...</p>
+//             </div>
+//         );
+//     }
+
+//     return (
+//         <div className="space-y-16 md:space-y-24">
+//             <section className="relative text-center bg-gray-900 text-white py-20 px-6 rounded-lg overflow-hidden">
+//                 <div className="absolute inset-0 bg-cover bg-center opacity-30" style={{ backgroundImage: "url('/moto2.png')" }} />
+//                 <div className="relative z-10 flex flex-col items-center">
+//                     <Bike size={64} className="mb-4 text-blue-400" />
+//                     <h1 className="text-4xl md:text-5xl font-extrabold">Welcome, {currentUser?.fullName || 'Rider'}!</h1>
+//                     <p className="mt-4 max-w-2xl text-lg md:text-xl text-gray-300">The best care for your bike is just a click away. Fast, reliable, and professional.</p>
+//                     <a href="#/user/home#services-section"><Button size="lg" className="mt-8 bg-blue-600 hover:bg-blue-700 group">Explore Services<ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" /></Button></a>
+//                 </div>
+//             </section>
+//             <section className="text-center">
+//                 <h2 className="inline-flex items-center text-3xl font-bold text-gray-800 dark:text-white"><Wrench className="mr-3 text-gray-400" size={32} />How It Works</h2>
+//                 <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">Get your bike serviced in 3 simple steps.</p>
+//                 <div className="grid md:grid-cols-3 gap-8 mt-10">
+//                     <div className="flex flex-col items-center p-4"><div className="bg-blue-100 dark:bg-blue-900/50 p-4 rounded-full"><Search size={32} className="text-blue-500 dark:text-blue-400" /></div><h3 className="text-xl font-semibold mt-4">1. Choose Service</h3><p className="text-gray-500 dark:text-gray-400 mt-1">Find the perfect service package for your needs.</p></div>
+//                     <div className="flex flex-col items-center p-4"><div className="bg-blue-100 dark:bg-blue-900/50 p-4 rounded-full"><CalendarDays size={32} className="text-blue-500 dark:text-blue-400" /></div><h3 className="text-xl font-semibold mt-4">2. Book Your Slot</h3><p className="text-gray-500 dark:text-gray-400 mt-1">Select a convenient date and time that works for you.</p></div>
+//                     <div className="flex flex-col items-center p-4"><div className="bg-blue-100 dark:bg-blue-900/50 p-4 rounded-full"><ThumbsUp size={32} className="text-blue-500 dark:text-blue-400" /></div><h3 className="text-xl font-semibold mt-4">3. We Handle the Rest</h3><p className="text-gray-500 dark:text-gray-400 mt-1">Our expert mechanics ensure your bike is in top condition.</p></div>
+//                 </div>
+//             </section>
+//             <section id="services-section" className="space-y-8 pt-8">
+//                 <div className="text-center"><h2 className="inline-flex items-center text-3xl md:text-4xl font-bold text-gray-800 dark:text-white"><Home className="mr-3 text-gray-400" size={36} />Our Services</h2><p className="mt-2 text-lg text-gray-600 dark:text-gray-300">Choose a service below to get started.</p></div>
+
+//                 <Card className="flex flex-wrap items-end gap-4 p-4 mb-8">
+//                     <div className="flex-grow">
+//                         <label htmlFor="radius" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter by distance from your location:</label>
+//                         <select
+//                             id="radius"
+//                             value={searchRadius}
+//                             onChange={(e) => setSearchRadius(Number(e.target.value))}
+//                             className="w-full sm:w-auto px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white"
+//                         >
+//                             <option value={5}>5 km</option>
+//                             <option value={10}>10 km</option>
+//                             <option value={25}>25 km</option>
+//                             <option value={50}>50 km</option>
+//                             <option value={100}>100 km</option>
+//                         </select>
+//                     </div>
+//                     <Button onClick={handleApplyFilter} disabled={!isLocationSet}>
+//                         <Search size={18} /> Apply Filter
+//                     </Button>
+//                     <Button variant="secondary" onClick={handleClearFilter}>
+//                         Clear Filter
+//                     </Button>
+//                     {!isLocationSet && (
+//                         <p className="text-red-500 text-sm w-full mt-2">Your location is not set. Go to Profile to enable location services for accurate filtering.</p>
+//                     )}
+//                 </Card>
+
+//                 {services.length > 0 ? (
+//                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+//                         {services.map(service => (
+//                             <a key={service._id} href={`#/user/service-details/${service._id}`} className="group block">
+//                                 <Card className="flex flex-col h-full text-center overflow-hidden rounded-lg transition-all duration-300 group-hover:shadow-xl group-hover:scale-105 group-hover:ring-2 group-hover:ring-blue-500">
+//                                     <div className="relative">
+//                                         <img src={`http://localhost:5050/${service.image}`} alt={service.name} onError={handleImageError} className="w-full h-40 object-cover" />
+//                                         <div className="absolute top-2 right-2 bg-black/50 text-white text-sm px-2 py-1 rounded-full">रु{service.price}</div>
+//                                     </div>
+//                                     <div className="p-4 flex flex-col flex-grow">
+//                                         <h3 className="text-xl font-semibold text-gray-800 dark:text-white">{service.name}</h3>
+//                                         {service.workshop && (
+//                                             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center justify-center gap-1">
+//                                                 <MapPin size={14} />{service.workshop.workshopName}
+//                                                 {service.distance != null && ` (${service.distance.toFixed(1)} km away)`}
+//                                             </p>
+//                                         )}
+//                                         <div className="flex items-center justify-center gap-2 my-2">
+//                                             <StarRating rating={service.rating} readOnly={true} size={18} />
+//                                             <span className="text-xs text-gray-500 dark:text-gray-400">({service.numReviews} reviews)</span>
+//                                         </div>
+//                                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 flex-grow">{service.description}</p>
+//                                         <Button className="mt-4 w-full group/button bg-black text-white hover:bg-blue-700 dark:bg-gray-200 dark:text-black dark:hover:bg-blue-500 dark:hover:text-white">View Details <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/button:translate-x-1" /></Button>
+//                                     </div>
+//                                 </Card>
+//                             </a>
+//                         ))}
+//                     </div>
+//                 ) : (
+//                     <Card className="text-center py-16">
+//                         <Wrench size={48} className="mx-auto text-gray-400" />
+//                         <h3 className="mt-4 text-xl font-semibold">No Services Available</h3>
+//                         <p className="mt-1 text-sm text-gray-500">
+//                             {isLocationSet && searchRadius > 0 ?
+//                                 `No services found within ${searchRadius} km of your location. Try increasing the radius or checking back later.` :
+//                                 "No services found. Please check back later."
+//                             }
+//                         </p>
+//                     </Card>
+//                 )}
+//             </section>
+//         </div>
+//     );
+// };
+// // --- END: UPDATED UserServiceHomePage ---
+
+// const ServiceDetailPage = () => {
+//     const [service, setService] = useState(null);
+//     const [isLoading, setIsLoading] = useState(true);
+//     useEffect(() => {
+//         const fetchService = async () => {
+//             const id = window.location.hash.split('/').pop();
+//             if (!id) {
+//                 toast.error("Service ID not found.");
+//                 window.location.hash = '#/user/home';
+//                 return;
+//             }
+//             setIsLoading(true);
+//             try {
+//                 const response = await apiFetchUser(`/services/${id}`);
+//                 const data = await response.json();
+//                 setService(data.data);
+//             } catch (error) {
+//                 toast.error(error.message || "Could not load service details.");
+//                 window.location.hash = '#/user/home';
+//             } finally {
+//                 setIsLoading(false);
+//             }
+//         };
+//         fetchService();
+//     }, []);
+//     const handleBookNow = () => {
+//         if (service && service.workshop) {
+//             window.location.hash = `#/user/new-booking?serviceId=${service._id}&workshopId=${service.workshop._id}`;
+//         } else {
+//             toast.error("Service workshop information is missing. Cannot book.");
+//         }
+//     };
+//     const handleImageError = (e) => { e.target.src = '/motofix.png'; };
+//     if (isLoading) { return (<div className="text-center p-12"><div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div><p className="mt-2 text-gray-500">Loading Service Details...</p></div>); }
+//     if (!service) { return (<div className="text-center p-12"><h1 className="text-2xl font-bold">Service Not Found</h1><p className="text-gray-500 mt-2">The service you are looking for may have been removed.</p><Button onClick={() => window.location.hash = '#/user/home'} className="mt-4"><ArrowLeft size={20} /> Back to Services</Button></div>); }
+//     return (
+//         <div className="space-y-6 animate-fade-in">
+//             <div className="flex items-center gap-4"><button onClick={() => window.history.back()} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Go Back"><ArrowLeft size={24} /></button><h1 className="text-3xl font-bold text-gray-800 dark:text-white">{service.name}</h1></div>
+//             <Card>
+//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+//                     <div><img src={`http://localhost:5050/${service.image}`} alt={service.name} onError={handleImageError} className="w-full h-auto max-h-96 object-contain rounded-lg bg-gray-100 dark:bg-gray-900 p-2" /></div>
+//                     <div className="flex flex-col">
+//                         <h2 className="text-2xl font-semibold mb-2 text-gray-800 dark:text-white">{service.name}</h2>
+//                         {service.workshop && (
+//                             <p className="text-md text-gray-600 dark:text-gray-400 mb-2 flex items-center gap-1">
+//                                 <MapPin size={16} /> From <strong>{service.workshop.workshopName}</strong>
+//                                 {service.distance !== null && ` (${service.distance.toFixed(1)} km away)`}
+//                             </p>
+//                         )}
+//                         <div className="flex items-center gap-2 mb-4"><StarRating rating={service.rating} readOnly={true} /><span className="text-sm text-gray-600 dark:text-gray-400">{service.rating.toFixed(1)} stars ({service.numReviews} reviews)</span></div>
+//                         <div className="prose dark:prose-invert text-gray-600 dark:text-gray-300"><p className="whitespace-pre-wrap">{service.description}</p></div>
+//                         <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+//                             <div className="flex items-baseline gap-8">
+//                                 <div><p className="text-sm font-medium text-gray-500 dark:text-gray-400">Price</p><p className="text-3xl font-bold text-blue-600 dark:text-blue-400">रु{service.price}</p></div>
+//                                 {service.duration && (<div><p className="text-sm font-medium text-gray-500 dark:text-gray-400">Est. Time</p><p className="text-3xl font-bold text-gray-800 dark:text-white">{service.duration}</p></div>)}
+//                             </div>
+//                         </div>
+//                         <div className="mt-auto pt-8"><Button onClick={handleBookNow} className="w-full !py-3 !text-lg !font-bold"><PlusCircle size={22} /> Book This Service Now</Button></div>
+//                     </div>
+//                 </div>
+//             </Card>
+//             <Card>
+//                 <h3 className="text-2xl font-bold mb-4">Customer Reviews</h3>
+//                 <ReviewsList reviews={service.reviews} />
+//             </Card>
+//         </div>
+//     );
+// };
 
 // ... (The rest of your components: UserBookingsPage, EditBookingPage, NewBookingPage, etc. remain unchanged) ...
 // ... (All other components are included below for completeness) ...
