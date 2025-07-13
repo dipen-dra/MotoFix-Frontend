@@ -1,18 +1,19 @@
+// src/components/Auth/LoginForm.jsx
 import React, { useContext, useState } from 'react';
-import { EmailIcon, LockIcon } from '../../assets/icons';
-import { FormInputWithLabel } from './FormInputWIthLabel';
+import { EmailIcon, LockIcon } from '../../assets/icons'; // Assuming these exist
+import { FormInputWithLabel } from './FormInputWIthLabel'; // Assuming this exists
 import { toast } from 'react-toastify';
-import { loginUserApi } from '../../api/authApi';
-import { Link } from 'react-router-dom';
-import { AuthContext } from '../../auth/AuthContext';
+import { loginUserApi } from '../../api/authApi'; // Assuming this API service exists
+import { Link } from 'react-router-dom'; // Keep Link for forgot password
+import { AuthContext } from '../../auth/AuthContext'; // Import AuthContext
 
 export const LoginForm = ({ onSwitch }) => {
-    const { login } = useContext(AuthContext);
+    const { login } = useContext(AuthContext); // Get login function from context
     const [formData, setFormData] = useState({
         email: '',
         password: '',
     });
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(false); // Use 'loading' for button state
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -26,17 +27,23 @@ export const LoginForm = ({ onSwitch }) => {
             return;
         }
 
-        setLoading(true);
+        setLoading(true); // Start loading state
         try {
-            const data = await loginUserApi(formData);
-            console.log("Login response:", data.data);
-            login(data.data, data.data.token);
-            toast.success('Login successful!');
+            const data = await loginUserApi(formData); // Call your API service
+            console.log("Login response from API:", data); // Log the full response from your API
+
+            // Pass the entire data.data object (which contains role) and the token to AuthContext's login
+            login(data.data.data, data.data.token); // Assuming data.data holds user info and data.data.token is the token
+
+            // IMPORTANT: Remove any navigate() calls from here.
+            // Redirection will now be handled centrally in App.jsx's useEffect.
+            toast.success('Login successful!'); // Show success toast here
 
         } catch (err) {
+            console.error("Login Error:", err); // Log the full error
             toast.error(err.message || 'Login failed. Please try again.');
         } finally {
-            setLoading(false);
+            setLoading(false); // End loading state
         }
     };
 
@@ -51,16 +58,11 @@ export const LoginForm = ({ onSwitch }) => {
                 <FormInputWithLabel id="email" label="Email" type="email" placeholder="you@example.com" icon={<EmailIcon />} value={formData.email} onChange={handleChange} />
                 <FormInputWithLabel id="password" label="Password" type="password" placeholder="••••••••" icon={<LockIcon />} value={formData.password} onChange={handleChange} />
 
-                {/* <div className="flex justify-end text-sm">
-                    <a href="#/forgot-password" className="font-semibold text-blue-600 hover:text-blue-500">Forgot Password?</a>
-                </div> */}
                 <div className="flex justify-end text-sm w-full">
                     <Link to="/forgot-password" className="font-semibold text-blue-600 hover:text-blue-500">
                         Forgot Password?
                     </Link>
                 </div>
-
-
 
                 <button type="submit" disabled={loading} className="mt-4 bg-gray-900 dark:bg-blue-600 border-transparent text-white text-base font-medium rounded-lg h-12 w-full hover:bg-gray-800 dark:hover:bg-blue-700 transition-colors duration-200 disabled:bg-gray-400">
                     {loading ? 'Signing In...' : 'Sign In'}

@@ -2316,21 +2316,19 @@
 // export default UserDashboard;
 
 
-
-
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import {
     LayoutDashboard, CalendarDays, User, LogOut, Menu, X, Sun, Moon,
     PlusCircle, Bike, Wrench, Edit, Trash2, AlertTriangle, Camera, MapPin,
     CreditCard, ArrowLeft, Gift, ArrowRight, ChevronDown, ChevronUp,
     MessageSquare, Send, Paperclip, FileText, XCircle, Home,
-    Search, ThumbsUp, Star, MessageCircle
+    Search, ThumbsUp, Star, MessageCircle, Briefcase, Clock
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import io from 'socket.io-client';
 import { AuthContext } from '../auth/AuthContext';
 import { submitReview } from '../api/reviewService';
-import GeminiChatbot from '../components/GeminiChatbot'; // Import the Gemini AI Chatbot component
+import GeminiChatbot from '../components/GeminiChatbot';
 
 const socket = io.connect("http://localhost:5050");
 const API_BASE_URL_USER = "http://localhost:5050/api/user";
@@ -2609,7 +2607,7 @@ const UserDashboardPage = () => {
                             <thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700">
                                 <tr>
                                     <th className="p-3">Service</th>
-                                    <th className="p-3">Workshop</th> {/* NEW: Display workshop */}
+                                    <th className="p-3">Workshop</th>
                                     <th className="p-3">Bike Model</th>
                                     <th className="p-3">Date</th>
                                     <th className="p-3">Status</th>
@@ -2620,7 +2618,7 @@ const UserDashboardPage = () => {
                                 {recentBookings.map(booking => (
                                     <tr key={booking._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
                                         <td className="p-3 font-medium text-gray-900 dark:text-white">{booking.serviceType}</td>
-                                        <td className="p-3 text-gray-600 dark:text-gray-300">{booking.workshop?.workshopName || 'N/A'}</td> {/* NEW: Workshop Name */}
+                                        <td className="p-3 text-gray-600 dark:text-gray-300">{booking.workshop?.workshopName || 'N/A'}</td>
                                         <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel}</td>
                                         <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
                                         <td className="p-3"><StatusBadge status={booking.status} /></td>
@@ -2641,15 +2639,13 @@ const UserDashboardPage = () => {
     );
 };
 
-// --- MODIFIED: UserServiceHomePage for location filtering ---
 const UserServiceHomePage = ({ currentUser }) => {
     const [services, setServices] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [userLocation, setUserLocation] = useState({ lat: null, lon: null });
-    const [searchRadius, setSearchRadius] = useState(10); // Default 10km
-    const [isLocationSet, setIsLocationSet] = useState(false); // Track if user's location is known
+    const [searchRadius, setSearchRadius] = useState(10);
+    const [isLocationSet, setIsLocationSet] = useState(false);
 
-    // Function to fetch services based on location/radius
     const fetchServices = async (lat, lon, radius) => {
         setIsLoading(true);
         try {
@@ -2668,7 +2664,6 @@ const UserServiceHomePage = ({ currentUser }) => {
         }
     };
 
-    // Auto-fetch user's saved location on component mount
     useEffect(() => {
         if (currentUser?.location?.coordinates && (currentUser.location.coordinates[0] !== 0 || currentUser.location.coordinates[1] !== 0)) {
             const [lon, lat] = currentUser.location.coordinates;
@@ -2676,7 +2671,6 @@ const UserServiceHomePage = ({ currentUser }) => {
             setIsLocationSet(true);
             fetchServices(lat, lon, searchRadius);
         } else {
-            // If user's location not saved, try to fetch it automatically (one time)
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
@@ -2686,20 +2680,18 @@ const UserServiceHomePage = ({ currentUser }) => {
                         fetchServices(latitude, longitude, searchRadius);
                         toast.info("Auto-detected your location. Services filtered by proximity.");
                     },
-                    (error) => {
-                        console.error("Geolocation error:", error);
-                        // If user denies or error, show all services initially
+                    () => {
                         fetchServices(null, null, null); 
                         toast.info("Could not auto-detect location. Showing all services. You can set it in profile.");
                     },
                     { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
                 );
             } else {
-                fetchServices(null, null, null); // Browser doesn't support geolocation
+                fetchServices(null, null, null);
                 toast.info("Geolocation not supported. Showing all services.");
             }
         }
-    }, [currentUser, searchRadius]); // Re-fetch if currentUser or radius changes
+    }, [currentUser, searchRadius]);
 
     const handleApplyFilter = () => {
         if (userLocation.lat && userLocation.lon) {
@@ -2712,8 +2704,8 @@ const UserServiceHomePage = ({ currentUser }) => {
     const handleClearFilter = () => {
         setUserLocation({ lat: null, lon: null });
         setIsLocationSet(false);
-        setSearchRadius(10); // Reset radius
-        fetchServices(null, null, null); // Fetch all services
+        setSearchRadius(10);
+        fetchServices(null, null, null);
         toast.info("Location filter cleared. Showing all services.");
     };
 
@@ -2750,7 +2742,6 @@ const UserServiceHomePage = ({ currentUser }) => {
             <section id="services-section" className="space-y-8 pt-8">
                 <div className="text-center"><h2 className="inline-flex items-center text-3xl md:text-4xl font-bold text-gray-800 dark:text-white"><Home className="mr-3 text-gray-400" size={36} />Our Services</h2><p className="mt-2 text-lg text-gray-600 dark:text-gray-300">Choose a service below to get started.</p></div>
                 
-                {/* NEW: Location Filter */}
                 <Card className="flex flex-wrap items-end gap-4 p-4 mb-8">
                     <div className="flex-grow">
                         <label htmlFor="radius" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter by distance from your location:</label>
@@ -2789,11 +2780,10 @@ const UserServiceHomePage = ({ currentUser }) => {
                                     </div>
                                     <div className="p-4 flex flex-col flex-grow">
                                         <h3 className="text-xl font-semibold text-gray-800 dark:text-white">{service.name}</h3>
-                                        {/* NEW: Display workshop name and distance */}
                                         {service.workshop && (
                                             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center justify-center gap-1">
                                                 <MapPin size={14} />{service.workshop.workshopName}
-                                                {service.distance !== null && ` (${service.distance} km away)`}
+                                                {service.distance !== null && ` (${service.distance.toFixed(1)} km away)`}
                                             </p>
                                         )}
                                         <div className="flex items-center justify-center gap-2 my-2">
@@ -2824,7 +2814,6 @@ const UserServiceHomePage = ({ currentUser }) => {
     );
 };
 
-// --- MODIFIED: ServiceDetailPage to show workshop info and pass workshopId to booking ---
 const ServiceDetailPage = () => {
     const [service, setService] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -2852,7 +2841,6 @@ const ServiceDetailPage = () => {
     }, []);
     const handleBookNow = () => { 
         if (service && service.workshop) { 
-            // Pass serviceId and workshopId to new booking page
             window.location.hash = `#/user/new-booking?serviceId=${service._id}&workshopId=${service.workshop._id}`; 
         } else {
             toast.error("Service workshop information is missing. Cannot book.");
@@ -2869,11 +2857,10 @@ const ServiceDetailPage = () => {
                     <div><img src={`http://localhost:5050/${service.image}`} alt={service.name} onError={handleImageError} className="w-full h-auto max-h-96 object-contain rounded-lg bg-gray-100 dark:bg-gray-900 p-2" /></div>
                     <div className="flex flex-col">
                         <h2 className="text-2xl font-semibold mb-2 text-gray-800 dark:text-white">{service.name}</h2>
-                        {/* NEW: Display workshop name here too */}
                         {service.workshop && (
                             <p className="text-md text-gray-600 dark:text-gray-400 mb-2 flex items-center gap-1">
                                 <MapPin size={16} /> From <strong>{service.workshop.workshopName}</strong>
-                                {service.distance !== null && ` (${service.distance} km away)`}
+                                {service.distance !== null && ` (${service.distance.toFixed(1)} km away)`}
                             </p>
                         )}
                         <div className="flex items-center gap-2 mb-4"><StarRating rating={service.rating} readOnly={true} /><span className="text-sm text-gray-600 dark:text-gray-400">{service.rating.toFixed(1)} stars ({service.numReviews} reviews)</span></div>
@@ -2959,7 +2946,7 @@ const UserBookingsPage = () => {
             <div className="flex justify-between items-center"><h1 className="text-3xl font-bold text-gray-800 dark:text-white">My Bookings</h1><Button onClick={() => window.location.hash = '#/user/new-booking'}><PlusCircle size={20} />New Booking</Button></div>
             <Card className="flex flex-col flex-grow">
                 <div className="overflow-x-auto flex-grow">{isLoading ? (<div className="text-center p-12 text-gray-500 dark:text-gray-400">Loading bookings...</div>) : bookings.length > 0 ? (<table className="w-full text-left"><thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700"><tr><th className="p-3">Service</th><th className="p-3">Workshop</th><th className="p-3">Bike</th><th className="p-3">Date</th><th className="p-3">Status</th><th className="p-3">Payment</th><th className="p-3 text-right">Cost</th><th className="p-3 text-center">Actions</th></tr></thead><tbody>{bookings.map(booking => (<tr key={booking._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50"><td className="p-3 font-medium text-gray-900 dark:text-white">{booking.serviceType}</td>
-                    <td className="p-3 text-gray-600 dark:text-gray-300">{booking.workshop?.workshopName || 'N/A'}</td> {/* NEW: Workshop Name */}
+                    <td className="p-3 text-gray-600 dark:text-gray-300">{booking.workshop?.workshopName || 'N/A'}</td>
                     <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel}</td><td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td><td className="p-3"><StatusBadge status={booking.status} /></td><td className="p-3"><StatusBadge status={booking.paymentStatus} /></td><td className="p-3 text-right font-semibold">{booking.discountApplied && (<span className="text-xs text-red-500 line-through mr-1">रु{booking.totalCost}</span>)}रु{booking.finalAmount ?? booking.totalCost}</td>
                     <td className="p-3 text-center">
                         <div className="flex justify-center gap-2">
@@ -2976,37 +2963,28 @@ const UserBookingsPage = () => {
     );
 };
 
-// --- MODIFIED: EditBookingPage to show workshop and handle pickup/drop-off ---
-const EditBookingPage = ({ currentUser }) => { // Receive currentUser as prop
-    const [formData, setFormData] = useState({ 
-        serviceId: '', 
-        bikeModel: '', 
-        date: '', 
-        notes: '',
-        workshopId: '', // Keep track of workshop id
-        pickupDropoffRequested: false, // NEW
-        pickupDropoffAddress: '' // NEW
-    });
+const EditBookingPage = ({ currentUser }) => {
+    const [formData, setFormData] = useState({ serviceId: '', bikeModel: '', date: '', notes: '', workshopId: '', pickupDropoffRequested: false, pickupDropoffAddress: '' });
     const [services, setServices] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [originalBooking, setOriginalBooking] = useState(null); // To store original booking details
-    const [workshopDetails, setWorkshopDetails] = useState(null); // To store workshop details
+    const [originalBooking, setOriginalBooking] = useState(null);
+    const [workshopDetails, setWorkshopDetails] = useState(null);
+    const [selectedServiceDetails, setSelectedServiceDetails] = useState(null);
+
 
     useEffect(() => {
         const id = window.location.hash.split('/').pop();
         const fetchInitialData = async () => {
             setIsLoading(true);
             try {
-                // Fetch all services (for the dropdown)
-                const servicesRes = await apiFetchUser('/services'); // This now fetches services with populated workshop
+                const servicesRes = await apiFetchUser('/services');
                 const { data: allServices } = await servicesRes.json();
                 setServices(allServices || []);
 
-                // Fetch the specific booking
                 const bookingRes = await apiFetchUser(`/bookings/${id}`);
                 const { data: booking } = await bookingRes.json();
-                setOriginalBooking(booking); // Save original booking
+                setOriginalBooking(booking);
 
                 if (booking) {
                     if (booking.isPaid || booking.discountApplied || booking.status !== 'Pending') { 
@@ -3014,28 +2992,23 @@ const EditBookingPage = ({ currentUser }) => { // Receive currentUser as prop
                         window.location.hash = '#/user/bookings'; 
                         return; 
                     }
-                    // Find the service object from the fetched allServices
                     const service = (allServices || []).find(s => s._id === booking.service);
                     if (!service) {
                         toast.error("Linked service not found.");
                         window.location.hash = '#/user/bookings'; 
                         return;
                     }
-
-                    // Fetch workshop details based on booking.workshop
-                    // You might already have it if booking population includes workshop
-                    const workshopRes = await apiFetchUser(`/workshops/${booking.workshop}`); // Assuming this endpoint exists
-                    const { data: workshop } = await workshopRes.json();
-                    setWorkshopDetails(workshop);
+                    setSelectedServiceDetails(service);
+                    setWorkshopDetails(service.workshop);
 
                     setFormData({ 
                         serviceId: service._id, 
                         bikeModel: booking.bikeModel, 
                         date: new Date(booking.date).toISOString().split('T')[0], 
                         notes: booking.notes,
-                        workshopId: booking.workshop, // Store workshop ID
-                        pickupDropoffRequested: booking.pickupDropoffRequested || false, // Populate new fields
-                        pickupDropoffAddress: booking.pickupDropoffAddress || currentUser?.address || '' // Populate new fields, default to user's current profile address
+                        workshopId: booking.workshop,
+                        pickupDropoffRequested: booking.pickupDropoffRequested || false,
+                        pickupDropoffAddress: booking.pickupDropoffAddress || currentUser?.address || ''
                     });
                 } else { 
                     throw new Error("Booking not found."); 
@@ -3046,40 +3019,30 @@ const EditBookingPage = ({ currentUser }) => { // Receive currentUser as prop
                 setIsLoading(false); 
             }
         };
-        // Ensure currentUser is available before fetching, as pickupDropoffAddress depends on it.
         if (id && currentUser) { 
             fetchInitialData(); 
-        } else if (id && !currentUser) {
-            // Handle case where currentUser is null on first render, but ID is present
-            // This might mean AuthContext is still loading. Could add a loading state check.
-            // For now, it will just wait for currentUser.
         }
-    }, [currentUser]); // Re-fetch if currentUser changes (e.g., location updated)
+    }, [currentUser]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData(prev => {
             const newState = { ...prev, [name]: type === 'checkbox' ? checked : value };
-
-            // If serviceId changes, update selectedServiceDetails and workshopId
             if (name === 'serviceId') {
                 const selected = services.find(s => s._id === value);
                 if (selected) {
                     newState.workshopId = selected.workshop?._id;
-                    // Note: If you don't have selectedServiceDetails state elsewhere, you can remove this.
-                    // Or keep it for clarity if you pass it down to other components.
-                    // setSelectedServiceDetails(selected); 
+                    setSelectedServiceDetails(selected); 
                     setWorkshopDetails(selected.workshop);
-                    // Reset pickup options if workshop changed or service changed significantly
                     if (!selected.workshop?.pickupDropoffAvailable) {
                         newState.pickupDropoffRequested = false;
-                        newState.pickupDropoffAddress = currentUser?.address || ''; // Reset to default
+                        newState.pickupDropoffAddress = currentUser?.address || '';
                     }
                 } else {
                     newState.workshopId = '';
-                    // setSelectedServiceDetails(null);
+                    setSelectedServiceDetails(null);
                     setWorkshopDetails(null);
-                    newState.pickupDropoffRequested = false; // Reset if no service selected
+                    newState.pickupDropoffRequested = false;
                     newState.pickupDropoffAddress = currentUser?.address || '';
                 }
             }
@@ -3088,59 +3051,30 @@ const EditBookingPage = ({ currentUser }) => { // Receive currentUser as prop
     };
 
     const calculateEstimatedPickupCost = () => {
-        // Only calculate if pickup requested, workshop details available, workshop offers it,
-        // and user/workshop have valid coordinates
-        if (!formData.pickupDropoffRequested || !workshopDetails?.pickupDropoffAvailable || !currentUser?.location?.coordinates || !workshopDetails?.location?.coordinates) {
-            return 0;
-        }
-
-        const userCoords = currentUser.location.coordinates; // [lon, lat]
-        const workshopCoords = workshopDetails.location.coordinates; // [lon, lat]
-
-        // Check for default/zero coordinates
-        if (userCoords[0] === 0 && userCoords[1] === 0) {
-            // This toast is informational, the user needs to update their profile for accurate calculation.
-            toast.warn("Your location is not set in your profile. Pickup cost might be inaccurate.");
-            return 0; // Can't calculate without user location
-        }
-        if (workshopCoords[0] === 0 && workshopCoords[1] === 0) {
-             // This toast is informational, the workshop needs to set their location.
-            toast.warn("Workshop location is not set. Pickup cost might be inaccurate.");
-            return 0; // Can't calculate without workshop location
-        }
-
-        const R = 6371; // Radius of Earth in kilometers
-        const dLat = (workshopCoords[1] - userCoords[1]) * Math.PI / 180; // Latitude difference in radians
-        const dLon = (workshopCoords[0] - userCoords[0]) * Math.PI / 180; // Longitude difference in radians
-
-        const a = 
-            Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(userCoords[1] * Math.PI / 180) * Math.cos(workshopCoords[1] * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+        if (!formData.pickupDropoffRequested || !workshopDetails?.pickupDropoffAvailable || !currentUser?.location?.coordinates || !workshopDetails?.location?.coordinates) return 0;
+        const userCoords = currentUser.location.coordinates;
+        const workshopCoords = workshopDetails.location.coordinates;
+        if ((userCoords[0] === 0 && userCoords[1] === 0) || (workshopCoords[0] === 0 && workshopCoords[1] === 0)) return 0;
+        const R = 6371;
+        const dLat = (workshopCoords[1] - userCoords[1]) * Math.PI / 180;
+        const dLon = (workshopCoords[0] - userCoords[0]) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(userCoords[1] * Math.PI / 180) * Math.cos(workshopCoords[1] * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        const distanceKm = R * c; // Distance in km
-
-        const cost = distanceKm * workshopDetails.pickupDropoffCostPerKm * 2; // Multiply by 2 for round trip
-        return Math.round(cost / 10) * 10; // Round to nearest 10 for display
+        const distanceKm = R * c;
+        const cost = distanceKm * workshopDetails.pickupDropoffCostPerKm * 2;
+        return Math.round(cost / 10) * 10;
     };
 
     const estimatedPickupCost = calculateEstimatedPickupCost();
-    // Use original booking's totalCost as base if no service selected, otherwise selected service price
     const baseServiceCost = services.find(s => s._id === formData.serviceId)?.price || originalBooking?.totalCost || 0;
     const finalAmountEstimate = baseServiceCost + estimatedPickupCost;
-
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
             const bookingId = window.location.hash.split('/').pop();
-            const payload = {
-                ...formData,
-                // Ensure pickupDropoffCost is 0 if pickupDropoffRequested is false
-                pickupDropoffCost: formData.pickupDropoffRequested ? estimatedPickupCost : 0, 
-                // Ensure pickupDropoffAddress is empty if pickupDropoffRequested is false
-                pickupDropoffAddress: formData.pickupDropoffRequested ? (formData.pickupDropoffAddress || currentUser?.address || '') : ''
-            };
+            const payload = { ...formData, pickupDropoffCost: estimatedPickupCost, pickupDropoffAddress: formData.pickupDropoffRequested ? (formData.pickupDropoffAddress || currentUser?.address || '') : '' };
             const response = await apiFetchUser(`/bookings/${bookingId}`, { method: 'PUT', body: JSON.stringify(payload) });
             const data = await response.json();
             toast.success(data.message || "Booking updated successfully!");
@@ -3148,7 +3082,7 @@ const EditBookingPage = ({ currentUser }) => { // Receive currentUser as prop
         } catch (err) { toast.error(err.message || "Failed to update booking."); }
         finally { setIsSubmitting(false); }
     };
-    if (isLoading || !currentUser) return <div className="text-center p-12">Loading...</div>; // Ensure currentUser is loaded
+    if (isLoading || !currentUser) return <div className="text-center p-12">Loading...</div>;
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4"><button onClick={() => window.history.back()} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><ArrowLeft size={24} /></button><h1 className="text-3xl font-bold text-gray-800 dark:text-white">Edit Booking</h1></div>
@@ -3160,9 +3094,7 @@ const EditBookingPage = ({ currentUser }) => { // Receive currentUser as prop
                             <p><strong>Workshop:</strong> {workshopDetails?.workshopName || 'N/A'}</p>
                             <p><strong>Original Service:</strong> {originalBooking.serviceType}</p>
                             <p><strong>Original Cost:</strong> रु{originalBooking.totalCost}</p>
-                            {originalBooking.pickupDropoffRequested && (
-                                <p><strong>Original Pickup Cost:</strong> रु{originalBooking.pickupDropoffCost} from {originalBooking.pickupDropoffAddress}</p>
-                            )}
+                            {originalBooking.pickupDropoffRequested && (<p><strong>Original Pickup Cost:</strong> रु{originalBooking.pickupDropoffCost} from {originalBooking.pickupDropoffAddress}</p>)}
                             <p className="font-bold">Original Final Amount: रु{originalBooking.finalAmount}</p>
                         </div>
                     )}
@@ -3170,67 +3102,34 @@ const EditBookingPage = ({ currentUser }) => { // Receive currentUser as prop
                         <label htmlFor="serviceId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Service*</label>
                         <select id="serviceId" name="serviceId" value={formData.serviceId} onChange={handleChange} required className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white">
                             <option value="" disabled>-- Choose a service --</option>
-                            {/* Filter services to only show those from the original booking's workshop */}
-                            {services.filter(s => s.workshop?._id === originalBooking?.workshop).map(service => ( 
-                                <option key={service._id} value={service._id}>
-                                    {service.name} (रु{service.price})
-                                </option>
-                            ))}
+                            {services.filter(s => s.workshop?._id === originalBooking?.workshop).map(service => ( <option key={service._id} value={service._id}>{service.name} (रु{service.price})</option>))}
                         </select>
-                        {formData.serviceId && selectedServiceDetails && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                Service from: {selectedServiceDetails.workshop?.workshopName}
-                            </p>
-                        )}
+                        {formData.serviceId && selectedServiceDetails && (<p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Service from: {selectedServiceDetails.workshop?.workshopName}</p>)}
                     </div>
                     <Input id="bikeModel" name="bikeModel" label="Bike Model" value={formData.bikeModel} onChange={handleChange} required />
                     <Input id="date" name="date" label="Preferred Date" type="date" value={formData.date} onChange={handleChange} required min={new Date().toISOString().split("T")[0]} />
                     
-                    {/* NEW: Pickup/Drop-off options (only if workshop details are loaded and it's available) */}
                     {workshopDetails?.pickupDropoffAvailable && (
                         <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 space-y-3 bg-gray-50 dark:bg-gray-700/50">
                             <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Pickup & Delivery</h3>
                             <div>
-                                <input 
-                                    type="checkbox" 
-                                    id="pickupDropoffRequested" 
-                                    name="pickupDropoffRequested" 
-                                    checked={formData.pickupDropoffRequested} 
-                                    onChange={handleChange} 
-                                    className="mr-2 text-blue-600 focus:ring-blue-500"
-                                />
-                                <label htmlFor="pickupDropoffRequested" className="text-gray-700 dark:text-gray-300">
-                                    Request Pickup & Drop-off Service (Charges apply)
-                                </label>
+                                <input type="checkbox" id="pickupDropoffRequested" name="pickupDropoffRequested" checked={formData.pickupDropoffRequested} onChange={handleChange} className="mr-2 text-blue-600 focus:ring-blue-500" />
+                                <label htmlFor="pickupDropoffRequested" className="text-gray-700 dark:text-gray-300">Request Pickup & Drop-off Service (Charges apply)</label>
                             </div>
                             {formData.pickupDropoffRequested && (
                                 <div className="space-y-3">
-                                    <Input 
-                                        id="pickupDropoffAddress" 
-                                        name="pickupDropoffAddress" 
-                                        label="Pickup Address (defaults to your profile address)" 
-                                        value={formData.pickupDropoffAddress} 
-                                        onChange={handleChange} 
-                                        placeholder={currentUser?.address || "Enter address for pickup"}
-                                    />
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                                        Estimated Pickup/Drop-off Cost: <strong>रु{estimatedPickupCost}</strong> (based on your profile location and workshop's rate of रु{workshopDetails.pickupDropoffCostPerKm}/km)
-                                        {!currentUser?.location?.coordinates || (currentUser.location.coordinates[0] === 0 && currentUser.location.coordinates[1] === 0) && (
-                                            <span className="text-red-500 block"> (Your location is not set in profile, cost might be inaccurate.)</span>
-                                        )}
+                                    <Input id="pickupDropoffAddress" name="pickupDropoffAddress" label="Pickup Address (defaults to your profile address)" value={formData.pickupDropoffAddress} onChange={handleChange} placeholder={currentUser?.address || "Enter address for pickup"} />
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">Estimated Pickup/Drop-off Cost: <strong>रु{estimatedPickupCost}</strong> (based on your profile location and workshop's rate of रु{workshopDetails.pickupDropoffCostPerKm}/km)
+                                        {!currentUser?.location?.coordinates || (currentUser.location.coordinates[0] === 0 && currentUser.location.coordinates[1] === 0) && (<span className="text-red-500 block"> (Your location is not set in profile, cost might be inaccurate.)</span>)}
                                     </p>
                                 </div>
                             )}
                         </div>
                     )}
-                    {/* END NEW: Pickup/Drop-off options */}
 
                     <div><label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Problem Description</label><textarea id="notes" name="notes" rows="4" value={formData.notes || ''} onChange={handleChange} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white" placeholder="Any specific issues or requests?"></textarea></div>
                     
-                    {/* Display estimated final amount */}
-                    <div className="text-right text-lg font-bold text-gray-900 dark:text-white">
-                        Estimated Total: रु{finalAmountEstimate}
-                    </div>
+                    <div className="text-right text-lg font-bold text-gray-900 dark:text-white">Estimated Total: रु{finalAmountEstimate}</div>
 
                     <div className="flex justify-end gap-3"><Button variant="secondary" type="button" onClick={() => window.location.hash = '#/user/bookings'}>Cancel</Button><Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Saving...' : 'Save Changes'}</Button></div>
                 </form>
@@ -3239,82 +3138,59 @@ const EditBookingPage = ({ currentUser }) => { // Receive currentUser as prop
     );
 };
 
-// --- MODIFIED: NewBookingPage to handle workshop and pickup/drop-off ---
-const NewBookingPage = ({ currentUser }) => { // Receive currentUser as prop
+const NewBookingPage = ({ currentUser }) => {
     const [services, setServices] = useState([]);
-    const [formData, setFormData] = useState({ 
-        serviceId: '', 
-        bikeModel: '', 
-        date: '', 
-        notes: '',
-        workshopId: '', // NEW: To store the selected workshop ID
-        pickupDropoffRequested: false, // NEW: Pickup/drop-off flag
-        pickupDropoffAddress: '' // NEW: Custom pickup address
-    });
+    const [formData, setFormData] = useState({ serviceId: '', bikeModel: '', date: '', notes: '', workshopId: '', pickupDropoffRequested: false, pickupDropoffAddress: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [selectedServiceDetails, setSelectedServiceDetails] = useState(null); // To store full service object
-    const [workshopDetails, setWorkshopDetails] = useState(null); // To store full workshop object for calculations
+    const [selectedServiceDetails, setSelectedServiceDetails] = useState(null);
+    const [workshopDetails, setWorkshopDetails] = useState(null);
 
-    // Fetch all services and pre-select if serviceId is in URL
     useEffect(() => {
         const hash = window.location.hash;
         const urlParams = new URLSearchParams(hash.substring(hash.indexOf('?')));
         const preselectedServiceId = urlParams.get('serviceId');
-        const preselectedWorkshopId = urlParams.get('workshopId'); // NEW: Get workshopId from URL
+        const preselectedWorkshopId = urlParams.get('workshopId');
 
         const fetchServicesAndWorkshops = async () => {
             try {
-                const servicesRes = await apiFetchUser('/services'); // Fetches all services with populated workshop
+                const servicesRes = await apiFetchUser('/services');
                 const { data: allServices } = await servicesRes.json();
                 setServices(allServices || []);
 
                 if (preselectedServiceId && preselectedWorkshopId) {
                     const serviceFound = allServices.find(s => s._id === preselectedServiceId && s.workshop?._id === preselectedWorkshopId);
                     if (serviceFound) {
-                        setFormData(prev => ({ 
-                            ...prev, 
-                            serviceId: preselectedServiceId,
-                            workshopId: preselectedWorkshopId,
-                            pickupDropoffAddress: currentUser?.address || '' // Pre-fill pickup address from user profile
-                        }));
+                        setFormData(prev => ({ ...prev, serviceId: preselectedServiceId, workshopId: preselectedWorkshopId, pickupDropoffAddress: currentUser?.address || '' }));
                         setSelectedServiceDetails(serviceFound);
-                        setWorkshopDetails(serviceFound.workshop); // Set workshop details directly from service
+                        setWorkshopDetails(serviceFound.workshop);
                     } else {
                         toast.warn("Pre-selected service or workshop not found/valid.");
                     }
                 }
-            } catch (err) { 
-                toast.error(err.message || "Could not load available services. Please try again later."); 
-            }
+            } catch (err) { toast.error(err.message || "Could not load available services. Please try again later."); }
         };
-        // Ensure currentUser is loaded before setting initial pickup address
-        if(currentUser) { 
-            fetchServicesAndWorkshops(); 
-        }
-    }, [currentUser]); // Re-run if currentUser changes to get updated address
+        if(currentUser) { fetchServicesAndWorkshops(); }
+    }, [currentUser]);
 
     const handleChange = (e) => { 
         const { name, value, type, checked } = e.target;
         setFormData(prev => {
             const newState = { ...prev, [name]: type === 'checkbox' ? checked : value };
-
-            // If serviceId changes, update selectedServiceDetails and workshopId
             if (name === 'serviceId') {
                 const selected = services.find(s => s._id === value);
                 if (selected) {
                     newState.workshopId = selected.workshop?._id;
                     setSelectedServiceDetails(selected);
                     setWorkshopDetails(selected.workshop);
-                    // Reset pickup options if workshop changed or service changed significantly
                     if (!selected.workshop?.pickupDropoffAvailable) {
                         newState.pickupDropoffRequested = false;
-                        newState.pickupDropoffAddress = currentUser?.address || ''; // Reset to default
+                        newState.pickupDropoffAddress = currentUser?.address || '';
                     }
                 } else {
                     newState.workshopId = '';
                     setSelectedServiceDetails(null);
                     setWorkshopDetails(null);
-                    newState.pickupDropoffRequested = false; // Reset if no service selected
+                    newState.pickupDropoffRequested = false;
                     newState.pickupDropoffAddress = currentUser?.address || '';
                 }
             }
@@ -3323,45 +3199,23 @@ const NewBookingPage = ({ currentUser }) => { // Receive currentUser as prop
     };
 
     const calculateEstimatedPickupCost = () => {
-        // Only calculate if pickup requested, workshop details available, workshop offers it,
-        // and user/workshop have valid coordinates
-        if (!formData.pickupDropoffRequested || !workshopDetails?.pickupDropoffAvailable || !currentUser?.location?.coordinates || !workshopDetails?.location?.coordinates) {
-            return 0;
-        }
-
-        const userCoords = currentUser.location.coordinates; // [lon, lat]
-        const workshopCoords = workshopDetails.location.coordinates; // [lon, lat]
-
-        // Check for default/zero coordinates
-        if (userCoords[0] === 0 && userCoords[1] === 0) {
-            // This toast is informational, the user needs to update their profile for accurate calculation.
-            toast.warn("Your location is not set in your profile. Pickup cost might be inaccurate.");
-            return 0; // Can't calculate without user location
-        }
-        if (workshopCoords[0] === 0 && workshopCoords[1] === 0) {
-             // This toast is informational, the workshop needs to set their location.
-            toast.warn("Workshop location is not set. Pickup cost might be inaccurate.");
-            return 0; // Can't calculate without workshop location
-        }
-
-        const R = 6371; // Radius of Earth in kilometers
-        const dLat = (workshopCoords[1] - userCoords[1]) * Math.PI / 180; // Latitude difference in radians
-        const dLon = (workshopCoords[0] - userCoords[0]) * Math.PI / 180; // Longitude difference in radians
-
-        const a = 
-            Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(userCoords[1] * Math.PI / 180) * Math.cos(workshopCoords[1] * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+        if (!formData.pickupDropoffRequested || !workshopDetails?.pickupDropoffAvailable || !currentUser?.location?.coordinates || !workshopDetails?.location?.coordinates) return 0;
+        const userCoords = currentUser.location.coordinates;
+        const workshopCoords = workshopDetails.location.coordinates;
+        if ((userCoords[0] === 0 && userCoords[1] === 0) || (workshopCoords[0] === 0 && workshopCoords[1] === 0)) return 0;
+        const R = 6371;
+        const dLat = (workshopCoords[1] - userCoords[1]) * Math.PI / 180;
+        const dLon = (workshopCoords[0] - userCoords[0]) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(userCoords[1] * Math.PI / 180) * Math.cos(workshopCoords[1] * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        const distanceKm = R * c; // Distance in km
-
-        const cost = distanceKm * workshopDetails.pickupDropoffCostPerKm * 2; // Multiply by 2 for round trip
-        return Math.round(cost / 10) * 10; // Round to nearest 10 for display
+        const distanceKm = R * c;
+        const cost = distanceKm * workshopDetails.pickupDropoffCostPerKm * 2;
+        return Math.round(cost / 10) * 10;
     };
 
     const estimatedPickupCost = calculateEstimatedPickupCost();
     const baseServiceCost = selectedServiceDetails ? selectedServiceDetails.price : 0;
     const finalAmountEstimate = baseServiceCost + estimatedPickupCost;
-
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -3371,13 +3225,7 @@ const NewBookingPage = ({ currentUser }) => { // Receive currentUser as prop
         }
         setIsSubmitting(true);
         try {
-            const payload = {
-                ...formData,
-                // Ensure pickupDropoffCost is 0 if pickupDropoffRequested is false
-                pickupDropoffCost: formData.pickupDropoffRequested ? estimatedPickupCost : 0, 
-                // Ensure pickupDropoffAddress is empty if pickupDropoffRequested is false
-                pickupDropoffAddress: formData.pickupDropoffRequested ? (formData.pickupDropoffAddress || currentUser?.address || '') : ''
-            };
+            const payload = { ...formData, pickupDropoffCost: estimatedPickupCost, pickupDropoffAddress: formData.pickupDropoffRequested ? (formData.pickupDropoffAddress || currentUser?.address || '') : '' };
             await apiFetchUser('/bookings', { method: 'POST', body: JSON.stringify(payload) });
             toast.success("Booking submitted! Please proceed with payment.");
             window.location.hash = `#/user/my-payments`;
@@ -3393,66 +3241,34 @@ const NewBookingPage = ({ currentUser }) => { // Receive currentUser as prop
                         <label htmlFor="serviceId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Service*</label>
                         <select id="serviceId" name="serviceId" value={formData.serviceId} onChange={handleChange} required className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white">
                             <option value="" disabled>-- Choose a service --</option>
-                            {services.map(service => (
-                                <option key={service._id} value={service._id}>
-                                    {service.name} (रु{service.price}) from {service.workshop?.workshopName || 'N/A'}
-                                </option>
-                            ))}
+                            {services.map(service => ( <option key={service._id} value={service._id}>{service.name} (रु{service.price}) from {service.workshop?.workshopName || 'N/A'}</option>))}
                         </select>
-                        {formData.serviceId && selectedServiceDetails && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                Service from: <strong>{selectedServiceDetails.workshop?.workshopName || 'N/A'}</strong>
-                            </p>
-                        )}
+                        {formData.serviceId && selectedServiceDetails && (<p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Service from: <strong>{selectedServiceDetails.workshop?.workshopName || 'N/A'}</strong></p>)}
                     </div>
                     <Input id="bikeModel" name="bikeModel" label="Bike Model (e.g., Bajaj Pulsar 220F)*" value={formData.bikeModel} onChange={handleChange} required />
                     <Input id="date" name="date" label="Preferred Date*" type="date" value={formData.date} onChange={handleChange} required min={new Date().toISOString().split("T")[0]} />
                     
-                    {/* NEW: Pickup/Drop-off options (only if selected service/workshop has it available) */}
                     {workshopDetails?.pickupDropoffAvailable && (
                         <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 space-y-3 bg-gray-50 dark:bg-gray-700/50">
                             <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Pickup & Delivery</h3>
                             <div>
-                                <input 
-                                    type="checkbox" 
-                                    id="pickupDropoffRequested" 
-                                    name="pickupDropoffRequested" 
-                                    checked={formData.pickupDropoffRequested} 
-                                    onChange={handleChange} 
-                                    className="mr-2 text-blue-600 focus:ring-blue-500"
-                                />
-                                <label htmlFor="pickupDropoffRequested" className="text-gray-700 dark:text-gray-300">
-                                    Request Pickup & Drop-off Service (Charges apply)
-                                </label>
+                                <input type="checkbox" id="pickupDropoffRequested" name="pickupDropoffRequested" checked={formData.pickupDropoffRequested} onChange={handleChange} className="mr-2 text-blue-600 focus:ring-blue-500" />
+                                <label htmlFor="pickupDropoffRequested" className="text-gray-700 dark:text-gray-300">Request Pickup & Drop-off Service (Charges apply)</label>
                             </div>
                             {formData.pickupDropoffRequested && (
                                 <div className="space-y-3">
-                                    <Input 
-                                        id="pickupDropoffAddress" 
-                                        name="pickupDropoffAddress" 
-                                        label="Pickup Address (defaults to your profile address)" 
-                                        value={formData.pickupDropoffAddress} 
-                                        onChange={handleChange} 
-                                        placeholder={currentUser?.address || "Enter address for pickup"}
-                                    />
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                                        Estimated Pickup/Drop-off Cost: <strong>रु{estimatedPickupCost}</strong> (based on your profile location and workshop's rate of रु{workshopDetails.pickupDropoffCostPerKm}/km)
-                                        {!currentUser?.location?.coordinates || (currentUser.location.coordinates[0] === 0 && currentUser.location.coordinates[1] === 0) && (
-                                            <span className="text-red-500 block"> (Your location is not set in profile, cost might be inaccurate.)</span>
-                                        )}
+                                    <Input id="pickupDropoffAddress" name="pickupDropoffAddress" label="Pickup Address (defaults to your profile address)" value={formData.pickupDropoffAddress} onChange={handleChange} placeholder={currentUser?.address || "Enter address for pickup"} />
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">Estimated Pickup/Drop-off Cost: <strong>रु{estimatedPickupCost}</strong> (based on your profile location and workshop's rate of रु{workshopDetails.pickupDropoffCostPerKm}/km)
+                                        {!currentUser?.location?.coordinates || (currentUser.location.coordinates[0] === 0 && currentUser.location.coordinates[1] === 0) && (<span className="text-red-500 block"> (Your location is not set in profile, cost might be inaccurate.)</span>)}
                                     </p>
                                 </div>
                             )}
                         </div>
                     )}
-                    {/* END NEW: Pickup/Drop-off options */}
 
                     <div><label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Explain Your Problem Here*</label><textarea id="notes" name="notes" rows="4" value={formData.notes || ""} onChange={handleChange} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white" placeholder="Any specific issues or requests?"></textarea></div>
                     
-                    {/* Display estimated final amount */}
-                    <div className="text-right text-lg font-bold text-gray-900 dark:text-white">
-                        Estimated Total: रु{finalAmountEstimate}
-                    </div>
+                    <div className="text-right text-lg font-bold text-gray-900 dark:text-white">Estimated Total: रु{finalAmountEstimate}</div>
 
                     <div className="flex justify-center"><Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Submitting...' : 'Submit Request'}</Button></div>
                 </form>
@@ -3460,6 +3276,7 @@ const NewBookingPage = ({ currentUser }) => { // Receive currentUser as prop
         </div>
     );
 };
+
 const MyPaymentsPage = ({ currentUser, loyaltyPoints, onDiscountApplied }) => {
     const [unpaidBookings, setUnpaidBookings] = useState([]);
     const [paidBookings, setPaidBookings] = useState([]);
@@ -3476,11 +3293,8 @@ const MyPaymentsPage = ({ currentUser, loyaltyPoints, onDiscountApplied }) => {
             const historyRes = await apiFetchUser('/bookings/history');
             const historyData = await historyRes.json();
             setPaidBookings(historyData.data || []);
-        } catch (error) { 
-            toast.error(error.message || 'Could not fetch your payment information.'); 
-        } finally { 
-            setIsLoading(false); 
-        }
+        } catch (error) { toast.error(error.message || 'Could not fetch your payment information.'); }
+        finally { setIsLoading(false); }
     };
     
     useEffect(() => {
@@ -3489,19 +3303,14 @@ const MyPaymentsPage = ({ currentUser, loyaltyPoints, onDiscountApplied }) => {
         const status = params.get('status');
         const message = params.get('message');
         if (status && message) {
-            if (status === 'success') { 
-                toast.success(message); 
-            } else { 
-                toast.error(message); 
-            }
-            // Clear URL params after displaying toast
+            if (status === 'success') toast.success(message); 
+            else toast.error(message);
             window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
         }
     }, []);
 
     const handlePaymentAndDiscount = async () => {
-        await fetchData(); // Refresh bookings list
-        // Also refresh user profile to get updated loyalty points
+        await fetchData();
         const profileResponse = await apiFetchUser('/profile');
         const data = await profileResponse.json();
         onDiscountApplied(data.data.loyaltyPoints);
@@ -3511,42 +3320,25 @@ const MyPaymentsPage = ({ currentUser, loyaltyPoints, onDiscountApplied }) => {
         try {
             await apiFetchUser(`/bookings/${bookingId}/apply-discount`, { method: 'PUT' });
             toast.success('Discount applied!');
-            handlePaymentAndDiscount(); // Refresh data after discount
-        } catch (error) { 
-            toast.error(error.message || "Failed to apply discount."); 
-        }
+            handlePaymentAndDiscount();
+        } catch (error) { toast.error(error.message || "Failed to apply discount."); }
     };
 
     const handlePayment = async (booking, method) => {
         const amountToPay = booking.finalAmount ?? booking.totalCost;
-
         if (method === 'COD') {
             try {
                 await apiFetchUser(`/bookings/${booking._id}/pay`, { method: 'PUT', body: JSON.stringify({ paymentMethod: 'COD' }) });
                 toast.success("Payment Confirmed! Your booking is now being processed.");
-                handlePaymentAndDiscount(); // Refresh data after payment
-            } catch (error) { // Corrected syntax here
-                toast.error(error.message || "Payment confirmation failed."); 
-            }
+                handlePaymentAndDiscount();
+            } catch (error) { toast.error(error.message || "Payment confirmation failed."); }
             return;
         }
-
         if (method === 'eSewa') {
             try {
-                const response = await fetch('http://localhost:5050/api/payment/esewa/initiate', { 
-                    method: 'POST', 
-                    headers: { 
-                        'Content-Type': 'application/json', 
-                        'Authorization': `Bearer ${localStorage.getItem('token')}` 
-                    }, 
-                    body: JSON.stringify({ bookingId: booking._id }) 
-                });
-                if (!response.ok) { 
-                    const errorData = await response.json(); 
-                    throw new Error(errorData.message || 'An API error occurred.'); 
-                }
+                const response = await fetch('http://localhost:5050/api/payment/esewa/initiate', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` }, body: JSON.stringify({ bookingId: booking._id }) });
+                if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.message || 'An API error occurred.'); }
                 const esewaResponse = await response.json();
-                
                 const form = document.createElement('form');
                 form.setAttribute('method', 'POST');
                 form.setAttribute('action', esewaResponse.ESEWA_URL);
@@ -3561,145 +3353,48 @@ const MyPaymentsPage = ({ currentUser, loyaltyPoints, onDiscountApplied }) => {
                 }
                 document.body.appendChild(form);
                 form.submit();
-            } catch (error) { 
-                toast.error(error.message || 'Error initiating eSewa payment.'); 
-            }
+            } catch (error) { toast.error(error.message || 'Error initiating eSewa payment.'); }
             return;
         }
-
         if (method === 'Khalti') {
             const khaltiConfig = {
-                publicKey: "test_public_key_dc74e0fd57cb46cd93832aee0a390234", // Make sure this is your actual Khalti Public Key
+                publicKey: "test_public_key_dc74e0fd57cb46cd93832aee0a390234",
                 productIdentity: booking._id, 
                 productName: booking.serviceType, 
-                productUrl: window.location.href, // Current URL for Khalti callback
+                productUrl: window.location.href,
                 eventHandler: {
                     async onSuccess(payload) {
                         try {
-                            await apiFetchUser('/bookings/verify-khalti', { 
-                                method: 'POST', 
-                                body: JSON.stringify({ token: payload.token, amount: payload.amount, booking_id: booking._id }) 
-                            });
+                            await apiFetchUser('/bookings/verify-khalti', { method: 'POST', body: JSON.stringify({ token: payload.token, amount: payload.amount, booking_id: booking._id }) });
                             toast.success('Payment Successful & Verified!');
-                            handlePaymentAndDiscount(); // Refresh data after payment
-                        } catch (error) { 
-                            toast.error(error.message || 'Payment verification failed.'); 
-                        }
+                            handlePaymentAndDiscount();
+                        } catch (error) { toast.error(error.message || 'Payment verification failed.'); }
                     },
-                    onError: (error) => toast.error('Payment process was interrupted.'),
-                    onClose: () => console.log('Khalti widget closed'), // Optional: log close event
+                    onError: () => toast.error('Payment process was interrupted.'),
+                    onClose: () => console.log('Khalti widget closed'),
                 },
                 paymentPreference: ["KHALTI", "EBANKING", "MOBILE_BANKING", "CONNECT_IPS", "SCT"],
             };
-            // Ensure KhaltiCheckout script is loaded in your index.html
             const checkout = new KhaltiCheckout(khaltiConfig); 
-            checkout.show({ amount: amountToPay * 100 }); // Khalti amount is in paisa
+            checkout.show({ amount: amountToPay * 100 });
         }
     };
 
-    // Slice the paid bookings for display based on showAllHistory
     const displayedHistory = showAllHistory ? paidBookings : paidBookings.slice(0, 10);
 
     return (
         <div className="space-y-8">
             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">My Payments</h1>
-            
             <Card>
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Pending Payments</h2>
-                    <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400">
-                        <Gift size={20} />
-                        <span className="font-semibold">{loyaltyPoints} Points</span>
-                    </div>
+                    <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400"><Gift size={20} /><span className="font-semibold">{loyaltyPoints} Points</span></div>
                 </div>
-                {isLoading && unpaidBookings.length === 0 ? (
-                    <div className="text-center p-12">Loading...</div>
-                ) : unpaidBookings.length > 0 ? (
-                    <div className="space-y-4">
-                        {unpaidBookings.map(booking => (
-                            <div key={booking._id} className="p-4 border rounded-lg dark:border-gray-700 flex flex-wrap justify-between items-center gap-4">
-                                <div>
-                                    <p className="font-bold">{booking.serviceType} for {booking.bikeModel}</p>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">Workshop: {booking.workshop?.workshopName || 'N/A'}</p> {/* NEW */}
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">Date: {new Date(booking.date).toLocaleDateString()}</p>
-                                    {booking.pickupDropoffRequested && <p className="text-sm text-gray-500 dark:text-gray-400">Pickup: {booking.pickupDropoffAddress || 'User Profile Address'}</p>} {/* NEW */}
-                                    <div className="text-lg font-semibold mt-1">
-                                        {booking.discountApplied && (<span className="text-base text-gray-500 line-through mr-2">रु{booking.totalCost}</span>)}
-                                        <span>रु{booking.finalAmount ?? booking.totalCost}</span>
-                                    </div>
-                                    {booking.discountApplied && <p className="text-sm font-bold text-green-500">Discount: -रु{booking.discountAmount}</p>}
-                                </div>
-                                <div className="flex flex-wrap items-center gap-2">
-                                    {loyaltyPoints >= 100 && !booking.discountApplied && (
-                                        <Button variant="special" onClick={() => handleApplyDiscount(booking._id)}>
-                                            <Gift size={16} /> Apply 20% Discount
-                                        </Button>
-                                    )}
-                                    <Button onClick={() => handlePayment(booking, 'COD')}>Pay with COD</Button>
-                                    {/* Ensure Khalti and eSewa logos are in your public folder */}
-                                    <Button variant="secondary" onClick={() => handlePayment(booking, 'Khalti')} className="bg-white">
-                                        <img src="/khaltilogo.png" alt="Khalti" style={{ height: '24px' }} />
-                                    </Button>
-                                    <Button variant="secondary" onClick={() => handlePayment(booking, 'eSewa')} className="bg-white hover:bg-gray-100">
-                                        <img src="/esewa_logo.png" alt="eSewa" style={{ height: '24px' }} />
-                                    </Button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center py-12">
-                        <CreditCard size={48} className="mx-auto text-gray-400" />
-                        <h3 className="mt-2 text-xl font-semibold">No Pending Payments</h3>
-                        <p className="mt-1 text-sm text-gray-500">All your payments are up to date!</p>
-                    </div>
-                )}
+                {isLoading && unpaidBookings.length === 0 ? (<div className="text-center p-12">Loading...</div>) : unpaidBookings.length > 0 ? (<div className="space-y-4">{unpaidBookings.map(booking => (<div key={booking._id} className="p-4 border rounded-lg dark:border-gray-700 flex flex-wrap justify-between items-center gap-4"><div><p className="font-bold">{booking.serviceType} for {booking.bikeModel}</p><p className="text-sm text-gray-500 dark:text-gray-400">Workshop: {booking.workshop?.workshopName || 'N/A'}</p><p className="text-sm text-gray-500 dark:text-gray-400">Date: {new Date(booking.date).toLocaleDateString()}</p>{booking.pickupDropoffRequested && <p className="text-sm text-gray-500 dark:text-gray-400">Pickup: {booking.pickupDropoffAddress || 'User Profile Address'}</p>}<div className="text-lg font-semibold mt-1">{booking.discountApplied && (<span className="text-base text-gray-500 line-through mr-2">रु{booking.totalCost}</span>)}<span>रु{booking.finalAmount ?? booking.totalCost}</span></div>{booking.discountApplied && <p className="text-sm font-bold text-green-500">Discount: -रु{booking.discountAmount}</p>}</div><div className="flex flex-wrap items-center gap-2">{loyaltyPoints >= 100 && !booking.discountApplied && (<Button variant="special" onClick={() => handleApplyDiscount(booking._id)}><Gift size={16} /> Apply 20% Discount</Button>)}<Button onClick={() => handlePayment(booking, 'COD')}>Pay with COD</Button><Button variant="secondary" onClick={() => handlePayment(booking, 'Khalti')} className="bg-white"><img src="/khaltilogo.png" alt="Khalti" style={{ height: '24px' }} /></Button><Button variant="secondary" onClick={() => handlePayment(booking, 'eSewa')} className="bg-white hover:bg-gray-100"><img src="/esewa_logo.png" alt="eSewa" style={{ height: '24px' }} /></Button></div></div>))}</div>) : (<div className="text-center py-12"><CreditCard size={48} className="mx-auto text-gray-400" /><h3 className="mt-2 text-xl font-semibold">No Pending Payments</h3><p className="mt-1 text-sm text-gray-500">All your payments are up to date!</p></div>)}
             </Card>
-
             <Card className="flex flex-col flex-grow">
                 <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Payment History</h2>
-                <div className="overflow-x-auto flex-grow">
-                    {isLoading && paidBookings.length === 0 ? (
-                        <div className="text-center p-12">Loading history...</div>
-                    ) : displayedHistory.length > 0 ? (
-                        <table className="w-full text-left">
-                            <thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700">
-                                <tr>
-                                    <th className="p-3">Service</th>
-                                    <th className="p-3">Workshop</th> {/* NEW */}
-                                    <th className="p-3">Bike</th>
-                                    <th className="p-3">Date</th>
-                                    <th className="p-3">Amount Paid</th>
-                                    <th className="p-3">Method</th>
-                                    <th className="p-3">Pickup/Dropoff</th> {/* NEW */}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {displayedHistory.map(booking => (
-                                    <tr key={booking._id} className="border-b dark:border-gray-700">
-                                        <td className="p-3 font-medium text-gray-900 dark:text-white">{booking.serviceType}</td>
-                                        <td className="p-3 text-gray-600 dark:text-gray-300">{booking.workshop?.workshopName || 'N/A'}</td> {/* NEW */}
-                                        <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel}</td>
-                                        <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
-                                        <td className="p-3 font-semibold">
-                                            {booking.discountApplied && (<span className="text-xs text-red-500 line-through mr-1">रु{booking.totalCost}</span>)}
-                                            <span>रु{booking.finalAmount ?? booking.totalCost}</span>
-                                        </td>
-                                        <td className="p-3"><StatusBadge status={booking.paymentMethod} /></td>
-                                        <td className="p-3 text-gray-600 dark:text-gray-300">
-                                            {booking.pickupDropoffRequested ? `रु${booking.pickupDropoffCost} from ${booking.pickupDropoffAddress || 'Profile Address'}` : 'Self'}
-                                        </td> {/* NEW */}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    ) : (
-                        <div className="text-center py-12">
-                            <p className="text-gray-500 dark:text-gray-400">No payment history found.</p>
-                        </div>
-                    )}
-                </div>
-                {/* Ensure LoadMoreControl is correctly passed props from your state */}
+                <div className="overflow-x-auto flex-grow">{isLoading && paidBookings.length === 0 ? (<div className="text-center p-12">Loading history...</div>) : displayedHistory.length > 0 ? (<table className="w-full text-left"><thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700"><tr><th className="p-3">Service</th><th className="p-3">Workshop</th><th className="p-3">Bike</th><th className="p-3">Date</th><th className="p-3">Amount Paid</th><th className="p-3">Method</th><th className="p-3">Pickup/Dropoff</th></tr></thead><tbody>{displayedHistory.map(booking => (<tr key={booking._id} className="border-b dark:border-gray-700"><td className="p-3 font-medium text-gray-900 dark:text-white">{booking.serviceType}</td><td className="p-3 text-gray-600 dark:text-gray-300">{booking.workshop?.workshopName || 'N/A'}</td><td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel}</td><td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td><td className="p-3 font-semibold">{booking.discountApplied && (<span className="text-xs text-red-500 line-through mr-1">रु{booking.totalCost}</span>)}<span>रु{booking.finalAmount ?? booking.totalCost}</span></td><td className="p-3"><StatusBadge status={booking.paymentMethod} /></td><td className="p-3 text-gray-600 dark:text-gray-300">{booking.pickupDropoffRequested ? `रु${booking.pickupDropoffCost} from ${booking.pickupDropoffAddress || 'Profile Address'}` : 'Self'}</td></tr>))}</tbody></table>) : (<div className="text-center py-12"><p className="text-gray-500 dark:text-gray-400">No payment history found.</p></div>)}</div>
                 <LoadMoreControl onToggle={() => setShowAllHistory(!showAllHistory)} isExpanded={showAllHistory} hasMore={paidBookings.length > 10} />
             </Card>
         </div>
@@ -3707,35 +3402,17 @@ const MyPaymentsPage = ({ currentUser, loyaltyPoints, onDiscountApplied }) => {
 };
 
 const UserProfilePage = ({ currentUser, setCurrentUser }) => {
-    const [profile, setProfile] = useState({ 
-        fullName: '', 
-        email: '', 
-        phone: '', 
-        address: '', 
-        profilePicture: '',
-        latitude: '', // NEW: For displaying/editing location
-        longitude: '' // NEW: For displaying/editing location
-    });
+    const [profile, setProfile] = useState({ fullName: '', email: '', phone: '', address: '', profilePicture: '', latitude: '', longitude: '' });
     const [isEditing, setIsEditing] = useState(false);
     const [isFetchingLocation, setIsFetchingLocation] = useState(false);
     const [initialProfile, setInitialProfile] = useState({});
     const fileInputRef = useRef(null);
 
-    // Populate form data when currentUser changes
     useEffect(() => { 
         if (currentUser) {
-            setProfile({
-                ...currentUser,
-                // Ensure lat/lon are properly extracted from coordinates array [lon, lat]
-                latitude: currentUser.location?.coordinates[1] || '', 
-                longitude: currentUser.location?.coordinates[0] || ''
-            });
-            // Set initial profile for cancellation (deep copy if necessary for complex objects)
-            setInitialProfile({
-                ...currentUser,
-                latitude: currentUser.location?.coordinates[1] || '',
-                longitude: currentUser.location?.coordinates[0] || ''
-            });
+            const initialData = { ...currentUser, latitude: currentUser.location?.coordinates[1] || '', longitude: currentUser.location?.coordinates[0] || '' };
+            setProfile(initialData);
+            setInitialProfile(initialData);
         }
     }, [currentUser]);
 
@@ -3746,47 +3423,30 @@ const UserProfilePage = ({ currentUser, setCurrentUser }) => {
         navigator.geolocation.getCurrentPosition(
             async (position) => {
                 const { latitude, longitude } = position.coords;
-                // Reverse geocode to get human-readable address (optional, but good UX)
                 try {
-                    // Use Nominatim or similar service
                     const nominatimResponse = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
                     if (!nominatimResponse.ok) throw new Error('Failed to convert location to address.');
                     const data = await nominatimResponse.json();
                     if (data && data.display_name) {
-                        setProfile(p => ({ 
-                            ...p, 
-                            address: data.display_name,
-                            latitude: latitude,
-                            longitude: longitude
-                        }));
+                        setProfile(p => ({ ...p, address: data.display_name, latitude, longitude }));
                         toast.success("Location fetched successfully!");
                     } else { 
                         toast.warn('Could not find a detailed address for this location. Lat/Lon saved.');
-                        setProfile(p => ({ 
-                            ...p, 
-                            latitude: latitude,
-                            longitude: longitude
-                        }));
+                        setProfile(p => ({ ...p, latitude, longitude }));
                     }
                 } catch (error) { 
                     toast.error(error.message || "Failed to fetch address. Latitude and Longitude saved."); 
-                    setProfile(p => ({ // Still set lat/lon even if address fails
-                        ...p, 
-                        latitude: latitude,
-                        longitude: longitude
-                    }));
-                } finally { 
-                    setIsFetchingLocation(false); 
-                }
+                    setProfile(p => ({ ...p, latitude, longitude }));
+                } finally { setIsFetchingLocation(false); }
             },
             (error) => {
                 let errorMessage = "Geolocation permission denied. Please enable it in browser settings.";
-                if (error.code === error.POSITION_UNAVAILABLE) { errorMessage = "Location information is currently unavailable."; }
-                else if (error.code === error.TIMEOUT) { errorMessage = "Request for location timed out."; }
+                if (error.code === error.POSITION_UNAVAILABLE) errorMessage = "Location information is currently unavailable.";
+                else if (error.code === error.TIMEOUT) errorMessage = "Request for location timed out.";
                 toast.error(errorMessage);
                 setIsFetchingLocation(false);
             },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } // High accuracy, 10s timeout
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     };
 
@@ -3797,11 +3457,9 @@ const UserProfilePage = ({ currentUser, setCurrentUser }) => {
         formDataToSend.append('phone', profile.phone);
         formDataToSend.append('address', profile.address);
         
-        // NEW: Add coordinates if both latitude and longitude are valid numbers
         if (profile.latitude !== '' && profile.longitude !== '' && !isNaN(parseFloat(profile.latitude)) && !isNaN(parseFloat(profile.longitude))) {
-            formDataToSend.append('coordinates', JSON.stringify([parseFloat(profile.longitude), parseFloat(profile.latitude)])); // MongoDB expects [longitude, latitude]
+            formDataToSend.append('coordinates', JSON.stringify([parseFloat(profile.longitude), parseFloat(profile.latitude)]));
         } else {
-             // If coordinates are explicitly cleared or invalid, send default zeros
             formDataToSend.append('coordinates', JSON.stringify([0, 0])); 
         }
 
@@ -3811,37 +3469,18 @@ const UserProfilePage = ({ currentUser, setCurrentUser }) => {
             const response = await apiFetchUser('/profile', { method: 'PUT', body: formDataToSend });
             const data = await response.json();
             const updatedData = { ...data.data, address: data.data.address || '' };
+            const finalProfileData = { ...updatedData, latitude: updatedData.location?.coordinates[1] || '', longitude: updatedData.location?.coordinates[0] || '' };
             
-            // Update profile state with fresh data, ensuring lat/lon are correctly set from coordinates
-            setProfile({
-                ...updatedData,
-                latitude: updatedData.location?.coordinates[1] || '',
-                longitude: updatedData.location?.coordinates[0] || ''
-            });
-            // Update initial profile for future cancellations
-            setInitialProfile({
-                ...updatedData,
-                latitude: updatedData.location?.coordinates[1] || '',
-                longitude: updatedData.location?.coordinates[0] || ''
-            });
-            setCurrentUser(updatedData); // Update AuthContext's currentUser
+            setProfile(finalProfileData);
+            setInitialProfile(finalProfileData);
+            setCurrentUser(updatedData);
             setIsEditing(false);
             toast.success(data.message || 'Profile updated successfully!');
         } catch (error) { toast.error(error.message || 'Failed to update profile.'); }
     };
 
-    const handleCancel = () => { 
-        setProfile(initialProfile); 
-        setIsEditing(false); 
-    };
-
-    const handleFileChange = (e) => { 
-        const file = e.target.files[0]; 
-        if (file) { 
-            setProfile(p => ({ ...p, profilePictureUrl: URL.createObjectURL(file), newProfilePicture: file })); 
-        } 
-    };
-
+    const handleCancel = () => { setProfile(initialProfile); setIsEditing(false); };
+    const handleFileChange = (e) => { const file = e.target.files[0]; if (file) setProfile(p => ({ ...p, profilePictureUrl: URL.createObjectURL(file), newProfilePicture: file })); };
     const handleImageError = (e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.fullName || 'U')}&background=e2e8f0&color=4a5568&size=128`; };
     const profilePictureSrc = profile.profilePictureUrl || (profile.profilePicture ? `http://localhost:5050/${profile.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.fullName || 'U')}&background=e2e8f0&color=4a5568&size=128`);
     
@@ -3862,7 +3501,6 @@ const UserProfilePage = ({ currentUser, setCurrentUser }) => {
                         <Input id="email" label="Email Address" name="email" type="email" value={profile.email || ''} onChange={(e) => setProfile({ ...profile, email: e.target.value })} disabled={!isEditing} />
                         <Input id="phone" label="Phone Number" name="phone" value={profile.phone || ''} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} disabled={!isEditing} />
                         
-                        {/* NEW: Address & Location fields */}
                         <div>
                             <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address</label>
                             <div className="flex items-center gap-2">
@@ -3874,17 +3512,123 @@ const UserProfilePage = ({ currentUser, setCurrentUser }) => {
                             <Input id="latitude" label="Latitude" name="latitude" type="number" step="any" value={profile.latitude} onChange={(e) => setProfile({ ...profile, latitude: e.target.value })} disabled={!isEditing} placeholder="e.g., 27.7172" />
                             <Input id="longitude" label="Longitude" name="longitude" type="number" step="any" value={profile.longitude} onChange={(e) => setProfile({ ...profile, longitude: e.target.value })} disabled={!isEditing} placeholder="e.g., 85.3240" />
                         </div>
-                        {/* Display current coordinates if set */}
-                        {currentUser?.location?.coordinates && (currentUser.location.coordinates[0] !== 0 || currentUser.location.coordinates[1] !== 0) && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                Your saved coordinates: Lat {currentUser.location.coordinates[1].toFixed(4)}, Lon {currentUser.location.coordinates[0].toFixed(4)}
-                            </p>
-                        )}
-                        {/* END NEW: Address & Location fields */}
+                        {currentUser?.location?.coordinates && (currentUser.location.coordinates[0] !== 0 || currentUser.location.coordinates[1] !== 0) && (<p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Your saved coordinates: Lat {currentUser.location.coordinates[1].toFixed(4)}, Lon {currentUser.location.coordinates[0].toFixed(4)}</p>)}
 
                         {isEditing && (<div className="flex justify-end gap-3 pt-4"><Button variant="secondary" onClick={handleCancel}>Cancel</Button><Button onClick={handleSave}>Save Changes</Button></div>)}
                     </div>
                 </div>
+            </Card>
+        </div>
+    );
+};
+
+// --- NEW COMPONENT: WorkshopApplicationPage ---
+const WorkshopApplicationPage = ({ currentUser }) => {
+    const [formData, setFormData] = useState({
+        workshopName: '',
+        ownerName: currentUser?.fullName || '',
+        email: currentUser?.email || '',
+        phone: currentUser?.phone || '',
+        address: '',
+        message: '', // The backend has 'notes', but frontend form can use 'message'
+    });
+    const [companyDocument, setCompanyDocument] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [applicationStatus, setApplicationStatus] = useState(null);
+
+    useEffect(() => {
+        const checkApplicationStatus = async () => {
+            try {
+                const response = await apiFetchUser('/my-workshop-application');
+                const data = await response.json();
+                if (data.data) {
+                    setApplicationStatus(data.data.status);
+                }
+            } catch (error) {
+                console.log("No existing workshop application found for this user.");
+            }
+        };
+        checkApplicationStatus();
+    }, []);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleFileChange = (e) => {
+        setCompanyDocument(e.target.files[0]);
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!companyDocument) {
+            toast.error("Please upload your company registration document.");
+            return;
+        }
+        setIsSubmitting(true);
+        const dataToSend = new FormData();
+        // Match backend controller keys
+        dataToSend.append('workshopName', formData.workshopName);
+        dataToSend.append('ownerName', formData.ownerName);
+        dataToSend.append('email', formData.email);
+        dataToSend.append('phone', formData.phone);
+        dataToSend.append('address', formData.address);
+        dataToSend.append('notes', formData.message); // Frontend 'message' maps to backend 'notes'
+        dataToSend.append('companyDocumentImage', companyDocument);
+
+        try {
+            await apiFetchUser('/apply-for-workshop', { method: 'POST', body: dataToSend });
+            toast.success("Application submitted successfully! We will review it and get back to you.");
+            setApplicationStatus('Pending');
+        } catch (error) {
+            toast.error(error.message || "Failed to submit application.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    if (applicationStatus === 'Approved') {
+        return (
+            <div className="space-y-6"><h1 className="text-3xl font-bold text-gray-800 dark:text-white">Application Status</h1><Card className="text-center"><ThumbsUp size={48} className="mx-auto text-green-500" /><h2 className="mt-4 text-2xl font-semibold">Congratulations!</h2><p className="mt-2 text-gray-600 dark:text-gray-400">Your workshop application has been approved. Please log out and log back in to access your new Admin Dashboard.</p></Card></div>
+        );
+    }
+    if (applicationStatus === 'Pending') {
+        return (
+            <div className="space-y-6"><h1 className="text-3xl font-bold text-gray-800 dark:text-white">Application Status</h1><Card className="text-center"><Clock size={48} className="mx-auto text-yellow-500" /><h2 className="mt-4 text-2xl font-semibold">Your Application is Pending Review</h2><p className="mt-2 text-gray-600 dark:text-gray-400">We have received your application and are currently reviewing it. We will notify you once a decision has been made. Thank you for your patience.</p></Card></div>
+        );
+    }
+    
+    return (
+        <div className="space-y-6">
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Become a MotoFix Partner</h1>
+            <p className="text-lg text-gray-600 dark:text-gray-400">Register your workshop with us to reach more customers and grow your business.</p>
+            <Card>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <Input id="workshopName" name="workshopName" label="Workshop Name" value={formData.workshopName} onChange={handleChange} required />
+                        <Input id="ownerName" name="ownerName" label="Owner's Full Name" value={formData.ownerName} onChange={handleChange} required />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <Input id="email" name="email" type="email" label="Contact Email" value={formData.email} onChange={handleChange} required />
+                        <Input id="phone" name="phone" label="Contact Phone" value={formData.phone} onChange={handleChange} required />
+                    </div>
+                    <div>
+                        <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Workshop Address</label>
+                        <textarea id="address" name="address" rows="3" value={formData.address} onChange={handleChange} required className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white" />
+                    </div>
+                    <div>
+                        <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Message (Optional)</label>
+                        <textarea id="message" name="message" rows="3" value={formData.message} onChange={handleChange} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white" placeholder="Tell us more about your workshop..." />
+                    </div>
+                    <div>
+                        <label htmlFor="companyDocument" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Company Registration Document (Image/PDF)</label>
+                        <input type="file" id="companyDocument" onChange={handleFileChange} required className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept="image/*,.pdf" />
+                    </div>
+                    <div className="flex justify-end">
+                        <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Submitting...' : 'Submit Application'}</Button>
+                    </div>
+                </form>
             </Card>
         </div>
     );
@@ -3916,24 +3660,17 @@ const ChatPage = ({ currentUser }) => {
             setIsHistoryLoading(false);
         };
         socket.on("chat_history", historyListener);
-        const messageListener = (data) => {
-            if (data.room === room) { setMessageList((list) => [...list, data]); }
-        };
+        const messageListener = (data) => { if (data.room === room) setMessageList((list) => [...list, data]); };
         socket.on("receive_message", messageListener);
-        return () => {
-            socket.off("chat_history", historyListener);
-            socket.off("receive_message", messageListener);
-        };
+        return () => { socket.off("chat_history", historyListener); socket.off("receive_message", messageListener); };
     }, [room, authorId]);
-    useEffect(() => {
-        if (chatBodyRef.current) { chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight; }
-    }, [messageList]);
+    useEffect(() => { if (chatBodyRef.current) chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight; }, [messageList]);
     const handleFileChange = (event) => {
         const file = event.target.files[0];
         if (file) {
             setSelectedFile(file);
-            if (file.type.startsWith('image/')) { setPreviewUrl(URL.createObjectURL(file)); }
-            else { setPreviewUrl(null); }
+            if (file.type.startsWith('image/')) setPreviewUrl(URL.createObjectURL(file));
+            else setPreviewUrl(null);
         }
         event.target.value = null;
     };
@@ -3947,10 +3684,9 @@ const ChatPage = ({ currentUser }) => {
             formData.append('room', room);
             formData.append('author', authorName);
             formData.append('authorId', authorId);
-            if (currentMessage.trim() !== '') { formData.append('message', currentMessage); }
-            try {
-                await apiFetchUser('/chat/upload', { method: 'POST', body: formData });
-            } catch (error) { toast.error(`File upload failed: ${error.message}`); }
+            if (currentMessage.trim() !== '') formData.append('message', currentMessage);
+            try { await apiFetchUser('/chat/upload', { method: 'POST', body: formData }); }
+            catch (error) { toast.error(`File upload failed: ${error.message}`); }
             finally { setIsUploading(false); handleRemovePreview(); setCurrentMessage(''); }
         } else {
             const messageData = { room, author: authorName, authorId, message: currentMessage };
@@ -3963,16 +3699,11 @@ const ChatPage = ({ currentUser }) => {
             await apiFetchUser('/chat/clear', { method: 'PUT' });
             toast.success("Your chat history has been cleared.");
             setMessageList([]);
-        } catch (error) {
-            toast.error(error.message || "Failed to clear chat history.");
-        } finally {
-            setConfirmOpen(false);
-        }
+        } catch (error) { toast.error(error.message || "Failed to clear chat history."); }
+        finally { setConfirmOpen(false); }
     };
     const renderFileContent = (msg) => {
-        if (msg.fileType?.startsWith('image/')) {
-            return (<a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" className="block"><img src={msg.fileUrl} alt={msg.fileName || 'Sent Image'} className="max-w-xs rounded-lg mt-1" /></a>);
-        }
+        if (msg.fileType?.startsWith('image/')) { return (<a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" className="block"><img src={msg.fileUrl} alt={msg.fileName || 'Sent Image'} className="max-w-xs rounded-lg mt-1" /></a>); }
         return (<a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" download={msg.fileName} className="flex items-center gap-3 bg-black/10 dark:bg-white/10 p-3 rounded-lg hover:bg-black/20 dark:hover:bg-white/20 transition-colors mt-1"><FileText size={32} className="flex-shrink-0" /><span className="truncate font-medium">{msg.fileName || 'Download File'}</span></a>);
     };
     return (
@@ -4045,6 +3776,7 @@ const UserSidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClos
                 <UserNavLink page="my-payments" icon={CreditCard} activePage={activePage} onLinkClick={onLinkClick}>My Payments</UserNavLink>
                 <UserNavLink page="new-booking" icon={PlusCircle} activePage={activePage} onLinkClick={onLinkClick}>New Booking</UserNavLink>
                 <UserNavLink page="profile" icon={User} activePage={activePage} onLinkClick={onLinkClick}>Profile</UserNavLink>
+                <UserNavLink page="become-partner" icon={Briefcase} activePage={activePage} onLinkClick={onLinkClick}>Become a Partner</UserNavLink>
                 <UserNavLink page="chat" icon={MessageSquare} activePage={activePage} onLinkClick={onLinkClick} badgeCount={unreadChatCount}>Chat</UserNavLink>
             </nav>
             <div className="p-4 border-t border-gray-200 dark:border-gray-700"><button onClick={onLogoutClick} className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-800"><LogOut size={22} /><span className="text-md">Logout</span></button></div>
@@ -4055,15 +3787,14 @@ const UserSidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClos
 // --- Main UserDashboard Component ---
 
 const UserDashboard = () => {
-    const { user } = useContext(AuthContext); // user from AuthContext
+    const { user } = useContext(AuthContext);
     const [activePage, setActivePage] = useState('home');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isLogoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
-    const [currentUser, setCurrentUser] = useState(null); // Now stores full user object including location
+    const [currentUser, setCurrentUser] = useState(null);
     const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('userTheme') === 'dark');
     const [unreadChatCount, setUnreadChatCount] = useState(0);
 
-    // Fetch currentUser data on component mount or user change
     useEffect(() => {
         const fetchInitialData = async () => {
             if (!user) return;
@@ -4085,38 +3816,22 @@ const UserDashboard = () => {
 
     useEffect(() => {
         if (!currentUser) return;
-
         const notificationListener = (data) => {
             const currentChatRoom = `chat-${currentUser._id}`;
             if (data.room === currentChatRoom && window.location.hash !== '#/user/chat') {
                 setUnreadChatCount(prevCount => prevCount + 1);
             }
         };
-
-        const readListener = () => {
-            setUnreadChatCount(0);
-        };
-        
+        const readListener = () => { setUnreadChatCount(0); };
         const bookingStatusListener = (data) => {
-            toast.info(data.message, {
-                position: "top-right",
-                autoClose: 7000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: isDarkMode ? "dark" : "light",
-            });
+            toast.info(data.message, { position: "top-right", autoClose: 7000, theme: isDarkMode ? "dark" : "light" });
             if (window.location.hash.includes('#/user/bookings')) {
                 window.dispatchEvent(new CustomEvent('refreshBookings'));
             }
         };
-
         socket.on('new_message_notification', notificationListener);
         socket.on('messages_read_by_user', readListener);
         socket.on('booking_status_update', bookingStatusListener);
-
         return () => {
             socket.off('new_message_notification', notificationListener);
             socket.off('messages_read_by_user', readListener);
@@ -4124,21 +3839,15 @@ const UserDashboard = () => {
         };
     }, [currentUser, isDarkMode]);
 
-    useEffect(() => {
-        document.title = unreadChatCount > 0 ? `(${unreadChatCount}) MotoFix Customer` : 'MotoFix Customer';
-    }, [unreadChatCount]);
-
-    useEffect(() => {
-        document.documentElement.classList.toggle('dark', isDarkMode);
-        localStorage.setItem('userTheme', isDarkMode ? 'dark' : 'light');
-    }, [isDarkMode]);
+    useEffect(() => { document.title = unreadChatCount > 0 ? `(${unreadChatCount}) MotoFix Customer` : 'MotoFix Customer'; }, [unreadChatCount]);
+    useEffect(() => { document.documentElement.classList.toggle('dark', isDarkMode); localStorage.setItem('userTheme', isDarkMode ? 'dark' : 'light'); }, [isDarkMode]);
 
     useEffect(() => {
         const handleHashChange = () => {
             const path = window.location.hash.replace('#/user/', '').split('?')[0];
             let page = path || 'home';
-            if (path.startsWith('edit-booking/')) { page = 'edit-booking'; }
-            else if (path.startsWith('service-details/')) { page = 'service-details'; }
+            if (path.startsWith('edit-booking/')) page = 'edit-booking';
+            else if (path.startsWith('service-details/')) page = 'service-details';
             setActivePage(page);
         };
         window.addEventListener('hashchange', handleHashChange);
@@ -4146,31 +3855,27 @@ const UserDashboard = () => {
         return () => window.removeEventListener('hashchange', handleHashChange);
     }, []);
 
-    const handleDiscountApplied = async (newPoints) => {
-        // After discount, re-fetch profile to get updated loyalty points
+    const handleDiscountApplied = async () => {
         const response = await apiFetchUser('/profile');
         const data = await response.json();
-        setCurrentUser(data.data); // Update AuthContext's currentUser with fresh data
+        setCurrentUser(data.data);
     };
 
-    const handleLogoutConfirm = () => {
-        localStorage.clear();
-        window.location.href = '/login';
-    };
+    const handleLogoutConfirm = () => { localStorage.clear(); window.location.href = '/login'; };
 
     const renderPage = () => {
-        if (!currentUser) {
-            return <div className="text-center p-12">Loading User Data...</div>;
-        }
+        if (!currentUser) return <div className="text-center p-12">Loading User Data...</div>;
+        
         switch (activePage) {
             case 'home': return <UserServiceHomePage currentUser={currentUser} />;
             case 'service-details': return <ServiceDetailPage />;
             case 'dashboard': return <UserDashboardPage />;
             case 'bookings': return <UserBookingsPage />;
-            case 'new-booking': return <NewBookingPage currentUser={currentUser} />; {/* Pass currentUser to NewBookingPage */}
+            case 'new-booking': return <NewBookingPage currentUser={currentUser} />;
             case 'my-payments': return <MyPaymentsPage currentUser={currentUser} loyaltyPoints={currentUser.loyaltyPoints} onDiscountApplied={handleDiscountApplied} />;
-            case 'edit-booking': return <EditBookingPage currentUser={currentUser} />; {/* Pass currentUser to EditBookingPage */}
+            case 'edit-booking': return <EditBookingPage currentUser={currentUser} />;
             case 'profile': return <UserProfilePage currentUser={currentUser} setCurrentUser={setCurrentUser} />;
+            case 'become-partner': return <WorkshopApplicationPage currentUser={currentUser} />;
             case 'chat': return <ChatPage currentUser={currentUser} />;
             default:
                 window.location.hash = '#/user/home';
@@ -4178,29 +3883,24 @@ const UserDashboard = () => {
         }
     };
 
-    const handleImageError = (e) => {
-        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser?.fullName || 'U')}&background=e2e8f0&color=4a5568&size=40`;
-    };
+    const handleImageError = (e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser?.fullName || 'U')}&background=e2e8f0&color=4a5568&size=40`; };
     const profilePictureSrc = currentUser?.profilePicture ? `http://localhost:5050/${currentUser.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser?.fullName || 'U')}&background=e2e8f0&color=4a5568&size=40`;
 
     return (
         <div className={`flex h-screen bg-gray-100 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100`}>
-            {/* Mobile Sidebar */}
             <div className={`fixed inset-0 z-40 flex lg:hidden transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="w-72 bg-white dark:bg-gray-800 shadow-lg flex flex-col">
                     <UserSidebarContent activePage={activePage} onLinkClick={() => setIsSidebarOpen(false)} onLogoutClick={() => { setIsSidebarOpen(false); setLogoutConfirmOpen(true); }} onMenuClose={() => setIsSidebarOpen(false)} unreadChatCount={unreadChatCount} />
                 </div>
                 <div className="flex-1 bg-black bg-opacity-50" onClick={() => setIsSidebarOpen(false)}></div>
             </div>
-            {/* Desktop Sidebar */}
             <aside className="w-72 bg-white dark:bg-gray-800 shadow-md hidden lg:flex flex-col flex-shrink-0">
                 <UserSidebarContent activePage={activePage} onLinkClick={() => {}} onLogoutClick={() => setLogoutConfirmOpen(true)} unreadChatCount={unreadChatCount} />
             </aside>
-
             <main className="flex-1 flex flex-col overflow-hidden">
                 <header className="bg-white dark:bg-gray-800 shadow-sm p-4 flex justify-between items-center">
                     <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-gray-600 dark:text-gray-300"><Menu size={28} /></button>
-                    <div className="hidden lg:block" /> {/* Spacer to push items right */}
+                    <div className="hidden lg:block" />
                     <div className="flex items-center gap-4">
                         <button onClick={() => setIsDarkMode(!isDarkMode)} className="text-gray-600 dark:text-gray-300 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
                             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
@@ -4218,11 +3918,7 @@ const UserDashboard = () => {
                     {renderPage()}
                 </div>
             </main>
-
             <ConfirmationModal isOpen={isLogoutConfirmOpen} onClose={() => setLogoutConfirmOpen(false)} onConfirm={handleLogoutConfirm} title="Confirm Logout" message="Are you sure you want to logout?" confirmText="Logout" confirmButtonVariant="danger" Icon={LogOut} />
-
-            {/* --- AI CHATBOT INTEGRATION --- */}
-            {/* The GeminiChatbot is placed here to be available on all user pages */}
             <GeminiChatbot />
         </div>
     );

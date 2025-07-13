@@ -2184,15 +2184,1387 @@
 // };
 
 // export default AdminDashboard;
+//above code is done for my project
+
+//enchanment
+//multi workshop code 
+
+// import React, { useState, useEffect, useRef } from 'react';
+// import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+// import { Plus, Edit, Trash2, Search, Users, Wrench, DollarSign, List, User, LogOut, Menu, X, Sun, Moon, Camera, AlertTriangle, ArrowLeft, MapPin, ChevronLeft, ChevronRight, MessageSquare, Send, Inbox, Paperclip, FileText, XCircle, Star, MessageCircle as ReviewIcon } from 'lucide-react';
+// import { toast } from 'react-toastify';
+// import io from 'socket.io-client';
+// import GeminiChatbot from '../../components/GeminiChatbot'; // Import the Gemini AI Chatbot component
+
+// const API_BASE_URL = "http://localhost:5050/api/admin";
+// const socket = io.connect("http://localhost:5050");
+
+// // API fetch utility
+// const apiFetch = async (endpoint, options = {}) => {
+//     const headers = {
+//         'Authorization': `Bearer ${localStorage.getItem('token')}`,
+//         ...options.headers
+//     };
+//     if (!(options.body instanceof FormData)) {
+//         headers['Content-Type'] = 'application/json';
+//     }
+//     const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+//     if (!response.ok) {
+//         const errorData = await response.json();
+//         throw new Error(errorData.message || 'An error occurred with the API request.');
+//     }
+//     return response;
+// };
+
+// // --- START: Helper & Shared Components ---
+
+// // StarRating Helper Component
+// const StarRating = ({ rating = 0 }) => {
+//     return (
+//         <div className="flex items-center gap-1">
+//             {[1, 2, 3, 4, 5].map((index) => (
+//                 <Star
+//                     key={index}
+//                     size={16}
+//                     className={`transition-colors duration-200 ${
+//                         rating >= index
+//                             ? 'text-yellow-400 fill-yellow-400'
+//                             : 'text-gray-300 dark:text-gray-600'
+//                     }`}
+//                 />
+//             ))}
+//         </div>
+//     );
+// };
+
+// const getStatusColor = (status) => {
+//     switch (status) {
+//         case 'Completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+//         case 'In Progress': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+//         case 'Pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+//         case 'Cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+//         default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+//     }
+// };
+// const Card = ({ children, className = '', ...props }) => (<div {...props} className={`bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 transition-all duration-300 ${className}`}>{children}</div>);
+// const Modal = ({ isOpen, onClose, title, children }) => {
+//     if (!isOpen) return null;
+//     return (
+//         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+//             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+//                 <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center flex-shrink-0">
+//                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h3>
+//                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><X size={24} /></button>
+//                 </div>
+//                 <div className="p-6 overflow-y-auto">{children}</div>
+//             </div>
+//         </div>
+//     );
+// };
+// const Button = ({ children, onClick, className = '', variant = 'primary', ...props }) => {
+//     const baseClasses = "px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed";
+//     const variants = {
+//         primary: "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
+//         secondary: "bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 focus:ring-gray-500",
+//         danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
+//     };
+//     return (<button onClick={onClick} className={`${baseClasses} ${variants[variant]} ${className}`} {...props}>{children}</button>);
+// };
+// const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm', confirmButtonVariant = 'danger', Icon = AlertTriangle, iconColor = 'text-red-600 dark:text-red-400', iconBgColor = 'bg-red-100 dark:bg-red-900/50' }) => {
+//     if (!isOpen) return null;
+//     return (
+//         <Modal isOpen={isOpen} onClose={onClose} title="">
+//             <div className="text-center">
+//                 <div className={`mx-auto flex items-center justify-center h-12 w-12 rounded-full ${iconBgColor}`}><Icon className={`h-6 w-6 ${iconColor}`} /></div>
+//                 <h3 className="mt-5 text-lg font-medium text-gray-900 dark:text-white">{title}</h3>
+//                 <div className="mt-2 px-7 py-3"><p className="text-sm text-gray-500 dark:text-gray-400">{message}</p></div>
+//                 <div className="flex justify-center gap-3 mt-4">
+//                     <Button variant="secondary" onClick={onClose}>Cancel</Button>
+//                     <Button variant={confirmButtonVariant} onClick={onConfirm}>{confirmText}</Button>
+//                 </div>
+//             </div>
+//         </Modal>
+//     );
+// };
+// const Input = ({ id, label, ...props }) => (
+//     <div>
+//         <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
+//         <input id={id} {...props} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white disabled:opacity-70 disabled:cursor-not-allowed" />
+//     </div>
+// );
+// const StatusBadge = ({ status }) => (<span className={`px-2.5 py-1 text-xs font-semibold rounded-full capitalize ${getStatusColor(status)}`}>{status}</span>);
+// const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+//     if (totalPages <= 1) return null;
+//     return (
+//         <div className="flex items-center justify-between pt-3 mt-auto border-t border-gray-200 dark:border-gray-700">
+//             <Button variant="secondary" onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className="!px-3 !py-1.5 text-sm">
+//                 <ChevronLeft size={16} /> Previous
+//             </Button>
+//             <span className="text-sm text-gray-700 dark:text-gray-300">Page {totalPages > 0 ? currentPage : 0} of {totalPages > 0 ? totalPages : 0}</span>
+//             <Button variant="secondary" onClick={() => onPageChange(currentPage + 1)} disabled={currentPage >= totalPages} className="!px-3 !py-1.5 text-sm">
+//                 Next <ChevronRight size={16} />
+//             </Button>
+//         </div>
+//     );
+// };
+// // --- END: Helper & Shared Components ---
+
+
+// // --- START: Page Specific Components ---
+
+// // NEW COMPONENT - ReviewsModal
+// const ReviewsModal = ({ isOpen, onClose, serviceId }) => {
+//     const [service, setService] = useState(null);
+//     const [isLoading, setIsLoading] = useState(false);
+
+//     useEffect(() => {
+//         if (isOpen && serviceId) {
+//             const fetchReviews = async () => {
+//                 setIsLoading(true);
+//                 try {
+//                     const response = await apiFetch(`/services/${serviceId}/reviews`);
+//                     const data = await response.json();
+//                     setService(data.data);
+//                 } catch (error) {
+//                     toast.error("Failed to fetch reviews.");
+//                     onClose();
+//                 } finally {
+//                     setIsLoading(false);
+//                 }
+//             };
+//             fetchReviews();
+//         }
+//     }, [isOpen, serviceId]);
+
+//     return (
+//         <Modal isOpen={isOpen} onClose={onClose} title={`Reviews for "${service?.name || ''}"`}>
+//             {isLoading ? (
+//                 <div className="text-center p-8">Loading reviews...</div>
+//             ) : !service || service.reviews.length === 0 ? (
+//                 <div className="text-center p-8 text-gray-500">
+//                     <ReviewIcon size={48} className="mx-auto text-gray-400" />
+//                     <p className="mt-4">No reviews have been submitted for this service yet.</p>
+//                 </div>
+//             ) : (
+//                 <div className="space-y-6">
+//                     {service.reviews.slice().reverse().map((review) => (
+//                         <div key={review._id} className="flex gap-4 border-b dark:border-gray-700 pb-4 last:pb-0 last:border-b-0">
+//                             <div className="flex-shrink-0">
+//                                 {review.user && review.user.profilePicture ? (
+//                                     <img
+//                                         src={`http://localhost:5050/${review.user.profilePicture}`}
+//                                         alt={review.user.fullName}
+//                                         className="w-10 h-10 rounded-full object-cover bg-gray-200"
+//                                     />
+//                                 ) : (
+//                                     <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center font-bold text-lg text-indigo-600 dark:text-indigo-300">
+//                                         {(review.user?.fullName || review.username || 'U').charAt(0).toUpperCase()}
+//                                     </div>
+//                                 )}
+//                             </div>
+//                             <div className="flex-1">
+//                                 <div className="flex items-center justify-between">
+//                                     <h4 className="font-bold text-gray-800 dark:text-white">{review.user?.fullName || review.username}</h4>
+//                                     <span className="text-xs text-gray-500 dark:text-gray-400">{new Date(review.createdAt).toLocaleDateString()}</span>
+//                                 </div>
+//                                 <div className="my-1"><StarRating rating={review.rating} /></div>
+//                                 <p className="text-gray-600 dark:text-gray-300">{review.comment}</p>
+//                             </div>
+//                         </div>
+//                     ))}
+//                 </div>
+//             )}
+//         </Modal>
+//     );
+// };
+
+// const AdminChatPage = () => {
+//     const [conversations, setConversations] = useState([]);
+//     const [activeConversation, setActiveConversation] = useState(null);
+//     const [messages, setMessages] = useState([]);
+//     const [currentMessage, setCurrentMessage] = useState('');
+//     const [selectedFile, setSelectedFile] = useState(null);
+//     const [previewUrl, setPreviewUrl] = useState(null);
+//     const [isUploading, setIsUploading] = useState(false);
+//     const [isConfirmOpen, setConfirmOpen] = useState(false);
+//     const [itemToClear, setItemToClear] = useState(null);
+//     const chatBodyRef = useRef(null);
+//     const fileInputRef = useRef(null);
+//     const cameraInputRef = useRef(null);
+    
+//     const fetchConversations = async () => {
+//         try {
+//             const response = await apiFetch('/chat/users');
+//             const data = await response.json();
+//             const sortedData = (data.data || []).sort((a, b) => new Date(b.lastMessageTimestamp) - new Date(a.lastMessageTimestamp));
+//             setConversations(sortedData);
+//         } catch (error) { toast.error('Failed to fetch chat conversations.'); }
+//     };
+
+//     useEffect(() => { fetchConversations(); }, []);
+
+//     useEffect(() => {
+//         const newMessageListener = (data) => {
+//             const roomUserId = data.room.replace('chat-', '');
+//             const isChatActive = activeConversation?._id === roomUserId;
+//             const isFromAdmin = data.authorId === 'admin_user';
+
+//             if (isFromAdmin && isChatActive) {
+//             // We only need to update the conversation list, not the active messages.
+//         } else if (isChatActive) {
+//             // Add message to the active chat window only if it's from the user.
+//             setMessages((prev) => [...prev, data]);
+//         }
+
+//             setConversations(prevConvos => {
+//                 let convoExists = false;
+//                 const updatedConvos = prevConvos.map(convo => {
+//                     if (convo._id === roomUserId) {
+//                         convoExists = true;
+//                         return { 
+//                             ...convo, 
+//                             lastMessage: isFromAdmin 
+//                                 ? convo.lastMessage 
+//                                 : (data.message || `Sent a ${data.fileType ? data.fileType.split('/')[0] : 'file'}`),
+//                             lastMessageTimestamp: data.createdAt, 
+//                             unreadCount: !isChatActive && !isFromAdmin ? (convo.unreadCount || 0) + 1 : convo.unreadCount
+//                         };
+//                     }
+//                     return convo;
+//                 });
+
+//                 if (!convoExists) {
+//                     fetchConversations();
+//                     return prevConvos;
+//                 }
+                
+//                 updatedConvos.sort((a, b) => new Date(b.lastMessageTimestamp) - new Date(a.lastMessageTimestamp));
+//                 return updatedConvos;
+//             });
+//         };
+
+//         const messagesReadListener = (data) => {
+//             const roomUserId = data.room.replace('chat-', '');
+//             setConversations(prevConvos => prevConvos.map(convo => convo._id === roomUserId ? { ...convo, unreadCount: 0 } : convo));
+//         };
+
+//         socket.on('receive_message', newMessageListener);
+//         socket.on('messages_read_by_admin', messagesReadListener);
+//         return () => {
+//             socket.off('receive_message', newMessageListener);
+//             socket.off('messages_read_by_admin', messagesReadListener);
+//         };
+//     }, [activeConversation]);
+
+//     useEffect(() => {
+//         if (activeConversation) {
+//             const roomName = `chat-${activeConversation._id}`;
+//             const historyListener = (history) => {
+//                 const firstMsgRoom = history.length > 0 ? history[0].room : `chat-${activeConversation._id}`;
+//                 if (firstMsgRoom === roomName) {
+//                     setMessages(history);
+//                 }
+//             };
+//             socket.on('chat_history', historyListener);
+//             socket.emit('join_room', { roomName: `chat-${activeConversation._id}`, userId: 'admin_user' });
+//             return () => { socket.off('chat_history', historyListener); };
+//         }
+//     }, [activeConversation]);
+
+//     useEffect(() => {
+//         if (chatBodyRef.current) { chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight; }
+//     }, [messages]);
+
+//     const handleFileChange = (event) => {
+//         const file = event.target.files[0];
+//         if (file) {
+//             setSelectedFile(file);
+//             if (file.type.startsWith('image/')) { setPreviewUrl(URL.createObjectURL(file)); } else { setPreviewUrl(null); }
+//         }
+//         event.target.value = null;
+//     };
+    
+//     const handleRemovePreview = () => { setSelectedFile(null); setPreviewUrl(null); };
+
+//     const handleSendMessage = async () => {
+//         if (!activeConversation || (currentMessage.trim() === '' && !selectedFile)) return;
+//         if (selectedFile) {
+//             setIsUploading(true);
+//             const formData = new FormData();
+//             formData.append('file', selectedFile);
+//             formData.append('room', `chat-${activeConversation._id}`);
+//             formData.append('author', 'Admin');
+//             formData.append('authorId', 'admin_user');
+//             if (currentMessage.trim() !== '') { formData.append('message', currentMessage); }
+//             try { await apiFetch('/chat/upload', { method: 'POST', body: formData }); }
+//             catch (error) { toast.error(`File upload failed: ${error.message}`); }
+//             finally { setIsUploading(false); handleRemovePreview(); setCurrentMessage(''); }
+//         } else {
+//             const messageData = { room: `chat-${activeConversation._id}`, author: 'Admin', authorId: 'admin_user', message: currentMessage, createdAt: new Date().toISOString() };
+//             socket.emit('send_message', messageData);
+//             setMessages(prev => [...prev, messageData]);
+//             setCurrentMessage('');
+//         }
+//     };
+
+//     const handleSelectConversation = (user) => {
+//         if (activeConversation?._id !== user._id) {
+//             setMessages([]);
+//             setActiveConversation(user);
+//             handleRemovePreview();
+//         }
+//     };
+    
+//     const handleClearClick = (user) => { setItemToClear(user); setConfirmOpen(true); };
+
+//     const confirmClearChat = async () => {
+//         if (!itemToClear) return;
+//         try {
+//             await apiFetch(`/chat/clear/${itemToClear._id}`, { method: 'PUT' });
+//             toast.success(`Chat history with ${itemToClear.fullName} has been cleared from your view.`);
+//             if (activeConversation?._id === itemToClear._id) {
+//                 setActiveConversation(null);
+//                 setMessages([]);
+//             }
+//             fetchConversations();
+//         } catch (error) { toast.error(error.message || 'Failed to clear chat history.'); }
+//         finally { setConfirmOpen(false); setItemToClear(null); }
+//     };
+
+//     const handleImageError = (e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(e.target.dataset.name || 'U')}&background=e2e8f0&color=4a5568&size=40`; };
+    
+//     const renderFileContent = (msg) => {
+//         if (msg.fileType?.startsWith('image/')) { return (<a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" className="block"><img src={msg.fileUrl} alt={msg.fileName || 'Sent Image'} className="max-w-xs rounded-lg mt-1" /></a>); }
+//         return (<a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" download={msg.fileName} className="flex items-center gap-3 bg-black/10 dark:bg-white/10 p-3 rounded-lg hover:bg-black/20 dark:hover:bg-white/20 transition-colors mt-1"><FileText size={32} className="flex-shrink-0" /><span className="truncate font-medium">{msg.fileName || 'Download File'}</span></a>);
+//     };
+
+//     return (
+//         <div className="space-y-6">
+//             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Customer Chats</h1>
+//             <Card className="p-0 flex" style={{ height: 'calc(80vh - 2rem)' }}>
+//                 <div className="w-1/3 border-r dark:border-gray-700 overflow-y-auto">
+//                     <div className="p-4 border-b dark:border-gray-600"><h2 className="font-semibold text-lg">Conversations</h2></div>
+//                     <ul className="divide-y dark:divide-gray-700">
+//                         {conversations.map(user => (
+//                             <li key={user._id} className={`flex items-center gap-3 relative transition-colors group ${activeConversation?._id === user._id ? 'bg-blue-100 dark:bg-blue-900/50' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}>
+//                                 <div onClick={() => handleSelectConversation(user)} className="p-4 flex-grow flex items-center gap-3 cursor-pointer">
+//                                     <img src={user.profilePicture ? `http://localhost:5050/${user.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || 'U')}&background=0D8ABC&color=fff&size=40`} alt={user.fullName} className="w-10 h-10 rounded-full object-cover" data-name={user.fullName} onError={handleImageError} />
+//                                     <div className="flex-grow overflow-hidden">
+//                                         <p className={`truncate ${user.unreadCount > 0 ? 'font-bold' : 'font-semibold'}`}>{user.fullName}</p>
+//                                         <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{user.lastMessage}</p>
+//                                     </div>
+//                                     {user.unreadCount > 0 && <span className="absolute right-4 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">{user.unreadCount}</span>}
+//                                 </div>
+//                                 <div className="pr-2">
+//                                     <button onClick={() => handleClearClick(user)} className="p-2 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/50 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity" title={`Clear chat with ${user.fullName}`}><Trash2 size={18} /></button>
+//                                 </div>
+//                             </li>
+//                         ))}
+//                     </ul>
+//                 </div>
+//                 <div className="w-2/3 flex flex-col bg-white dark:bg-gray-900/50">
+//                     {activeConversation ? (
+//                         <>
+//                             <div className="p-3 border-b dark:border-gray-700 flex items-center gap-3 shadow-sm">
+//                                 <img src={activeConversation.profilePicture ? `http://localhost:5050/${activeConversation.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(activeConversation.fullName || 'U')}&background=0D8ABC&color=fff&size=40`} alt={activeConversation.fullName} className="w-10 h-10 rounded-full object-cover" data-name={activeConversation.fullName} onError={handleImageError} />
+//                                 <div><h3 className="font-semibold">{activeConversation.fullName}</h3><p className="text-sm text-gray-500">{activeConversation.email}</p></div>
+//                             </div>
+//                             <div className="flex-grow overflow-y-auto p-4 space-y-1" ref={chatBodyRef}>
+//                                 {messages.map((msg, index) => {
+//                                     const isAdmin = msg.authorId === 'admin_user';
+//                                     const prevMsg = messages[index - 1]; const nextMsg = messages[index + 1];
+//                                     const isFirstInGroup = !prevMsg || prevMsg.authorId !== msg.authorId;
+//                                     const isLastInGroup = !nextMsg || nextMsg.authorId !== msg.authorId;
+//                                     return (
+//                                         <div key={msg._id || index} className={`flex items-end gap-2 ${isAdmin ? 'justify-end' : 'justify-start'}`}>
+//                                             {!isAdmin && (<div className="w-8 flex-shrink-0 self-end">{isLastInGroup && <img src={activeConversation.profilePicture ? `http://localhost:5050/${activeConversation.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(activeConversation.fullName || 'U')}&background=e2e8f0&color=4a5568&size=40`} alt="p" className="w-7 h-7 rounded-full object-cover" />}</div>)}
+//                                             <div className={`py-2 px-3 max-w-md ${isAdmin ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white'} ${isFirstInGroup && isLastInGroup ? 'rounded-2xl' : ''} ${isAdmin ? `${isFirstInGroup ? 'rounded-t-2xl rounded-bl-2xl' : 'rounded-l-2xl'} ${isLastInGroup ? 'rounded-b-2xl' : ''} ${!isFirstInGroup && !isLastInGroup ? 'rounded-l-2xl rounded-r-md' : ''} ${isFirstInGroup && !isLastInGroup ? 'rounded-tr-md' : ''} ${!isFirstInGroup && isLastInGroup ? 'rounded-br-md' : ''}` : `${isFirstInGroup ? 'rounded-t-2xl rounded-br-2xl' : 'rounded-r-2xl'} ${isLastInGroup ? 'rounded-b-2xl' : ''} ${!isFirstInGroup && !isLastInGroup ? 'rounded-r-2xl rounded-l-md' : ''} ${isFirstInGroup && !isLastInGroup ? 'rounded-tl-md' : ''} ${!isFirstInGroup && isLastInGroup ? 'rounded-bl-md' : ''}`}`}>
+//                                                 {msg.fileUrl && renderFileContent(msg)}
+//                                                 {msg.message && <p className="text-md" style={{ overflowWrap: 'break-word' }}>{msg.message}</p>}
+//                                                 <p className={`text-xs text-right mt-1 opacity-70`}>{new Date(msg.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+//                                             </div>
+//                                         </div>
+//                                     );
+//                                 })}
+//                             </div>
+//                             <div className="p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800">
+//                                 {(previewUrl || selectedFile) && (<div className="mb-2 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-between">{previewUrl ? <img src={previewUrl} alt="Preview" className="h-16 w-16 object-cover rounded" /> : <div className="flex items-center gap-2 text-gray-500"><FileText /><span>{selectedFile.name}</span></div>}<button onClick={handleRemovePreview} className="text-gray-500 hover:text-red-500"><XCircle size={20} /></button></div>)}
+//                                 <div className="flex items-center gap-3">
+//                                     <div className="flex"><input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" /><input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" /><button onClick={() => fileInputRef.current.click()} className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"><Paperclip size={22} /></button><button onClick={() => cameraInputRef.current.click()} className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"><Camera size={22} /></button></div>
+//                                     <input type="text" value={currentMessage} onChange={(e) => setCurrentMessage(e.target.value)} onKeyPress={(e) => e.key === "Enter" && !isUploading && handleSendMessage()} placeholder="Message..." className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 border-2 border-transparent rounded-full focus:ring-blue-500 focus:border-blue-500 transition" disabled={isUploading} />
+//                                     <Button onClick={handleSendMessage} disabled={isUploading || (!currentMessage.trim() && !selectedFile)} className="!rounded-full !w-12 !h-12 !p-0">{isUploading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Send size={20} />}</Button>
+//                                 </div>
+//                             </div>
+//                         </>
+//                     ) : (<div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400"><Inbox size={64} /><p className="mt-4 text-lg">Select a conversation to start chatting</p></div>)}
+//                 </div>
+//             </Card>
+//             <ConfirmationModal isOpen={isConfirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={confirmClearChat} title="Clear Chat History" message={`Are you sure you want to clear your view of the chat history with ${itemToClear?.fullName}? This will not affect the user's view.`} confirmText="Clear" />
+//         </div>
+//     );
+// };
+
+// const DashboardPage = () => {
+//     const [analytics, setAnalytics] = useState({ totalRevenue: 0, totalBookings: 0, newUsers: 0, revenueData: [], servicesData: [] });
+//     const [recentBookings, setRecentBookings] = useState([]);
+//     useEffect(() => {
+//         const fetchDashboardData = async () => {
+//             try {
+//                 const response = await apiFetch('/dashboard');
+//                 const data = await response.json();
+//                 const d = data.data || {};
+//                 const formattedRevenue = (d.revenueData || []).map(item => ({ name: new Date(0, item._id - 1).toLocaleString('default', { month: 'short' }), revenue: item.revenue }));
+//                 const formattedServices = (d.servicesData || []).map(item => ({ name: item._id, bookings: item.bookings }));
+//                 setAnalytics({ totalRevenue: d.totalRevenue || 0, totalBookings: d.totalBookings || 0, newUsers: d.newUsers || 0, revenueData: formattedRevenue, servicesData: formattedServices });
+//                 setRecentBookings(d.recentBookings || []);
+//             } catch (error) { toast.error(error.message || "Failed to fetch dashboard data."); }
+//         };
+//         fetchDashboardData();
+//     }, []);
+//     return (
+//         <div className="space-y-8">
+//             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Analytics Dashboard</h1>
+//             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+//                 <Card><div className="flex items-center gap-4"><div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full"><DollarSign className="text-blue-600 dark:text-blue-300" size={28} /></div><div><p className="text-gray-500 dark:text-gray-400 text-sm">Total Revenue</p><p className="text-2xl font-bold text-gray-800 dark:text-white">रु{analytics.totalRevenue.toLocaleString()}</p></div></div></Card>
+//                 <Card><div className="flex items-center gap-4"><div className="p-3 bg-green-100 dark:bg-green-900 rounded-full"><List className="text-green-600 dark:text-green-300" size={28} /></div><div><p className="text-gray-500 dark:text-gray-400 text-sm">Total Bookings</p><p className="text-2xl font-bold text-gray-800 dark:text-white">{analytics.totalBookings}</p></div></div></Card>
+//                 <Card><div className="flex items-center gap-4"><div className="p-3 bg-indigo-100 dark:bg-indigo-900 rounded-full"><Users className="text-indigo-600 dark:text-indigo-300" size={28} /></div><div><p className="text-gray-500 dark:text-gray-400 text-sm">New Users This Month</p><p className="text-2xl font-bold text-gray-800 dark:text-white">{analytics.newUsers}</p></div></div></Card>
+//             </div>
+//             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+//                 <Card><h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Revenue Overview</h2><ResponsiveContainer width="100%" height={300}><LineChart data={analytics.revenueData}><CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} /><XAxis dataKey="name" stroke="rgb(107 114 128)" /><YAxis stroke="rgb(107 114 128)" /><Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', border: 'none', borderRadius: '0.5rem', color: '#fff' }} /><Legend /><Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={2} activeDot={{ r: 8 }} /></LineChart></ResponsiveContainer></Card>
+//                 <Card><h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Popular Services</h2><ResponsiveContainer width="100%" height={300}><BarChart data={analytics.servicesData}><CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} /><XAxis dataKey="name" angle={0} textAnchor="end" height={50} stroke="rgb(107 114 128)" /><YAxis stroke="rgb(107 114 128)" /><Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', border: 'none', borderRadius: '0.5rem', color: '#fff' }} /><Legend /><Bar dataKey="bookings" fill="#10b981" /></BarChart></ResponsiveContainer></Card>
+//             </div>
+//             <Card>
+//                 <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Recent Bookings</h2>
+//                 <div className="overflow-x-auto"><table className="w-full text-left"><thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700"><tr><th className="p-3">Customer</th><th className="p-3">Service</th><th className="p-3">Status</th><th className="p-3">Date</th><th className="p-3 text-right">Cost</th></tr></thead><tbody>
+//                     {recentBookings.length > 0 ? recentBookings.map(booking => (<tr key={booking._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
+//                         <td className="p-3 font-medium text-gray-900 dark:text-white"><a href={`#/admin/bookings/${booking._id}`} className="hover:underline">{booking.customer?.fullName || 'N/A'}</a></td>
+//                         <td className="p-3 text-gray-600 dark:text-gray-300">{booking.serviceType || 'N/A'}</td>
+//                         <td className="p-3"><StatusBadge status={booking.status} /></td>
+//                         <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
+//                         <td className="p-3 text-right font-medium text-gray-900 dark:text-white">रु{booking.totalCost}</td>
+//                     </tr>)) : (<tr><td colSpan="5" className="text-center py-8 text-gray-500">No recent bookings found.</td></tr>)}
+//                 </tbody></table></div>
+//             </Card>
+//         </div>
+//     );
+// };
+// const BookingsPage = () => {
+//     const [bookings, setBookings] = useState([]);
+//     const [searchTerm, setSearchTerm] = useState('');
+//     const [isModalOpen, setIsModalOpen] = useState(false);
+//     const [editingBooking, setEditingBooking] = useState(null);
+//     const [isConfirmOpen, setConfirmOpen] = useState(false);
+//     const [itemToDelete, setItemToDelete] = useState(null);
+//     const [currentPage, setCurrentPage] = useState(1);
+//     const [totalPages, setTotalPages] = useState(0);
+//     const ITEMS_PER_PAGE = 11;
+//     const fetchBookings = async (page) => {
+//         try {
+//             const response = await apiFetch(`/bookings?page=${page}&limit=${ITEMS_PER_PAGE}&search=${searchTerm}`);
+//             const data = await response.json();
+//             setBookings(data.data || []);
+//             setTotalPages(data.totalPages || 0);
+//         } catch (error) { toast.error(error.message || 'Failed to fetch bookings.'); setBookings([]); setTotalPages(0); }
+//     };
+//     useEffect(() => { fetchBookings(currentPage); }, [currentPage, searchTerm]);
+//     const handleEdit = (booking) => { setEditingBooking(booking); setIsModalOpen(true); };
+//     const handleDeleteClick = (id) => { setItemToDelete(id); setConfirmOpen(true); };
+//     const confirmDelete = async () => {
+//         if (!itemToDelete) return;
+//         try {
+//             await apiFetch(`/bookings/${itemToDelete}`, { method: 'DELETE' });
+//             toast.success('Booking deleted successfully!');
+//             fetchBookings(currentPage);
+//         } catch (error) { toast.error(error.message || 'Failed to delete booking.'); }
+//         finally { setConfirmOpen(false); setItemToDelete(null); }
+//     };
+//     const handleSave = async (formData) => {
+//         if (!editingBooking) return;
+//         try {
+//             const response = await apiFetch(`/bookings/${editingBooking._id}`, { method: 'PUT', body: JSON.stringify(formData) });
+//             const data = await response.json();
+//             setBookings(bookings.map(b => b._id === editingBooking._id ? data.data : b));
+//             toast.success(data.message || 'Booking updated successfully!');
+//             closeModal();
+//         } catch (error) { toast.error(error.message || 'Failed to save booking.'); }
+//     };
+//     const handlePageChange = (newPage) => { if (newPage > 0 && newPage <= totalPages) { setCurrentPage(newPage); } };
+//     const closeModal = () => { setIsModalOpen(false); setEditingBooking(null); };
+//     return (
+//         <div className="space-y-6 flex flex-col flex-grow">
+//             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Bookings Management</h1>
+//             <Card className="flex flex-col flex-grow">
+//                 <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+//                     <div className="relative w-full md:w-auto">
+//                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+//                         <input type="text" placeholder="Search bookings..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-full md:w-80 pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+//                     </div>
+//                 </div>
+//                 <div className="overflow-x-auto flex-grow">
+//                     <table className="w-full text-left">
+//                         <thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700"><tr><th className="p-3">Customer</th><th className="p-3">Vehicle</th><th className="p-3">Service</th><th className="p-3">Date</th><th className="p-3">Status</th><th className="p-3 text-right">Cost</th><th className="p-3 text-center">Actions</th></tr></thead>
+//                         <tbody>
+//                             {bookings.length > 0 ? bookings.map(booking => (
+//                                 <tr key={booking._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
+//                                     <td className="p-3 font-medium text-gray-900 dark:text-white">{booking.customer?.fullName || 'N/A'}</td>
+//                                     <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel || 'N/A'}</td>
+//                                     <td className="p-3 text-gray-600 dark:text-gray-300">{booking.serviceType || 'N/A'}</td>
+//                                     <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
+//                                     <td className="p-3"><StatusBadge status={booking.status} /></td>
+//                                     <td className="p-3 text-right font-medium">रु{booking.totalCost}</td>
+//                                     <td className="p-3 text-center"><div className="flex justify-center items-center gap-2"><a href={`#/admin/bookings/${booking._id}`} className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 p-1" title="View Details"><Search size={18} /></a><button onClick={() => handleEdit(booking)} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="Edit Booking"><Edit size={18} /></button><button onClick={() => handleDeleteClick(booking._id)} className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1" title="Delete Booking"><Trash2 size={18} /></button></div></td>
+//                                 </tr>
+//                             )) : (<tr><td colSpan="7" className="text-center py-10 text-gray-500">No bookings found.</td></tr>)}
+//                         </tbody>
+//                     </table>
+//                 </div>
+//                 <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+//             </Card>
+//             <BookingFormModal isOpen={isModalOpen} onClose={closeModal} booking={editingBooking} onSave={handleSave} />
+//             <ConfirmationModal isOpen={isConfirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={confirmDelete} title="Delete Booking" message="Are you sure you want to delete this booking? This action cannot be undone." />
+//         </div>
+//     );
+// };
+
+
+// import { FileText as DownloadIcon } from 'lucide-react'; // Using FileText as a download icon
+
+// const BookingDetailsPage = ({ bookingId }) => {
+//     const [booking, setBooking] = useState(null);
+//     const [loading, setLoading] = useState(true);
+//     const [error, setError] = useState(null);
+//     const [isDownloading, setIsDownloading] = useState(false);
+
+//     useEffect(() => {
+//         const fetchBooking = async () => {
+//             setLoading(true);
+//             try {
+//                 const response = await apiFetch(`/bookings/${bookingId}`);
+//                 const data = await response.json();
+//                 setBooking(data.data);
+//             } catch (err) {
+//                 setError(err.message);
+//                 toast.error(err.message || 'Failed to fetch booking details.');
+//             } finally {
+//                 setLoading(false);
+//             }
+//         };
+//         if (bookingId) {
+//             fetchBooking();
+//         }
+//     }, [bookingId]);
+
+//     const handleDownloadInvoice = async () => {
+//         setIsDownloading(true);
+//         toast.info('Generating your invoice...');
+//         try {
+//             const response = await apiFetch(`/bookings/${booking._id}/invoice`);
+//             const blob = await response.blob();
+//             const url = window.URL.createObjectURL(blob);
+//             const link = document.createElement('a');
+//             link.href = url;
+//             link.setAttribute('download', `invoice-${booking._id}.pdf`);
+//             document.body.appendChild(link);
+//             link.click();
+//             link.parentNode.removeChild(link);
+//             window.URL.revokeObjectURL(url);
+
+//         } catch (err) {
+//             toast.error('Failed to download invoice. Please try again.');
+//             console.error(err);
+//         } finally {
+//             setIsDownloading(false);
+//         }
+//     };
+
+//     if (loading) return <div className="text-center py-10">Loading booking details...</div>;
+//     if (error) return <div className="text-center py-10 text-red-500">Error: {error}</div>;
+//     if (!booking) return <div className="text-center py-10">Booking not found.</div>;
+
+//     return (
+//         <div className="space-y-6">
+//             <div className="flex justify-between items-center gap-4">
+//                 <div className="flex items-center gap-4">
+//                     <a href="#/admin/bookings" className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+//                         <ArrowLeft size={22} />
+//                     </a>
+//                     <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Booking Details</h1>
+//                 </div>
+//                 {booking.isPaid && (
+//                     <Button 
+//                         onClick={handleDownloadInvoice} 
+//                         disabled={isDownloading}
+//                         variant="primary"
+//                     >
+//                         <DownloadIcon size={18} />
+//                         {isDownloading ? 'Generating...' : 'Download Invoice'}
+//                     </Button>
+//                 )}
+//             </div>
+            
+//             <Card>
+//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
+//                     <div>
+//                         <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 border-b pb-2">Customer Information</h2>
+//                         <div className="space-y-2 mt-4 text-gray-600 dark:text-gray-400">
+//                             <p><strong>Name:</strong> {booking.customer?.fullName || 'N/A'}</p>
+//                             <p><strong>Email:</strong> {booking.customer?.email || 'N/A'}</p>
+//                             <p><strong>Phone:</strong> {booking.customer?.phone || 'N/A'}</p>
+//                             <p><strong>Address:</strong> {booking.customer?.address || 'N/A'}</p>
+//                         </div>
+//                     </div>
+//                     <div>
+//                         <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 border-b pb-2">Booking Information</h2>
+//                         <div className="space-y-2 mt-4 text-gray-600 dark:text-gray-400">
+//                             <p><strong>Service:</strong> {booking.serviceType || 'N/A'}</p>
+//                             <p><strong>Workshop:</strong> {booking.workshop?.workshopName || 'N/A'}</p> {/* NEW: Display Workshop Name */}
+//                             <p><strong>Date:</strong> {new Date(booking.date).toLocaleDateString()}</p>
+//                             <p><strong>Final Amount:</strong> रु{booking.finalAmount}</p>
+//                             <p><strong>Status:</strong> <StatusBadge status={booking.status} /></p>
+//                             <p><strong>Payment:</strong> {booking.isPaid ? `Paid via ${booking.paymentMethod}` : 'Pending'}</p>
+//                              {booking.pickupDropoffRequested && (
+//                                 <p><strong>Pickup/Dropoff:</strong> Yes (रु{booking.pickupDropoffCost} from {booking.pickupDropoffAddress || 'User Profile Address'})</p>
+//                             )} {/* NEW */}
+//                         </div>
+//                     </div>
+//                 </div>
+//                 <div className="p-6 border-t border-gray-200 dark:border-gray-700">
+//                     <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 border-b pb-2">Problem & Vehicle Details</h2>
+//                     <div className="space-y-2 mt-4 text-gray-600 dark:text-gray-400">
+//                         <p><strong>Vehicle Details:</strong> {booking.bikeModel || 'Not provided'}</p>
+//                         <p><strong>Problem Description:</strong> {booking.notes || 'Not provided'}</p>
+//                     </div>
+//                 </div>
+//             </Card>
+//         </div>
+//     );
+// };
+// const UsersPage = ({ onSave: parentOnSave }) => {
+//     const [users, setUsers] = useState([]);
+//     const [searchTerm, setSearchTerm] = useState('');
+//     const [isModalOpen, setIsModalOpen] = useState(false);
+//     const [editingUser, setEditingUser] = useState(null);
+//     const [isConfirmOpen, setConfirmOpen] = useState(false);
+//     const [itemToDelete, setItemToDelete] = useState(null);
+//     const [currentPage, setCurrentPage] = useState(1);
+//     const [totalPages, setTotalPages] = useState(0);
+//     const ITEMS_PER_PAGE = 10;
+//     const fetchUsers = async (page) => {
+//         try {
+//             const response = await apiFetch(`/users?page=${page}&limit=${ITEMS_PER_PAGE}&search=${searchTerm}`);
+//             const data = await response.json();
+//             setUsers(data.data || []);
+//             setTotalPages(data.totalPages || 0);
+//         } catch (error) { setUsers([]); setTotalPages(0); toast.error(error.message || 'Failed to fetch users.'); }
+//     };
+//     useEffect(() => { fetchUsers(currentPage); }, [currentPage, searchTerm]);
+//     const handleAddNew = () => { setEditingUser(null); setIsModalOpen(true); };
+//     const handleEdit = (user) => { setEditingUser(user); setIsModalOpen(true); };
+//     const handleDeleteClick = (id) => { setItemToDelete(id); setConfirmOpen(true); };
+//     const confirmDelete = async () => {
+//         try {
+//             await apiFetch(`/users/${itemToDelete}`, { method: 'DELETE' });
+//             toast.success('User deleted successfully!');
+//             fetchUsers(currentPage);
+//         } catch (error) { toast.error(error.message || 'Failed to delete user.'); }
+//         finally { setConfirmOpen(false); setItemToDelete(null); }
+//     };
+//     const handleSave = async (formData) => {
+//         try {
+//             if (editingUser) {
+//                 await apiFetch(`/users/${editingUser._id}`, { method: 'PUT', body: JSON.stringify(formData) });
+//                 toast.success('User updated successfully!');
+//             } else {
+//                 await apiFetch('/users/create', { method: 'POST', body: JSON.stringify(formData) });
+//                 toast.success('User created successfully!');
+//             }
+//             fetchUsers(currentPage);
+//             closeModal();
+//         } catch (error) { toast.error(error.message || 'Failed to save user.'); }
+//     };
+//     const handlePageChange = (newPage) => { if (newPage > 0 && newPage <= totalPages) { setCurrentPage(newPage); } };
+//     const closeModal = () => { setIsModalOpen(false); setEditingUser(null); };
+//     return (
+//         <div className="space-y-6 flex flex-col flex-grow">
+//             <div className="flex justify-between items-center"><h1 className="text-3xl font-bold text-gray-800 dark:text-white">User Management</h1><Button onClick={handleAddNew}><Plus size={20} />Add New User</Button></div>
+//             <Card className="flex flex-col flex-grow">
+//                 <div className="flex justify-between items-center mb-4">
+//                     <div className="relative w-full md:w-auto">
+//                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+//                         <input type="text" placeholder="Search users..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-full md:w-80 pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+//                     </div>
+//                 </div>
+//                 <div className="overflow-x-auto flex-grow">
+//                     <table className="w-full text-left">
+//                         <thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700"><tr><th className="p-3">Name</th><th className="p-3">Email</th><th className="p-3">Joined On</th><th className="p-3">Role</th><th className="p-3 text-center">Actions</th></tr></thead>
+//                         <tbody>
+//                             {users.length > 0 ? users.map(user => (
+//                                 <tr key={user._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
+//                                     <td className="p-3 font-medium text-gray-900 dark:text-white">{user.fullName}</td><td className="p-3 text-gray-600 dark:text-gray-300">{user.email}</td><td className="p-3 text-gray-600 dark:text-gray-300">{new Date(user.createdAt).toLocaleDateString()}</td><td className="p-3 text-gray-600 dark:text-gray-300 capitalize">{user.role}</td>
+//                                     <td className="p-3 text-center"><div className="flex justify-center items-center gap-2"><button onClick={() => handleEdit(user)} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-1"><Edit size={18} /></button><button onClick={() => handleDeleteClick(user._id)} className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1"><Trash2 size={18} /></button></div></td>
+//                                 </tr>
+//                             )) : (<tr><td colSpan="5" className="text-center py-10 text-gray-500">No users found.</td></tr>)}
+//                         </tbody>
+//                     </table>
+//                 </div>
+//                 <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+//             </Card>
+//             <UserFormModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSave} user={editingUser} />
+//             <ConfirmationModal isOpen={isConfirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={confirmDelete} title="Delete User" message="Are you sure you want to delete this user? This will permanently remove their data." />
+//         </div>
+//     );
+// };
+
+// // --- MODIFIED: ProfilePage for Workshop Owners ---
+// const ProfilePage = ({ currentUser, setCurrentUser }) => {
+//     const [profile, setProfile] = useState({ 
+//         ownerName: '', 
+//         workshopName: '', 
+//         email: '', 
+//         phone: '', 
+//         address: '', 
+//         profilePicture: '',
+//         latitude: '', 
+//         longitude: '',
+//         pickupDropoffAvailable: false,
+//         pickupDropoffCostPerKm: ''
+//     });
+//     const [isEditing, setIsEditing] = useState(false);
+//     const [isFetchingLocation, setIsFetchingLocation] = useState(false);
+//     const [initialProfile, setInitialProfile] = useState({});
+//     const fileInputRef = useRef(null);
+
+//     // Fetch workshop profile data on component mount or currentUser change
+//     useEffect(() => { 
+//         const fetchWorkshopProfile = async () => {
+//             try {
+//                 const response = await apiFetch('/profile'); // This fetches the workshop profile
+//                 const data = await response.json();
+//                 const workshopProfileData = {
+//                     ...data.data,
+//                     latitude: data.data.location?.coordinates[1] || '',
+//                     longitude: data.data.location?.coordinates[0] || '',
+//                     pickupDropoffAvailable: data.data.pickupDropoffAvailable || false,
+//                     pickupDropoffCostPerKm: data.data.pickupDropoffCostPerKm || ''
+//                 };
+//                 setProfile(workshopProfileData);
+//                 setInitialProfile(workshopProfileData); // Save initial state for reset
+//             } catch (error) {
+//                 toast.error(error.message || "Failed to fetch workshop profile.");
+//                 // Set default empty profile if fetching fails
+//                 setProfile({
+//                     ownerName: currentUser?.fullName || '',
+//                     workshopName: '', email: currentUser?.email || '', phone: '', address: '', profilePicture: '',
+//                     latitude: '', longitude: '', pickupDropoffAvailable: false, pickupDropoffCostPerKm: ''
+//                 });
+//                 setInitialProfile({
+//                     ownerName: currentUser?.fullName || '',
+//                     workshopName: '', email: currentUser?.email || '', phone: '', address: '', profilePicture: '',
+//                     latitude: '', longitude: '', pickupDropoffAvailable: false, pickupDropoffCostPerKm: ''
+//                 });
+//             }
+//         };
+//         if (currentUser) { // Only fetch if currentUser is loaded
+//             fetchWorkshopProfile();
+//         }
+//     }, [currentUser]); // Re-fetch if the currentUser object from AuthContext changes
+
+//     const handleChange = (e) => { 
+//         const { name, value, type, checked } = e.target;
+//         setProfile({ ...profile, [name]: type === 'checkbox' ? checked : value }); 
+//     };
+
+//     const handleFileChange = (e) => { 
+//         const file = e.target.files[0]; 
+//         if (file) { 
+//             setProfile(p => ({ ...p, profilePictureUrl: URL.createObjectURL(file), newProfilePicture: file })); 
+//         } 
+//     };
+
+//     const handleUploadClick = () => { fileInputRef.current.click(); };
+
+//     const handleFetchLocation = async () => {
+//         if (!navigator.geolocation) { toast.error("Geolocation is not supported by your browser."); return; }
+//         setIsFetchingLocation(true);
+//         toast.info("Fetching your location...");
+//         navigator.geolocation.getCurrentPosition(
+//             async (position) => {
+//                 const { latitude, longitude } = position.coords;
+//                 try {
+//                     const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+//                     if (!response.ok) throw new Error('Failed to convert location to address.');
+//                     const data = await response.json();
+//                     if (data && data.display_name) {
+//                         setProfile(p => ({ 
+//                             ...p, 
+//                             address: data.display_name,
+//                             latitude: latitude,
+//                             longitude: longitude
+//                         }));
+//                         toast.success("Location fetched and address updated!");
+//                     } else { 
+//                         toast.warn("Could not determine detailed address from your location. Latitude and Longitude saved."); 
+//                         setProfile(p => ({ ...p, latitude: latitude, longitude: longitude }));
+//                     }
+//                 } catch (error) { 
+//                     toast.error(error.message || "Failed to fetch address. Latitude and Longitude saved."); 
+//                     setProfile(p => ({ ...p, latitude: latitude, longitude: longitude }));
+//                 } finally { 
+//                     setIsFetchingLocation(false); 
+//                 }
+//             },
+//             (error) => {
+//                 let errorMessage = "An unknown geolocation error occurred.";
+//                 if (error.code === error.PERMISSION_DENIED) { errorMessage = "Location access denied. Please enable it in your browser settings."; }
+//                 else if (error.code === error.POSITION_UNAVAILABLE) { errorMessage = "Location information is currently unavailable."; }
+//                 else if (error.code === error.TIMEOUT) { errorMessage = "Request for location timed out."; }
+//                 toast.error(errorMessage);
+//                 setIsFetchingLocation(false);
+//             },
+//             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } // High accuracy, 10s timeout
+//         );
+//     };
+
+//     const handleSave = async () => {
+//         const formData = new FormData();
+//         formData.append('ownerName', profile.ownerName);
+//         formData.append('workshopName', profile.workshopName);
+//         formData.append('email', profile.email);
+//         formData.append('phone', profile.phone);
+//         formData.append('address', profile.address);
+//         formData.append('pickupDropoffAvailable', profile.pickupDropoffAvailable);
+//         formData.append('pickupDropoffCostPerKm', profile.pickupDropoffCostPerKm);
+
+//         // NEW: Add coordinates if both latitude and longitude are valid numbers
+//         if (profile.latitude !== '' && profile.longitude !== '' && !isNaN(parseFloat(profile.latitude)) && !isNaN(parseFloat(profile.longitude))) {
+//             formData.append('coordinates', JSON.stringify([parseFloat(profile.longitude), parseFloat(profile.latitude)])); // MongoDB expects [longitude, latitude]
+//         } else {
+//              // If coordinates are explicitly cleared or invalid, send default zeros
+//             formData.append('coordinates', JSON.stringify([0, 0])); 
+//         }
+
+//         if (profile.newProfilePicture) { formData.append('profilePicture', profile.newProfilePicture); }
+        
+//         try {
+//             const response = await apiFetch('/profile', { method: 'PUT', body: formData });
+//             const data = await response.json();
+            
+//             // Update local state with fresh data, ensuring lat/lon are set from coordinates
+//             const updatedProfileData = {
+//                 ...data.data,
+//                 latitude: data.data.location?.coordinates[1] || '',
+//                 longitude: data.data.location?.coordinates[0] || ''
+//             };
+//             setProfile(updatedProfileData);
+//             setInitialProfile(updatedProfileData); // Update initial state for subsequent cancellations
+
+//             // Also update the currentUser in the main AdminDashboard component if necessary (e.g. for ownerName display in header)
+//             // This assumes currentUser in AdminDashboard also has ownerName/workshopName
+//             if (setCurrentUser) {
+//                 setCurrentUser(prevUser => ({
+//                     ...prevUser,
+//                     fullName: updatedProfileData.ownerName, // Sync ownerName to fullName if used in header
+//                     workshopName: updatedProfileData.workshopName,
+//                     profilePicture: updatedProfileData.profilePicture, // Sync profile picture
+//                     // Note: The actual 'workshop' ObjectId field on the user model is handled by backend on login/promote
+//                     // This is just for local display consistency in the header/sidebar if needed
+//                 }));
+//             }
+            
+//             setIsEditing(false);
+//             toast.success(data.message || 'Profile updated successfully!');
+//         } catch (error) { toast.error(error.message || 'Failed to save profile.'); }
+//     };
+
+//     const handleCancel = () => { 
+//         setProfile(initialProfile); 
+//         setIsEditing(false); 
+//     };
+
+//     const handleImageError = (e) => { e.target.onerror = null; e.target.src = `https://placehold.co/128x128/e2e8f0/4a5568?text=A`; }
+//     const profilePictureSrc = profile.profilePictureUrl || (profile.profilePicture ? `http://localhost:5050/${profile.profilePicture}` : `https://placehold.co/128x128/e2e8f0/4a5568?text=A`);
+    
+//     return (
+//         <div className="space-y-6">
+//             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Workshop Profile</h1>
+//             <Card>
+//                 <div className="p-6">
+//                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
+//                         <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">Profile Information</h2>
+//                         {!isEditing && (<Button onClick={() => setIsEditing(true)}><Edit size={16} />Edit Profile</Button>)}
+//                     </div>
+//                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-4">
+//                         <div className="lg:col-span-1 flex flex-col items-center">
+//                             <img key={profilePictureSrc} src={profilePictureSrc} alt="Profile" className="w-32 h-32 rounded-full object-cover mb-4 ring-4 ring-blue-500/50" onError={handleImageError} />
+//                             <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+//                             {isEditing && (<Button variant="secondary" className="w-full" onClick={handleUploadClick}><Camera size={16} /> Change Picture</Button>)}
+//                         </div>
+//                         <div className="lg:col-span-2 space-y-4">
+//                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//                                 <Input id="workshopName" label="Workshop Name" name="workshopName" value={profile.workshopName || ''} onChange={handleChange} disabled={!isEditing} />
+//                                 <Input id="ownerName" label="Owner Name" name="ownerName" value={profile.ownerName || ''} onChange={handleChange} disabled={!isEditing} />
+//                                 <Input id="email" label="Email Address" name="email" type="email" value={profile.email || ''} onChange={handleChange} disabled={!isEditing} />
+//                                 <Input id="phone" label="Phone Number" name="phone" value={profile.phone || ''} onChange={handleChange} disabled={!isEditing} />
+//                             </div>
+                            
+//                             {/* NEW: Address & Location fields for Workshop */}
+//                             <div>
+//                                 <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address</label>
+//                                 <div className="flex items-center gap-2">
+//                                     <textarea id="address" name="address" rows="3" value={profile.address || ''} onChange={handleChange} disabled={!isEditing || isFetchingLocation} className="flex-grow px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-200 dark:disabled:bg-gray-700/50 dark:text-white" placeholder="Enter workshop address or fetch current location"></textarea>
+//                                     {isEditing && (<Button type="button" variant="secondary" onClick={handleFetchLocation} disabled={isFetchingLocation} className="shrink-0"><MapPin size={18} className={isFetchingLocation ? 'animate-pulse' : ''} /></Button>)}
+//                                 </div>
+//                             </div>
+//                             <div className="grid grid-cols-2 gap-4">
+//                                 <Input id="latitude" label="Latitude" name="latitude" type="number" step="any" value={profile.latitude} onChange={(e) => setProfile({ ...profile, latitude: e.target.value })} disabled={!isEditing} placeholder="e.g., 27.7172" />
+//                                 <Input id="longitude" label="Longitude" name="longitude" type="number" step="any" value={profile.longitude} onChange={(e) => setProfile({ ...profile, longitude: e.target.value })} disabled={!isEditing} placeholder="e.g., 85.3240" />
+//                             </div>
+//                             {/* Display current coordinates if set */}
+//                             {(profile.latitude !== '' || profile.longitude !== '') && (
+//                                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+//                                     Current coordinates: Lat {parseFloat(profile.latitude || 0).toFixed(4)}, Lon {parseFloat(profile.longitude || 0).toFixed(4)}
+//                                 </p>
+//                             )}
+//                             {/* END NEW: Address & Location fields */}
+
+//                             {/* NEW: Pickup/Drop-off Service Settings */}
+//                             <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 space-y-3 bg-gray-50 dark:bg-gray-700/50">
+//                                 <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Pickup & Delivery Service</h3>
+//                                 <div>
+//                                     <input 
+//                                         type="checkbox" 
+//                                         id="pickupDropoffAvailable" 
+//                                         name="pickupDropoffAvailable" 
+//                                         checked={profile.pickupDropoffAvailable} 
+//                                         onChange={handleChange} 
+//                                         disabled={!isEditing}
+//                                         className="mr-2 text-blue-600 focus:ring-blue-500"
+//                                     />
+//                                     <label htmlFor="pickupDropoffAvailable" className="text-gray-700 dark:text-gray-300">
+//                                         Offer Pickup & Drop-off Service
+//                                     </label>
+//                                 </div>
+//                                 {profile.pickupDropoffAvailable && (
+//                                     <Input 
+//                                         id="pickupDropoffCostPerKm" 
+//                                         name="pickupDropoffCostPerKm" 
+//                                         label="Cost per Kilometer (रु/km)" 
+//                                         type="number" 
+//                                         step="0.01"
+//                                         value={profile.pickupDropoffCostPerKm} 
+//                                         onChange={handleChange} 
+//                                         disabled={!isEditing}
+//                                         placeholder="e.g., 50 (for Rs. 50/km)"
+//                                     />
+//                                 )}
+//                             </div>
+//                             {/* END NEW: Pickup/Drop-off Service Settings */}
+
+//                             {isEditing && (<div className="flex justify-end gap-3 pt-4"><Button variant="secondary" onClick={handleCancel}>Cancel</Button><Button onClick={handleSave}>Save Changes</Button></div>)}
+//                         </div>
+//                     </div>
+//                 </div>
+//             </Card>
+//         </div>
+//     );
+// };
+// const BookingFormModal = ({ isOpen, onClose, booking, onSave }) => {
+//     const [formData, setFormData] = useState({});
+//     useEffect(() => { if (booking) { setFormData({ status: booking.status, totalCost: booking.totalCost }); } }, [booking, isOpen]);
+//     const handleChange = (e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); };
+//     const handleSubmit = (e) => { e.preventDefault(); onSave(formData); };
+//     return (<Modal isOpen={isOpen} onClose={onClose} title={`Edit Booking`}><form onSubmit={handleSubmit} className="space-y-4">{booking && <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50"><p className="text-sm"><strong className="dark:text-gray-300">Customer:</strong> {booking.customer?.fullName}</p><p className="text-sm"><strong className="dark:text-gray-300">Service:</strong> {booking.serviceType}</p><p className="text-sm"><strong className="dark:text-gray-300">Bike:</strong> {booking.bikeModel}</p></div>}<div><label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label><select id="status" name="status" value={formData.status || ''} onChange={handleChange} className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg dark:text-white"><option value="Pending">Pending</option><option value="In Progress">In Progress</option><option value="Completed">Completed</option><option value="Cancelled">Cancelled</option></select></div><Input id="totalCost" label="Total Cost (रु)" name="totalCost" type="number" value={formData.totalCost || ''} onChange={handleChange} /><div className="flex justify-end gap-3 pt-4"><Button type="button" variant="secondary" onClick={onClose}>Cancel</Button><Button type="submit" variant="primary">Save Changes</Button></div></form></Modal>);
+// };
+// const UserFormModal = ({ isOpen, onClose, onSave, user }) => {
+//     const [formData, setFormData] = useState({ fullName: '', email: '', password: '', role: 'user', workshopId: '' }); // Added workshopId for admin creation/edit
+//     const [workshops, setWorkshops] = useState([]); // State to hold workshop options
+
+//     useEffect(() => {
+//         // Fetch workshops if creating/editing an admin
+//         const fetchWorkshops = async () => {
+//             try {
+//                 const response = await apiFetch('/workshops'); // Assuming an API to get all workshops for selection
+//                 const data = await response.json();
+//                 setWorkshops(data.data || []);
+//             } catch (error) {
+//                 toast.error("Failed to fetch workshops for admin assignment.");
+//                 setWorkshops([]);
+//             }
+//         };
+//         if (isOpen && (user?.role === 'admin' || !user)) { // Only fetch if opening for admin or new user (potential admin)
+//              fetchWorkshops();
+//         }
+
+//         if (user) { 
+//             setFormData({ 
+//                 fullName: user.fullName, 
+//                 email: user.email, 
+//                 role: user.role, 
+//                 password: '', 
+//                 workshopId: user.workshop?._id || '' // Populate workshopId if user has one
+//             }); 
+//         } else { 
+//             setFormData({ fullName: '', email: '', password: '', role: 'normal', workshopId: '' }); 
+//         }
+//     }, [user, isOpen]);
+
+//     const handleChange = (e) => { 
+//         const { name, value } = e.target; 
+//         setFormData(prev => ({ ...prev, [name]: value })); 
+//     };
+
+//     const handleSubmit = (e) => { 
+//         e.preventDefault(); 
+//         const dataToSave = { ...formData }; 
+//         if (user && !dataToSave.password) { delete dataToSave.password; } 
+//         onSave(dataToSave); 
+//     };
+
+//     return (
+//         <Modal isOpen={isOpen} onClose={onClose} title={user ? 'Edit User' : 'Add New User'}>
+//             <form onSubmit={handleSubmit} className="space-y-4">
+//                 <Input id="fullName" name="fullName" label="Full Name" value={formData.fullName} onChange={handleChange} required />
+//                 <Input id="email" name="email" label="Email Address" type="email" value={formData.email} onChange={handleChange} required />
+//                 <Input id="password" name="password" label="Password" type="password" value={formData.password} onChange={handleChange} placeholder={user ? "Leave blank to keep current" : ""} required={!user} />
+//                 <div>
+//                     <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
+//                     <select id="role" name="role" value={formData.role || 'normal'} onChange={handleChange} className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg dark:text-white">
+//                         <option value="normal">Normal User</option>
+//                         <option value="admin">Admin</option>
+//                     </select>
+//                 </div>
+//                 {/* NEW: Workshop selection for admin role */}
+//                 {formData.role === 'admin' && (
+//                     <div>
+//                         <label htmlFor="workshopId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assign to Workshop</label>
+//                         <select id="workshopId" name="workshopId" value={formData.workshopId} onChange={handleChange} className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg dark:text-white">
+//                             <option value="">-- No Workshop Assigned / Create New Default --</option>
+//                             {workshops.map(ws => (
+//                                 <option key={ws._id} value={ws._id}>{ws.workshopName} ({ws.email})</option>
+//                             ))}
+//                         </select>
+//                         <p className="text-xs text-gray-500 mt-1">Leave blank to create a new default workshop for this admin or unassign.</p>
+//                     </div>
+//                 )}
+//                 {/* END NEW */}
+//                 <div className="flex justify-end gap-3 pt-4"><Button type="button" variant="secondary" onClick={onClose}>Cancel</Button><Button type="submit" variant="primary">{user ? 'Save Changes' : 'Add User'}</Button></div>
+//             </form>
+//         </Modal>
+//     );
+// };
+// const ServiceFormModal = ({ isOpen, onClose, onSave, service }) => {
+//     const [formData, setFormData] = useState({ name: '', description: '', price: '', duration: '' });
+//     const [image, setImage] = useState(null);
+//     const [preview, setPreview] = useState('');
+//     const fileInputRef = useRef(null);
+//     useEffect(() => {
+//         if (isOpen) {
+//             if (service) { setFormData(service); }
+//             else { setFormData({ name: '', description: '', price: '', duration: '' }); }
+//             setImage(null); setPreview('');
+//             if (fileInputRef.current) fileInputRef.current.value = "";
+//         }
+//     }, [service, isOpen]);
+//     const handleChange = (e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); }
+//     const handleFileChange = (e) => {
+//         const file = e.target.files[0];
+//         if (file) { setImage(file); setPreview(URL.createObjectURL(file)); }
+//     }
+//     const handleSubmit = (e) => {
+//         e.preventDefault();
+//         const dataToSend = new FormData();
+//         dataToSend.append('name', formData.name);
+//         dataToSend.append('description', formData.description);
+//         dataToSend.append('price', formData.price);
+//         dataToSend.append('duration', formData.duration || '');
+//         if (image) { dataToSend.append('image', image); }
+//         onSave(dataToSend);
+//     }
+//     return (
+//         <Modal isOpen={isOpen} onClose={onClose} title={service ? 'Edit Service' : 'Add New Service'}>
+//             <form onSubmit={handleSubmit} className="space-y-4">
+//                 <Input id="name" name="name" label="Service Name" value={formData.name || ''} onChange={handleChange} required />
+//                 <div><label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label><textarea id="description" name="description" value={formData.description || ''} onChange={handleChange} rows="3" className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white" required></textarea></div>
+//                 <Input id="price" name="price" label="Price (रु)" type="number" value={formData.price || ''} onChange={handleChange} required />
+//                 <Input id="duration" name="duration" label="Estimated Duration (e.g., 2 hours)" value={formData.duration || ''} onChange={handleChange} />
+//                 <div>
+//                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Service Image</label>
+//                     <input type="file" ref={fileInputRef} onChange={handleFileChange} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept="image/*" required={!service} />
+//                     {preview && <img src={preview} alt="New Preview" className="mt-4 h-32 w-auto rounded object-cover" />}
+//                     {service && service.image && !preview && <img src={`http://localhost:5050/${service.image}`} alt="Current" className="mt-4 h-32 w-auto rounded object-cover" />}
+//                 </div>
+//                 <div className="flex justify-end gap-3 pt-4"><Button type="button" variant="secondary" onClick={onClose}>Cancel</Button><Button type="submit" variant="primary">{service ? 'Save Changes' : 'Add Service'}</Button></div>
+//             </form>
+//         </Modal>
+//     );
+// };
+
+// // UPDATED SERVICES PAGE
+// const ServicesPage = () => {
+//     const [services, setServices] = useState([]);
+//     const [isModalOpen, setIsModalOpen] = useState(false);
+//     const [editingService, setEditingService] = useState(null);
+//     const [isConfirmOpen, setConfirmOpen] = useState(false);
+//     const [itemToDelete, setItemToDelete] = useState(null);
+//     const [currentPage, setCurrentPage] = useState(1);
+//     const [totalPages, setTotalPages] = useState(0);
+    
+//     // NEW STATE FOR REVIEWS MODAL
+//     const [isReviewModalOpen, setReviewModalOpen] = useState(false);
+//     const [selectedServiceId, setSelectedServiceId] = useState(null);
+    
+//     const ITEMS_PER_PAGE = 6;
+    
+//     const fetchServices = async (page) => {
+//         try {
+//             const response = await apiFetch(`/services?page=${page}&limit=${ITEMS_PER_PAGE}`);
+//             const data = await response.json();
+//             setServices(data.data || []);
+//             setTotalPages(data.totalPages || 0);
+//         } catch (error) { setServices([]); setTotalPages(0); toast.error(error.message || 'Failed to fetch services.'); }
+//     };
+    
+//     useEffect(() => { fetchServices(currentPage); }, [currentPage]);
+    
+//     const handleAddNew = () => { setEditingService(null); setIsModalOpen(true); };
+//     const handleEdit = (service) => { setEditingService(service); setIsModalOpen(true); };
+//     const handleDeleteClick = (id) => { setItemToDelete(id); setConfirmOpen(true); };
+    
+//     // NEW FUNCTION TO OPEN REVIEWS MODAL
+//     const handleViewReviews = (serviceId) => {
+//         setSelectedServiceId(serviceId);
+//         setReviewModalOpen(true);
+//     };
+
+//     const confirmDelete = async () => {
+//         try {
+//             await apiFetch(`/services/${itemToDelete}`, { method: 'DELETE' });
+//             toast.success('Service deleted successfully!');
+//             if (services.length === 1 && currentPage > 1) { setCurrentPage(currentPage - 1); } else { fetchServices(currentPage); }
+//         } catch (error) { toast.error(error.message || 'Failed to delete service.'); }
+//         finally { setConfirmOpen(false); setItemToDelete(null); }
+//     };
+    
+//     const handleSave = async (formData) => {
+//         try {
+//             const url = editingService ? `/services/${editingService._id}` : '/services';
+//             const method = editingService ? 'PUT' : 'POST';
+//             await apiFetch(url, { method, body: formData });
+//             toast.success(editingService ? 'Service updated successfully!' : 'Service added successfully!');
+//             fetchServices(currentPage);
+//             closeModal();
+//         } catch (error) { toast.error(error.message || 'Failed to save service.'); }
+//     };
+    
+//     const handlePageChange = (newPage) => { if (newPage > 0 && newPage <= totalPages) { setCurrentPage(newPage); } };
+//     const closeModal = () => { setIsModalOpen(false); setEditingService(null); }
+//     const handleImageError = (e) => { e.target.src = 'https://placehold.co/400x300/e2e8f0/4a5568?text=No+Image'; }
+    
+//     return (
+//         <div className="space-y-6 flex flex-col flex-grow">
+//             <div className="flex justify-between items-center"><h1 className="text-3xl font-bold text-gray-800 dark:text-white">Services Management</h1><Button onClick={handleAddNew}><Plus size={20} />Add New Service</Button></div>
+//             <Card className="flex flex-col flex-grow">
+//                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-grow">
+//                     {services.length > 0 ? services.map(service => (
+//                         <div key={service._id} className="flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
+//                             <img src={`http://localhost:5050/${service.image}`} alt={service.name} onError={handleImageError} className="w-full h-48 object-cover" />
+//                             <div className="p-4 flex-grow flex flex-col">
+//                                 <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400">{service.name}</h3>
+//                                 {/* NEW: Display workshop name here too */}
+//                                 {service.workshop && (
+//                                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center justify-center gap-1">
+//                                         <MapPin size={14} />{service.workshop.workshopName}
+//                                     </p>
+//                                 )}
+//                                 <div className="flex items-center gap-2 my-1 text-sm text-gray-500">
+//                                     <StarRating rating={service.rating} />
+//                                     <span>({service.numReviews} reviews)</span>
+//                                 </div>
+//                                 <p className="text-gray-600 dark:text-gray-300 mt-2 mb-4 flex-grow">{service.description}</p>
+//                                 <div className="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+//                                     <div><p className="text-lg font-semibold text-gray-800 dark:text-white">रु{service.price}</p><p className="text-sm text-gray-500 dark:text-gray-400">{service.duration}</p></div>
+//                                     <div className="flex gap-1">
+//                                         {/* NEW "VIEW REVIEWS" BUTTON */}
+//                                         <button onClick={() => handleViewReviews(service._id)} className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600" title="View Reviews">
+//                                             <ReviewIcon size={18} />
+//                                         </button>
+//                                         <button onClick={() => handleEdit(service)} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600" title="Edit Service"><Edit size={18} /></button>
+//                                         <button onClick={() => handleDeleteClick(service._id)} className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600" title="Delete Service"><Trash2 size={18} /></button>
+//                                     </div>
+//                                 </div>
+//                             </div>
+//                         </div>
+//                     )) : (<div className="col-span-full text-center py-10 text-gray-500">No services found.</div>)}
+//                 </div>
+//                 <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+//             </Card>
+//             <ServiceFormModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSave} service={editingService} />
+//             <ConfirmationModal isOpen={isConfirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={confirmDelete} title="Delete Service" message="Are you sure you want to delete this service? This action is permanent." />
+//             {/* RENDER THE NEW REVIEWS MODAL */}
+//             <ReviewsModal isOpen={isReviewModalOpen} onClose={() => setReviewModalOpen(false)} serviceId={selectedServiceId} />
+//         </div>
+//     );
+// };
+
+
+// const NavLink = ({ page, icon: Icon, children, activePage, onLinkClick, badgeCount }) => {
+//     const isActive = activePage === page;
+//     return (<a href={`#/admin/${page}`} onClick={onLinkClick} className={`relative flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-200 ${isActive ? 'bg-blue-600 text-white font-semibold shadow-lg' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}><Icon size={22} /><span className="text-md">{children}</span>{badgeCount > 0 && (<span className="absolute right-3 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">{badgeCount}</span>)}</a>);
+// };
+// const SidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClose, totalUnreadCount }) => (
+//     <>
+//         <div className="p-4 flex items-center justify-between"><a href="#/admin/dashboard" onClick={onLinkClick} className="flex items-center gap-3 cursor-pointer"><img src="/motofix-removebg-preview.png" alt="MotoFix Logo" className="h-20 w-auto" /></a>{onMenuClose && (<button onClick={onMenuClose} className="lg:hidden text-gray-500 dark:text-gray-400"><X size={24} /></button>)}</div>
+//         <nav className="flex-1 px-4 py-6 space-y-2"><NavLink page="dashboard" icon={BarChart} activePage={activePage} onLinkClick={onLinkClick}>Dashboard</NavLink><NavLink page="bookings" icon={List} activePage={activePage} onLinkClick={onLinkClick}>Bookings</NavLink><NavLink page="users" icon={Users} activePage={activePage} onLinkClick={onLinkClick}>Users</NavLink><NavLink page="services" icon={Wrench} activePage={activePage} onLinkClick={onLinkClick}>Services</NavLink><NavLink page="profile" icon={User} activePage={activePage} onLinkClick={onLinkClick}>Profile</NavLink><NavLink page="chat" icon={MessageSquare} activePage={activePage} onLinkClick={onLinkClick} badgeCount={totalUnreadCount}>Chat</NavLink></nav>
+//         <div className="p-4 border-t border-gray-200 dark:border-gray-700"><button onClick={onLogoutClick} className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-800"><LogOut size={22} /><span className="text-md">Logout</span></button></div>
+//     </>
+// );
+// const AdminDashboard = () => {
+//     const [activePage, setActivePage] = useState(() => (window.location.hash.replace('#/admin/', '').split('/')[0] || 'dashboard'));
+//     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+//     const [isLogoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+//     // Updated currentUser to store workshop details for display in header
+//     const [currentUser, setCurrentUser] = useState({ ownerName: 'Admin', workshopName: '', profilePicture: '' }); 
+//     const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('adminTheme') === 'dark');
+//     const [totalUnreadCount, setTotalUnreadCount] = useState(0);
+//     const handleLogoutConfirm = () => { localStorage.clear(); window.location.href = '/'; };
+
+//     // Fetch initial chat unread count and set up listeners
+//     useEffect(() => {
+//         const fetchInitialCount = async () => {
+//             try {
+//                 const response = await apiFetch('/chat/users');
+//                 const data = await response.json();
+//                 const unreadConversations = data.data.filter(c => c.unreadCount > 0);
+//                 setTotalUnreadCount(unreadConversations.length);
+//             } catch (error) { console.error("Could not fetch initial unread count", error); }
+//         };
+//         fetchInitialCount();
+//         const notificationListener = () => { fetchInitialCount(); };
+//         const readListener = () => { fetchInitialCount(); };
+//         socket.on('new_message_notification', notificationListener);
+//         socket.on('messages_read_by_admin', readListener);
+//         return () => {
+//             socket.off('new_message_notification', notificationListener);
+//             socket.off('messages_read_by_admin', readListener);
+//         };
+//     }, []);
+
+//     // Update document title with unread count
+//     useEffect(() => { document.title = totalUnreadCount > 0 ? `(${totalUnreadCount}) MotoFix Admin` : 'MotoFix Admin'; }, [totalUnreadCount]);
+    
+//     // Fetch current admin's workshop profile for header display
+//     useEffect(() => {
+//         const fetchProfile = async () => {
+//             try {
+//                 const response = await apiFetch('/profile'); // This endpoint now fetches workshop details
+//                 const data = await response.json();
+//                 setCurrentUser(data.data || { ownerName: 'Admin', workshopName: '', profilePicture: '' }); // Set to fetched workshop data
+//             } catch (error) { 
+//                 if (error.message.includes('Unauthorized') || error.message.includes('Forbidden')) { 
+//                     handleLogoutConfirm(); // Redirect if token invalid/expired
+//                 } else {
+//                     console.error("Failed to fetch admin/workshop profile:", error);
+//                     toast.error("Failed to load workshop profile for header. Please set it up.");
+//                 }
+//             }
+//         };
+//         fetchProfile();
+//     }, []);
+
+//     // Handle dark mode toggle
+//     useEffect(() => {
+//         document.documentElement.classList.toggle('dark', isDarkMode);
+//         localStorage.setItem('adminTheme', isDarkMode ? 'dark' : 'light');
+//     }, [isDarkMode]);
+
+//     // Handle hash change for page navigation
+//     useEffect(() => {
+//         const handleHashChange = () => {
+//             const page = window.location.hash.replace('#/admin/', '').split('/')[0] || 'dashboard';
+//             setActivePage(page);
+//         };
+//         window.addEventListener('hashchange', handleHashChange);
+//         handleHashChange();
+//         return () => window.removeEventListener('hashchange', handleHashChange);
+//     }, []);
+
+//     const renderPage = () => {
+//         const hash = window.location.hash.replace('#/admin/', '');
+//         const [page, id] = hash.split('/');
+//         switch (page) {
+//             case 'dashboard': return <DashboardPage />;
+//             case 'bookings': if (id) { return <BookingDetailsPage bookingId={id} />; } return <BookingsPage />;
+//             case 'users': return <UsersPage />;
+//             case 'services': return <ServicesPage />;
+//             // Pass setCurrentUser to ProfilePage so it can update header info
+//             case 'profile': return <ProfilePage currentUser={currentUser} setCurrentUser={setCurrentUser} />; 
+//             case 'chat': return <AdminChatPage />;
+//             default: window.location.hash = '#/admin/dashboard'; return <DashboardPage />;
+//         }
+//     };
+
+//     // Handle image error for profile picture in header
+//     const handleImageError = (e) => { e.target.onerror = null; e.target.src = `https://placehold.co/40x40/e2e8f0/4a5568?text=A`; }
+//     const profilePictureSrc = currentUser.profilePicture ? `http://localhost:5050/${currentUser.profilePicture}` : `https://placehold.co/40x40/e2e8f0/4a5568?text=A`;
+    
+//     return (
+//         <div className={`flex h-screen bg-gray-100 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100`}>
+//             {/* Mobile Sidebar */}
+//             <div className={`fixed inset-0 z-40 flex lg:hidden transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+//                 <div className="w-72 bg-white dark:bg-gray-800 shadow-lg flex flex-col">
+//                     <SidebarContent activePage={activePage} onLinkClick={() => setIsSidebarOpen(false)} onLogoutClick={() => { setIsSidebarOpen(false); setLogoutConfirmOpen(true); }} onMenuClose={() => setIsSidebarOpen(false)} totalUnreadCount={totalUnreadCount} />
+//                 </div>
+//                 <div className="flex-1 bg-black bg-opacity-50" onClick={() => setIsSidebarOpen(false)}></div>
+//             </div>
+//             {/* Desktop Sidebar */}
+//             <aside className="w-72 bg-white dark:bg-gray-800 shadow-md hidden lg:flex flex-col flex-shrink-0">
+//                 <SidebarContent activePage={activePage} onLinkClick={() => { }} onLogoutClick={() => setLogoutConfirmOpen(true)} totalUnreadCount={totalUnreadCount} />
+//             </aside>
+
+//             <main className="flex-1 flex flex-col overflow-hidden">
+//                 <header className="bg-white dark:bg-gray-800 shadow-sm p-4 flex justify-between items-center">
+//                     <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-gray-600 dark:text-gray-300"><Menu size={28} /></button>
+//                     <div className="hidden lg:block" /> {/* Spacer to push items right */}
+//                     <div className="flex items-center gap-4">
+//                         <button onClick={() => setIsDarkMode(!isDarkMode)} className="text-gray-600 dark:text-gray-300 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+//                             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+//                         </button>
+//                         <div className="flex items-center gap-3">
+//                             <img key={profilePictureSrc} src={profilePictureSrc} alt="Admin" className="w-10 h-10 rounded-full object-cover" onError={handleImageError} />
+//                             <div>
+//                                 <p className="font-semibold text-sm">{currentUser.ownerName}</p>
+//                                 <p className="text-xs text-gray-500 dark:text-gray-400">Workshop Owner</p>
+//                             </div>
+//                         </div>
+//                     </div>
+//                 </header>
+//                 <div className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 md:p-8 flex flex-col">
+//                     {renderPage()}
+//                 </div>
+//             </main>
+
+//             <ConfirmationModal isOpen={isLogoutConfirmOpen} onClose={() => setLogoutConfirmOpen(false)} onConfirm={handleLogoutConfirm} title="Confirm Logout" message="Are you sure you want to logout?" confirmText="Logout" confirmButtonVariant="danger" Icon={LogOut} />
+            
+//             {/* --- AI CHATBOT INTEGRATION --- */}
+//             {/* The GeminiChatbot is placed here to be available on all admin pages */}
+//             <GeminiChatbot />
+//         </div>
+//     );
+// };
+
+// export default AdminDashboard;
 
 
 
-import React, { useState, useEffect, useRef } from 'react';
+
+//next multi admin 
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Plus, Edit, Trash2, Search, Users, Wrench, DollarSign, List, User, LogOut, Menu, X, Sun, Moon, Camera, AlertTriangle, ArrowLeft, MapPin, ChevronLeft, ChevronRight, MessageSquare, Send, Inbox, Paperclip, FileText, XCircle, Star, MessageCircle as ReviewIcon } from 'lucide-react';
 import { toast } from 'react-toastify';
 import io from 'socket.io-client';
-import GeminiChatbot from '../../components/GeminiChatbot'; // Import the Gemini AI Chatbot component
+import GeminiChatbot from '../../components/GeminiChatbot';
+import { AuthContext } from '../../auth/AuthContext'; // IMPORTANT: Ensure this import is present
 
 const API_BASE_URL = "http://localhost:5050/api/admin";
 const socket = io.connect("http://localhost:5050");
@@ -2408,9 +3780,7 @@ const AdminChatPage = () => {
             const isFromAdmin = data.authorId === 'admin_user';
 
             if (isFromAdmin && isChatActive) {
-            // We only need to update the conversation list, not the active messages.
         } else if (isChatActive) {
-            // Add message to the active chat window only if it's from the user.
             setMessages((prev) => [...prev, data]);
         }
 
@@ -2662,7 +4032,7 @@ const BookingsPage = () => {
             const data = await response.json();
             setBookings(data.data || []);
             setTotalPages(data.totalPages || 0);
-        } catch (error) { toast.error(error.message || 'Failed to fetch bookings.'); setBookings([]); setTotalPages(0); }
+        } catch (error) { setBookings([]); setTotalPages(0); toast.error(error.message || 'Failed to fetch bookings.'); }
     };
     useEffect(() => { fetchBookings(currentPage); }, [currentPage, searchTerm]);
     const handleEdit = (booking) => { setEditingBooking(booking); setIsModalOpen(true); };
@@ -2704,11 +4074,8 @@ const BookingsPage = () => {
                         <tbody>
                             {bookings.length > 0 ? bookings.map(booking => (
                                 <tr key={booking._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
-                                    <td className="p-3 font-medium text-gray-900 dark:text-white">{booking.customer?.fullName || 'N/A'}</td>
-                                    <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel || 'N/A'}</td>
-                                    <td className="p-3 text-gray-600 dark:text-gray-300">{booking.serviceType || 'N/A'}</td>
-                                    <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
-                                    <td className="p-3"><StatusBadge status={booking.status} /></td>
+                                    <td className="p-3 font-medium text-gray-900 dark:text-white">{booking.customer?.fullName || 'N/A'}</td><td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel || 'N/A'}</td><td className="p-3 text-gray-600 dark:text-gray-300">{booking.serviceType || 'N/A'}</td>
+                                    <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td><td className="p-3"><StatusBadge status={booking.status} /></td>
                                     <td className="p-3 text-right font-medium">रु{booking.totalCost}</td>
                                     <td className="p-3 text-center"><div className="flex justify-center items-center gap-2"><a href={`#/admin/bookings/${booking._id}`} className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 p-1" title="View Details"><Search size={18} /></a><button onClick={() => handleEdit(booking)} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="Edit Booking"><Edit size={18} /></button><button onClick={() => handleDeleteClick(booking._id)} className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1" title="Delete Booking"><Trash2 size={18} /></button></div></td>
                                 </tr>
@@ -2815,14 +4182,14 @@ const BookingDetailsPage = ({ bookingId }) => {
                         <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 border-b pb-2">Booking Information</h2>
                         <div className="space-y-2 mt-4 text-gray-600 dark:text-gray-400">
                             <p><strong>Service:</strong> {booking.serviceType || 'N/A'}</p>
-                            <p><strong>Workshop:</strong> {booking.workshop?.workshopName || 'N/A'}</p> {/* NEW: Display Workshop Name */}
+                            <p><strong>Workshop:</strong> {booking.workshop?.workshopName || 'N/A'}</p>
                             <p><strong>Date:</strong> {new Date(booking.date).toLocaleDateString()}</p>
                             <p><strong>Final Amount:</strong> रु{booking.finalAmount}</p>
                             <p><strong>Status:</strong> <StatusBadge status={booking.status} /></p>
                             <p><strong>Payment:</strong> {booking.isPaid ? `Paid via ${booking.paymentMethod}` : 'Pending'}</p>
                              {booking.pickupDropoffRequested && (
                                 <p><strong>Pickup/Dropoff:</strong> Yes (रु{booking.pickupDropoffCost} from {booking.pickupDropoffAddress || 'User Profile Address'})</p>
-                            )} {/* NEW */}
+                            )}
                         </div>
                     </div>
                 </div>
@@ -2837,7 +4204,7 @@ const BookingDetailsPage = ({ bookingId }) => {
         </div>
     );
 };
-const UsersPage = ({ onSave: parentOnSave }) => {
+const UsersPage = ({ onSave: parentOnSave, currentUser }) => {
     const [users, setUsers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -2907,13 +4274,11 @@ const UsersPage = ({ onSave: parentOnSave }) => {
                 </div>
                 <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
             </Card>
-            <UserFormModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSave} user={editingUser} />
+            <UserFormModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSave} user={editingUser} currentUser={currentUser} />
             <ConfirmationModal isOpen={isConfirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={confirmDelete} title="Delete User" message="Are you sure you want to delete this user? This will permanently remove their data." />
         </div>
     );
 };
-
-// --- MODIFIED: ProfilePage for Workshop Owners ---
 const ProfilePage = ({ currentUser, setCurrentUser }) => {
     const [profile, setProfile] = useState({ 
         ownerName: '', 
@@ -2932,11 +4297,13 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
     const [initialProfile, setInitialProfile] = useState({});
     const fileInputRef = useRef(null);
 
-    // Fetch workshop profile data on component mount or currentUser change
     useEffect(() => { 
         const fetchWorkshopProfile = async () => {
             try {
-                const response = await apiFetch('/profile'); // This fetches the workshop profile
+                let endpoint = '/profile';
+                // This logic is simplified in the new `SuperadminWorkshopDetailsPage` to avoid confusion.
+                // This component now only handles the logged-in admin's own profile.
+                const response = await apiFetch(endpoint); 
                 const data = await response.json();
                 const workshopProfileData = {
                     ...data.data,
@@ -2946,10 +4313,9 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
                     pickupDropoffCostPerKm: data.data.pickupDropoffCostPerKm || ''
                 };
                 setProfile(workshopProfileData);
-                setInitialProfile(workshopProfileData); // Save initial state for reset
+                setInitialProfile(workshopProfileData); 
             } catch (error) {
                 toast.error(error.message || "Failed to fetch workshop profile.");
-                // Set default empty profile if fetching fails
                 setProfile({
                     ownerName: currentUser?.fullName || '',
                     workshopName: '', email: currentUser?.email || '', phone: '', address: '', profilePicture: '',
@@ -2962,10 +4328,10 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
                 });
             }
         };
-        if (currentUser) { // Only fetch if currentUser is loaded
+        if (currentUser) {
             fetchWorkshopProfile();
         }
-    }, [currentUser]); // Re-fetch if the currentUser object from AuthContext changes
+    }, [currentUser]); 
 
     const handleChange = (e) => { 
         const { name, value, type, checked } = e.target;
@@ -3013,13 +4379,13 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
             },
             (error) => {
                 let errorMessage = "An unknown geolocation error occurred.";
-                if (error.code === error.PERMISSION_DENIED) { errorMessage = "Location access denied. Please enable it in your browser settings."; }
+                if (error.code === error.PERMISSION_DENIED) { errorMessage = "Location access denied. Please enable it in browser settings."; }
                 else if (error.code === error.POSITION_UNAVAILABLE) { errorMessage = "Location information is currently unavailable."; }
                 else if (error.code === error.TIMEOUT) { errorMessage = "Request for location timed out."; }
                 toast.error(errorMessage);
                 setIsFetchingLocation(false);
             },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } // High accuracy, 10s timeout
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } 
         );
     };
 
@@ -3033,39 +4399,35 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
         formData.append('pickupDropoffAvailable', profile.pickupDropoffAvailable);
         formData.append('pickupDropoffCostPerKm', profile.pickupDropoffCostPerKm);
 
-        // NEW: Add coordinates if both latitude and longitude are valid numbers
         if (profile.latitude !== '' && profile.longitude !== '' && !isNaN(parseFloat(profile.latitude)) && !isNaN(parseFloat(profile.longitude))) {
-            formData.append('coordinates', JSON.stringify([parseFloat(profile.longitude), parseFloat(profile.latitude)])); // MongoDB expects [longitude, latitude]
+            formData.append('coordinates', JSON.stringify([parseFloat(profile.longitude), parseFloat(profile.latitude)])); 
         } else {
-             // If coordinates are explicitly cleared or invalid, send default zeros
             formData.append('coordinates', JSON.stringify([0, 0])); 
         }
 
         if (profile.newProfilePicture) { formData.append('profilePicture', profile.newProfilePicture); }
         
         try {
-            const response = await apiFetch('/profile', { method: 'PUT', body: formData });
+            const endpoint = '/profile'; // Always update the logged-in user's profile
+            
+            const response = await apiFetch(endpoint, { method: 'PUT', body: formData });
             const data = await response.json();
             
-            // Update local state with fresh data, ensuring lat/lon are set from coordinates
             const updatedProfileData = {
                 ...data.data,
                 latitude: data.data.location?.coordinates[1] || '',
                 longitude: data.data.location?.coordinates[0] || ''
             };
             setProfile(updatedProfileData);
-            setInitialProfile(updatedProfileData); // Update initial state for subsequent cancellations
+            setInitialProfile(updatedProfileData); 
 
-            // Also update the currentUser in the main AdminDashboard component if necessary (e.g. for ownerName display in header)
-            // This assumes currentUser in AdminDashboard also has ownerName/workshopName
             if (setCurrentUser) {
                 setCurrentUser(prevUser => ({
                     ...prevUser,
-                    fullName: updatedProfileData.ownerName, // Sync ownerName to fullName if used in header
+                    ownerName: updatedProfileData.ownerName, 
                     workshopName: updatedProfileData.workshopName,
-                    profilePicture: updatedProfileData.profilePicture, // Sync profile picture
-                    // Note: The actual 'workshop' ObjectId field on the user model is handled by backend on login/promote
-                    // This is just for local display consistency in the header/sidebar if needed
+                    profilePicture: updatedProfileData.profilePicture, 
+                    _id: updatedProfileData._id 
                 }));
             }
             
@@ -3105,11 +4467,10 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
                                 <Input id="phone" label="Phone Number" name="phone" value={profile.phone || ''} onChange={handleChange} disabled={!isEditing} />
                             </div>
                             
-                            {/* NEW: Address & Location fields for Workshop */}
                             <div>
                                 <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address</label>
                                 <div className="flex items-center gap-2">
-                                    <textarea id="address" name="address" rows="3" value={profile.address || ''} onChange={handleChange} disabled={!isEditing || isFetchingLocation} className="flex-grow px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-200 dark:disabled:bg-gray-700/50 dark:text-white" placeholder="Enter workshop address or fetch current location"></textarea>
+                                    <textarea id="address" name="address" rows="3" value={profile.address || ''} onChange={handleChange} disabled={!isEditing || isFetchingLocation} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-700/50 dark:text-white" placeholder="Enter workshop address or fetch current location"></textarea>
                                     {isEditing && (<Button type="button" variant="secondary" onClick={handleFetchLocation} disabled={isFetchingLocation} className="shrink-0"><MapPin size={18} className={isFetchingLocation ? 'animate-pulse' : ''} /></Button>)}
                                 </div>
                             </div>
@@ -3117,15 +4478,12 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
                                 <Input id="latitude" label="Latitude" name="latitude" type="number" step="any" value={profile.latitude} onChange={(e) => setProfile({ ...profile, latitude: e.target.value })} disabled={!isEditing} placeholder="e.g., 27.7172" />
                                 <Input id="longitude" label="Longitude" name="longitude" type="number" step="any" value={profile.longitude} onChange={(e) => setProfile({ ...profile, longitude: e.target.value })} disabled={!isEditing} placeholder="e.g., 85.3240" />
                             </div>
-                            {/* Display current coordinates if set */}
-                            {(profile.latitude !== '' || profile.longitude !== '') && (
+                            {profile.location?.coordinates && (profile.location.coordinates[0] !== 0 || profile.location.coordinates[1] !== 0) && (
                                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                    Current coordinates: Lat {parseFloat(profile.latitude || 0).toFixed(4)}, Lon {parseFloat(profile.longitude || 0).toFixed(4)}
+                                    Current coordinates: Lat {parseFloat(profile.location.coordinates[1] || 0).toFixed(4)}, Lon {parseFloat(profile.location.coordinates[0] || 0).toFixed(4)}
                                 </p>
                             )}
-                            {/* END NEW: Address & Location fields */}
 
-                            {/* NEW: Pickup/Drop-off Service Settings */}
                             <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 space-y-3 bg-gray-50 dark:bg-gray-700/50">
                                 <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Pickup & Delivery Service</h3>
                                 <div>
@@ -3156,7 +4514,6 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
                                     />
                                 )}
                             </div>
-                            {/* END NEW: Pickup/Drop-off Service Settings */}
 
                             {isEditing && (<div className="flex justify-end gap-3 pt-4"><Button variant="secondary" onClick={handleCancel}>Cancel</Button><Button onClick={handleSave}>Save Changes</Button></div>)}
                         </div>
@@ -3173,15 +4530,20 @@ const BookingFormModal = ({ isOpen, onClose, booking, onSave }) => {
     const handleSubmit = (e) => { e.preventDefault(); onSave(formData); };
     return (<Modal isOpen={isOpen} onClose={onClose} title={`Edit Booking`}><form onSubmit={handleSubmit} className="space-y-4">{booking && <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50"><p className="text-sm"><strong className="dark:text-gray-300">Customer:</strong> {booking.customer?.fullName}</p><p className="text-sm"><strong className="dark:text-gray-300">Service:</strong> {booking.serviceType}</p><p className="text-sm"><strong className="dark:text-gray-300">Bike:</strong> {booking.bikeModel}</p></div>}<div><label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label><select id="status" name="status" value={formData.status || ''} onChange={handleChange} className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg dark:text-white"><option value="Pending">Pending</option><option value="In Progress">In Progress</option><option value="Completed">Completed</option><option value="Cancelled">Cancelled</option></select></div><Input id="totalCost" label="Total Cost (रु)" name="totalCost" type="number" value={formData.totalCost || ''} onChange={handleChange} /><div className="flex justify-end gap-3 pt-4"><Button type="button" variant="secondary" onClick={onClose}>Cancel</Button><Button type="submit" variant="primary">Save Changes</Button></div></form></Modal>);
 };
-const UserFormModal = ({ isOpen, onClose, onSave, user }) => {
-    const [formData, setFormData] = useState({ fullName: '', email: '', password: '', role: 'user', workshopId: '' }); // Added workshopId for admin creation/edit
-    const [workshops, setWorkshops] = useState([]); // State to hold workshop options
+const UserFormModal = ({ isOpen, onClose, onSave, user, currentUser }) => {
+    const [formData, setFormData] = useState({ 
+        fullName: '', 
+        email: '', 
+        password: '', 
+        role: 'normal', 
+        workshopId: '' 
+    });
+    const [workshops, setWorkshops] = useState([]); 
 
     useEffect(() => {
-        // Fetch workshops if creating/editing an admin
         const fetchWorkshops = async () => {
             try {
-                const response = await apiFetch('/workshops'); // Assuming an API to get all workshops for selection
+                const response = await apiFetch('/workshops'); 
                 const data = await response.json();
                 setWorkshops(data.data || []);
             } catch (error) {
@@ -3189,7 +4551,8 @@ const UserFormModal = ({ isOpen, onClose, onSave, user }) => {
                 setWorkshops([]);
             }
         };
-        if (isOpen && (user?.role === 'admin' || !user)) { // Only fetch if opening for admin or new user (potential admin)
+
+        if (isOpen && currentUser?.role === 'superadmin') { 
              fetchWorkshops();
         }
 
@@ -3199,12 +4562,12 @@ const UserFormModal = ({ isOpen, onClose, onSave, user }) => {
                 email: user.email, 
                 role: user.role, 
                 password: '', 
-                workshopId: user.workshop?._id || '' // Populate workshopId if user has one
+                workshopId: user.workshop?._id || '' 
             }); 
         } else { 
             setFormData({ fullName: '', email: '', password: '', role: 'normal', workshopId: '' }); 
         }
-    }, [user, isOpen]);
+    }, [user, isOpen, currentUser]); 
 
     const handleChange = (e) => { 
         const { name, value } = e.target; 
@@ -3214,7 +4577,9 @@ const UserFormModal = ({ isOpen, onClose, onSave, user }) => {
     const handleSubmit = (e) => { 
         e.preventDefault(); 
         const dataToSave = { ...formData }; 
-        if (user && !dataToSave.password) { delete dataToSave.password; } 
+        if (user && !dataToSave.password) { 
+            delete dataToSave.password; 
+        } 
         onSave(dataToSave); 
     };
 
@@ -3228,23 +4593,22 @@ const UserFormModal = ({ isOpen, onClose, onSave, user }) => {
                     <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
                     <select id="role" name="role" value={formData.role || 'normal'} onChange={handleChange} className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg dark:text-white">
                         <option value="normal">Normal User</option>
-                        <option value="admin">Admin</option>
+                        {currentUser?.role === 'superadmin' && <option value="admin">Admin</option>}
+                        {currentUser?.role === 'superadmin' && <option value="superadmin">Superadmin</option>}
                     </select>
                 </div>
-                {/* NEW: Workshop selection for admin role */}
-                {formData.role === 'admin' && (
+                {(formData.role === 'admin' || formData.role === 'superadmin') && currentUser?.role === 'superadmin' && ( 
                     <div>
                         <label htmlFor="workshopId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assign to Workshop</label>
                         <select id="workshopId" name="workshopId" value={formData.workshopId} onChange={handleChange} className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg dark:text-white">
-                            <option value="">-- No Workshop Assigned / Create New Default --</option>
+                            <option value="">-- No Workshop Assigned / Create New Default --</option> 
                             {workshops.map(ws => (
                                 <option key={ws._id} value={ws._id}>{ws.workshopName} ({ws.email})</option>
                             ))}
                         </select>
-                        <p className="text-xs text-gray-500 mt-1">Leave blank to create a new default workshop for this admin or unassign.</p>
+                        <p className="text-xs text-gray-500 mt-1">Leave blank to create a new default workshop for this admin if no existing workshop selected.</p>
                     </div>
                 )}
-                {/* END NEW */}
                 <div className="flex justify-end gap-3 pt-4"><Button type="button" variant="secondary" onClick={onClose}>Cancel</Button><Button type="submit" variant="primary">{user ? 'Save Changes' : 'Add User'}</Button></div>
             </form>
         </Modal>
@@ -3297,7 +4661,6 @@ const ServiceFormModal = ({ isOpen, onClose, onSave, service }) => {
     );
 };
 
-// UPDATED SERVICES PAGE
 const ServicesPage = () => {
     const [services, setServices] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -3306,11 +4669,8 @@ const ServicesPage = () => {
     const [itemToDelete, setItemToDelete] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
-    
-    // NEW STATE FOR REVIEWS MODAL
     const [isReviewModalOpen, setReviewModalOpen] = useState(false);
     const [selectedServiceId, setSelectedServiceId] = useState(null);
-    
     const ITEMS_PER_PAGE = 6;
     
     const fetchServices = async (page) => {
@@ -3328,7 +4688,6 @@ const ServicesPage = () => {
     const handleEdit = (service) => { setEditingService(service); setIsModalOpen(true); };
     const handleDeleteClick = (id) => { setItemToDelete(id); setConfirmOpen(true); };
     
-    // NEW FUNCTION TO OPEN REVIEWS MODAL
     const handleViewReviews = (serviceId) => {
         setSelectedServiceId(serviceId);
         setReviewModalOpen(true);
@@ -3368,7 +4727,6 @@ const ServicesPage = () => {
                             <img src={`http://localhost:5050/${service.image}`} alt={service.name} onError={handleImageError} className="w-full h-48 object-cover" />
                             <div className="p-4 flex-grow flex flex-col">
                                 <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400">{service.name}</h3>
-                                {/* NEW: Display workshop name here too */}
                                 {service.workshop && (
                                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center justify-center gap-1">
                                         <MapPin size={14} />{service.workshop.workshopName}
@@ -3382,7 +4740,6 @@ const ServicesPage = () => {
                                 <div className="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
                                     <div><p className="text-lg font-semibold text-gray-800 dark:text-white">रु{service.price}</p><p className="text-sm text-gray-500 dark:text-gray-400">{service.duration}</p></div>
                                     <div className="flex gap-1">
-                                        {/* NEW "VIEW REVIEWS" BUTTON */}
                                         <button onClick={() => handleViewReviews(service._id)} className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600" title="View Reviews">
                                             <ReviewIcon size={18} />
                                         </button>
@@ -3398,37 +4755,413 @@ const ServicesPage = () => {
             </Card>
             <ServiceFormModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSave} service={editingService} />
             <ConfirmationModal isOpen={isConfirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={confirmDelete} title="Delete Service" message="Are you sure you want to delete this service? This action is permanent." />
-            {/* RENDER THE NEW REVIEWS MODAL */}
             <ReviewsModal isOpen={isReviewModalOpen} onClose={() => setReviewModalOpen(false)} serviceId={selectedServiceId} />
         </div>
     );
 };
 
+// --- NEWLY ADDED COMPONENTS FOR SUPERADMIN ---
+
+const WorkshopManagementPage = () => {
+    const [workshops, setWorkshops] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isConfirmOpen, setConfirmOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
+    const ITEMS_PER_PAGE = 10;
+
+    const fetchWorkshops = async (page) => {
+        try {
+            const response = await apiFetch(`/workshops?page=${page}&limit=${ITEMS_PER_PAGE}&search=${searchTerm}`);
+            const data = await response.json();
+            setWorkshops(data.data || []);
+            setTotalPages(data.totalPages || 0);
+        } catch (error) {
+            setWorkshops([]);
+            setTotalPages(0);
+            toast.error(error.message || 'Failed to fetch workshops.');
+        }
+    };
+
+    useEffect(() => {
+        fetchWorkshops(currentPage);
+    }, [currentPage, searchTerm]);
+
+    const handleDeleteClick = (id) => {
+        setItemToDelete(id);
+        setConfirmOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!itemToDelete) return;
+        try {
+            await apiFetch(`/workshops/${itemToDelete}`, { method: 'DELETE' });
+            toast.success('Workshop deleted successfully!');
+            fetchWorkshops(currentPage);
+        } catch (error) {
+            toast.error(error.message || 'Failed to delete workshop.');
+        } finally {
+            setConfirmOpen(false);
+            setItemToDelete(null);
+        }
+    };
+    
+    const handlePageChange = (newPage) => {
+        if (newPage > 0 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+        }
+    };
+
+    return (
+        <div className="space-y-6 flex flex-col flex-grow">
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Workshop Management</h1>
+            <Card className="flex flex-col flex-grow">
+                <div className="flex justify-between items-center mb-4">
+                    <div className="relative w-full md:w-auto">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                        <input
+                            type="text"
+                            placeholder="Search workshops..."
+                            value={searchTerm}
+                            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                            className="w-full md:w-80 pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+                </div>
+                <div className="overflow-x-auto flex-grow">
+                    <table className="w-full text-left">
+                        <thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th className="p-3">Workshop Name</th>
+                                <th className="p-3">Owner</th>
+                                <th className="p-3">Email</th>
+                                <th className="p-3">Phone</th>
+                                <th className="p-3 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {workshops.length > 0 ? workshops.map(ws => (
+                                <tr key={ws._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
+                                    <td className="p-3 font-medium text-gray-900 dark:text-white">{ws.workshopName}</td>
+                                    <td className="p-3 text-gray-600 dark:text-gray-300">{ws.ownerName}</td>
+                                    <td className="p-3 text-gray-600 dark:text-gray-300">{ws.email}</td>
+                                    <td className="p-3 text-gray-600 dark:text-gray-300">{ws.phone || 'N/A'}</td>
+                                    <td className="p-3 text-center">
+                                        <div className="flex justify-center items-center gap-2">
+                                            <a href={`#/admin/workshops/${ws._id}`} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="View/Edit Details">
+                                                <Edit size={18} />
+                                            </a>
+                                            <button onClick={() => handleDeleteClick(ws._id)} className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1" title="Delete Workshop">
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )) : (
+                                <tr><td colSpan="5" className="text-center py-10 text-gray-500">No workshops found.</td></tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+                <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+            </Card>
+            <ConfirmationModal
+                isOpen={isConfirmOpen}
+                onClose={() => setConfirmOpen(false)}
+                onConfirm={confirmDelete}
+                title="Delete Workshop"
+                message="Are you sure you want to delete this workshop? This will also delete the associated admin user and all related data. This action is permanent and cannot be undone."
+            />
+        </div>
+    );
+};
+
+const WorkshopApplicationsPage = () => {
+    const [applications, setApplications] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchApplications = async () => {
+        setLoading(true);
+        try {
+            const response = await apiFetch('/applications');
+            const data = await response.json();
+            setApplications(data.data || []);
+        } catch (error) {
+            toast.error(error.message || 'Failed to fetch workshop applications.');
+            setApplications([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchApplications();
+    }, []);
+
+    const handleAction = async (id, action) => {
+        try {
+            await apiFetch(`/applications/${id}/${action}`, { method: 'POST' });
+            toast.success(`Application has been ${action}d!`);
+            fetchApplications();
+        } catch (error) {
+            toast.error(error.message || `Failed to ${action} application.`);
+        }
+    };
+    
+    if (loading) {
+        return <div className="text-center py-10">Loading applications...</div>;
+    }
+
+    return (
+        <div className="space-y-6">
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Workshop Applications</h1>
+            {applications.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {applications.map(app => (
+                        <Card key={app._id}>
+                            <h2 className="text-xl font-bold text-blue-600 dark:text-blue-400">{app.workshopName}</h2>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Applied on {new Date(app.createdAt).toLocaleDateString()}</p>
+                            
+                            <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300 border-t pt-4 mt-4">
+                                <p><strong>Owner:</strong> {app.ownerName}</p>
+                                <p><strong>Email:</strong> {app.email}</p>
+                                <p><strong>Phone:</strong> {app.phone}</p>
+                                <p><strong>Address:</strong> {app.address}</p>
+                                <p><strong>Message:</strong> <span className="italic text-gray-500 dark:text-gray-400">{app.message || 'No message provided.'}</span></p>
+                            </div>
+
+                            <div className="flex justify-end gap-3 mt-6">
+                                <Button variant="danger" onClick={() => handleAction(app._id, 'reject')}>Reject</Button>
+                                <Button variant="primary" onClick={() => handleAction(app._id, 'approve')}>Approve</Button>
+                            </div>
+                        </Card>
+                    ))}
+                </div>
+            ) : (
+                 <Card className="text-center py-12">
+                     <FileText size={48} className="mx-auto text-gray-400" />
+                     <h3 className="mt-4 text-xl font-semibold">No Pending Applications</h3>
+                     <p className="text-gray-500 dark:text-gray-400 mt-2">There are currently no new workshop applications to review.</p>
+                 </Card>
+            )}
+        </div>
+    );
+};
+
+const SuperadminWorkshopDetailsPage = ({ workshopId }) => {
+    const [profile, setProfile] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [isEditing, setIsEditing] = useState(false);
+    const [isFetchingLocation, setIsFetchingLocation] = useState(false);
+    const [initialProfile, setInitialProfile] = useState({});
+    const fileInputRef = useRef(null);
+
+    const fetchWorkshopProfile = async () => {
+        setLoading(true);
+        try {
+            const response = await apiFetch(`/workshops/${workshopId}`);
+            const data = await response.json();
+            const workshopProfileData = {
+                ...data.data,
+                latitude: data.data.location?.coordinates[1] || '',
+                longitude: data.data.location?.coordinates[0] || '',
+                pickupDropoffAvailable: data.data.pickupDropoffAvailable || false,
+                pickupDropoffCostPerKm: data.data.pickupDropoffCostPerKm || ''
+            };
+            setProfile(workshopProfileData);
+            setInitialProfile(workshopProfileData);
+        } catch (error) {
+            toast.error(error.message || "Failed to fetch workshop profile.");
+            setProfile(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (workshopId) {
+            fetchWorkshopProfile();
+        }
+    }, [workshopId]);
+
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setProfile({ ...profile, [name]: type === 'checkbox' ? checked : value });
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setProfile(p => ({ ...p, profilePictureUrl: URL.createObjectURL(file), newProfilePicture: file }));
+        }
+    };
+
+    const handleUploadClick = () => fileInputRef.current.click();
+
+    const handleFetchLocation = async () => {
+        if (!navigator.geolocation) { toast.error("Geolocation is not supported by your browser."); return; }
+        setIsFetchingLocation(true);
+        // This functionality remains the same as in ProfilePage
+        // ... (omitted for brevity, it's identical to the one in ProfilePage)
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                //... (rest of the logic is identical to ProfilePage)
+                 setProfile(p => ({ ...p, latitude, longitude }));
+                 toast.success("Location fetched!");
+                 setIsFetchingLocation(false);
+            },
+            () => {
+                toast.error("Could not fetch location.");
+                setIsFetchingLocation(false);
+            }
+        );
+    };
+
+    const handleSave = async () => {
+        const formData = new FormData();
+        Object.keys(profile).forEach(key => {
+            if (key === 'newProfilePicture') {
+                formData.append('profilePicture', profile.newProfilePicture);
+            } else if (key === 'latitude' || key === 'longitude') {
+                // Handled below
+            } else {
+                formData.append(key, profile[key]);
+            }
+        });
+        
+        if (profile.latitude !== '' && profile.longitude !== '') {
+            formData.append('coordinates', JSON.stringify([parseFloat(profile.longitude), parseFloat(profile.latitude)]));
+        }
+
+        try {
+            await apiFetch(`/workshops/${profile._id}`, { method: 'PUT', body: formData });
+            toast.success('Workshop profile updated successfully!');
+            setIsEditing(false);
+            fetchWorkshopProfile(); // Re-fetch to show updated data
+        } catch (error) {
+            toast.error(error.message || 'Failed to save profile.');
+        }
+    };
+
+    const handleCancel = () => {
+        setProfile(initialProfile);
+        setIsEditing(false);
+    };
+
+    const handleImageError = (e) => { e.target.onerror = null; e.target.src = `https://placehold.co/128x128/e2e8f0/4a5568?text=W`; };
+
+    if (loading) return <div className="text-center py-10">Loading Workshop Profile...</div>;
+    if (!profile) return <div className="text-center py-10 text-red-500">Workshop not found or could not be loaded.</div>;
+
+    const profilePictureSrc = profile.profilePictureUrl || (profile.profilePicture ? `http://localhost:5050/${profile.profilePicture}` : `https://placehold.co/128x128/e2e8f0/4a5568?text=A`);
+
+    return (
+        <div className="space-y-6">
+            <div className="flex items-center gap-4">
+                <a href="#/admin/workshops" className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                    <ArrowLeft size={22} />
+                </a>
+                <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Workshop Details</h1>
+            </div>
+            {/* The rest of the JSX is identical to ProfilePage's return statement */}
+            <Card>
+                <div className="p-6">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
+                        <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">Profile: {profile.workshopName}</h2>
+                        {!isEditing && (<Button onClick={() => setIsEditing(true)}><Edit size={16} />Edit Profile</Button>)}
+                    </div>
+                    {/* The form structure is identical to ProfilePage, just ensure values point to the 'profile' state */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-4">
+                        <div className="lg:col-span-1 flex flex-col items-center">
+                            <img key={profilePictureSrc} src={profilePictureSrc} alt="Profile" className="w-32 h-32 rounded-full object-cover mb-4 ring-4 ring-blue-500/50" onError={handleImageError} />
+                            <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+                            {isEditing && (<Button variant="secondary" className="w-full" onClick={handleUploadClick}><Camera size={16} /> Change Picture</Button>)}
+                        </div>
+                        <div className="lg:col-span-2 space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <Input id="workshopName" label="Workshop Name" name="workshopName" value={profile.workshopName || ''} onChange={handleChange} disabled={!isEditing} />
+                                <Input id="ownerName" label="Owner Name" name="ownerName" value={profile.ownerName || ''} onChange={handleChange} disabled={!isEditing} />
+                                <Input id="email" label="Email Address" name="email" type="email" value={profile.email || ''} onChange={handleChange} disabled={!isEditing} />
+                                <Input id="phone" label="Phone Number" name="phone" value={profile.phone || ''} onChange={handleChange} disabled={!isEditing} />
+                            </div>
+                            <div>
+                                <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address</label>
+                                <div className="flex items-center gap-2">
+                                    <textarea id="address" name="address" rows="3" value={profile.address || ''} onChange={handleChange} disabled={!isEditing || isFetchingLocation} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-700/50 dark:text-white" placeholder="Enter workshop address or fetch current location"></textarea>
+                                    {isEditing && (<Button type="button" variant="secondary" onClick={handleFetchLocation} disabled={isFetchingLocation} className="shrink-0"><MapPin size={18} className={isFetchingLocation ? 'animate-pulse' : ''} /></Button>)}
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <Input id="latitude" label="Latitude" name="latitude" type="number" step="any" value={profile.latitude || ''} onChange={handleChange} disabled={!isEditing} placeholder="e.g., 27.7172" />
+                                <Input id="longitude" label="Longitude" name="longitude" type="number" step="any" value={profile.longitude || ''} onChange={handleChange} disabled={!isEditing} placeholder="e.g., 85.3240" />
+                            </div>
+                            <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 space-y-3 bg-gray-50 dark:bg-gray-700/50">
+                                <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Pickup & Delivery Service</h3>
+                                <div>
+                                    <input type="checkbox" id="pickupDropoffAvailable" name="pickupDropoffAvailable" checked={profile.pickupDropoffAvailable} onChange={handleChange} disabled={!isEditing} className="mr-2 text-blue-600 focus:ring-blue-500" />
+                                    <label htmlFor="pickupDropoffAvailable" className="text-gray-700 dark:text-gray-300">Offer Pickup & Drop-off Service</label>
+                                </div>
+                                {profile.pickupDropoffAvailable && (
+                                    <Input id="pickupDropoffCostPerKm" name="pickupDropoffCostPerKm" label="Cost per Kilometer (रु/km)" type="number" step="0.01" value={profile.pickupDropoffCostPerKm || ''} onChange={handleChange} disabled={!isEditing} placeholder="e.g., 50 (for Rs. 50/km)" />
+                                )}
+                            </div>
+                            {isEditing && (<div className="flex justify-end gap-3 pt-4"><Button variant="secondary" onClick={handleCancel}>Cancel</Button><Button onClick={handleSave}>Save Changes</Button></div>)}
+                        </div>
+                    </div>
+                </div>
+            </Card>
+        </div>
+    );
+};
+
+// --- END: NEWLY ADDED COMPONENTS ---
 
 const NavLink = ({ page, icon: Icon, children, activePage, onLinkClick, badgeCount }) => {
     const isActive = activePage === page;
     return (<a href={`#/admin/${page}`} onClick={onLinkClick} className={`relative flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-200 ${isActive ? 'bg-blue-600 text-white font-semibold shadow-lg' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}><Icon size={22} /><span className="text-md">{children}</span>{badgeCount > 0 && (<span className="absolute right-3 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">{badgeCount}</span>)}</a>);
 };
-const SidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClose, totalUnreadCount }) => (
+
+const SidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClose, totalUnreadCount, userRole }) => (
     <>
         <div className="p-4 flex items-center justify-between"><a href="#/admin/dashboard" onClick={onLinkClick} className="flex items-center gap-3 cursor-pointer"><img src="/motofix-removebg-preview.png" alt="MotoFix Logo" className="h-20 w-auto" /></a>{onMenuClose && (<button onClick={onMenuClose} className="lg:hidden text-gray-500 dark:text-gray-400"><X size={24} /></button>)}</div>
-        <nav className="flex-1 px-4 py-6 space-y-2"><NavLink page="dashboard" icon={BarChart} activePage={activePage} onLinkClick={onLinkClick}>Dashboard</NavLink><NavLink page="bookings" icon={List} activePage={activePage} onLinkClick={onLinkClick}>Bookings</NavLink><NavLink page="users" icon={Users} activePage={activePage} onLinkClick={onLinkClick}>Users</NavLink><NavLink page="services" icon={Wrench} activePage={activePage} onLinkClick={onLinkClick}>Services</NavLink><NavLink page="profile" icon={User} activePage={activePage} onLinkClick={onLinkClick}>Profile</NavLink><NavLink page="chat" icon={MessageSquare} activePage={activePage} onLinkClick={onLinkClick} badgeCount={totalUnreadCount}>Chat</NavLink></nav>
+        <nav className="flex-1 px-4 py-6 space-y-2">
+            <NavLink page="dashboard" icon={BarChart} activePage={activePage} onLinkClick={onLinkClick}>Dashboard</NavLink>
+            <NavLink page="bookings" icon={List} activePage={activePage} onLinkClick={onLinkClick}>Bookings</NavLink>
+            <NavLink page="users" icon={Users} activePage={activePage} onLinkClick={onLinkClick}>Users</NavLink>
+            <NavLink page="services" icon={Wrench} activePage={activePage} onLinkClick={onLinkClick}>Services</NavLink>
+            {userRole === 'superadmin' && (
+                <NavLink page="workshops" icon={Wrench} activePage={activePage} onLinkClick={onLinkClick}>Workshops</NavLink>
+            )}
+            {userRole === 'superadmin' && (
+                <NavLink page="applications" icon={FileText} activePage={activePage} onLinkClick={onLinkClick}>Applications</NavLink>
+            )}
+            <NavLink page="profile" icon={User} activePage={activePage} onLinkClick={onLinkClick}>Profile</NavLink>
+            <NavLink page="chat" icon={MessageSquare} activePage={activePage} onLinkClick={onLinkClick} badgeCount={totalUnreadCount}>Chat</NavLink>
+        </nav>
         <div className="p-4 border-t border-gray-200 dark:border-gray-700"><button onClick={onLogoutClick} className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-800"><LogOut size={22} /><span className="text-md">Logout</span></button></div>
     </>
 );
 const AdminDashboard = () => {
-    const [activePage, setActivePage] = useState(() => (window.location.hash.replace('#/admin/', '').split('/')[0] || 'dashboard'));
+    const { user } = useContext(AuthContext); 
+    const [activePage, setActivePage] = useState('dashboard');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isLogoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
-    // Updated currentUser to store workshop details for display in header
-    const [currentUser, setCurrentUser] = useState({ ownerName: 'Admin', workshopName: '', profilePicture: '' }); 
+    const [currentUser, setCurrentUser] = useState({ 
+        ownerName: 'Admin', 
+        workshopName: 'Loading...', 
+        profilePicture: '',
+        role: 'admin', 
+        _id: null 
+    }); 
     const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('adminTheme') === 'dark');
     const [totalUnreadCount, setTotalUnreadCount] = useState(0);
     const handleLogoutConfirm = () => { localStorage.clear(); window.location.href = '/'; };
 
-    // Fetch initial chat unread count and set up listeners
     useEffect(() => {
         const fetchInitialCount = async () => {
+            if (!user) return; 
             try {
                 const response = await apiFetch('/chat/users');
                 const data = await response.json();
@@ -3445,84 +5178,111 @@ const AdminDashboard = () => {
             socket.off('new_message_notification', notificationListener);
             socket.off('messages_read_by_admin', readListener);
         };
-    }, []);
+    }, [user]); 
 
-    // Update document title with unread count
     useEffect(() => { document.title = totalUnreadCount > 0 ? `(${totalUnreadCount}) MotoFix Admin` : 'MotoFix Admin'; }, [totalUnreadCount]);
     
-    // Fetch current admin's workshop profile for header display
     useEffect(() => {
         const fetchProfile = async () => {
+            if (!user) return; 
             try {
-                const response = await apiFetch('/profile'); // This endpoint now fetches workshop details
+                const response = await apiFetch('/profile'); 
                 const data = await response.json();
-                setCurrentUser(data.data || { ownerName: 'Admin', workshopName: '', profilePicture: '' }); // Set to fetched workshop data
+                
+                setCurrentUser({
+                    ownerName: data.data.ownerName,
+                    workshopName: data.data.workshopName,
+                    profilePicture: data.data.profilePicture || '',
+                    _id: data.data._id, 
+                    role: user.role 
+                });
             } catch (error) { 
+                console.error("Failed to fetch admin/workshop profile for header:", error);
+                setCurrentUser(prev => ({ 
+                    ...prev, 
+                    ownerName: user?.fullName || 'Admin', 
+                    workshopName: 'Not Set', 
+                    profilePicture: '',
+                    role: user?.role || 'admin'
+                }));
                 if (error.message.includes('Unauthorized') || error.message.includes('Forbidden')) { 
-                    handleLogoutConfirm(); // Redirect if token invalid/expired
+                    handleLogoutConfirm(); 
                 } else {
-                    console.error("Failed to fetch admin/workshop profile:", error);
                     toast.error("Failed to load workshop profile for header. Please set it up.");
                 }
             }
         };
         fetchProfile();
-    }, []);
+    }, [user]);
 
-    // Handle dark mode toggle
     useEffect(() => {
         document.documentElement.classList.toggle('dark', isDarkMode);
         localStorage.setItem('adminTheme', isDarkMode ? 'dark' : 'light');
     }, [isDarkMode]);
 
-    // Handle hash change for page navigation
     useEffect(() => {
         const handleHashChange = () => {
-            const page = window.location.hash.replace('#/admin/', '').split('/')[0] || 'dashboard';
-            setActivePage(page);
+            const path = window.location.hash.replace('#/admin/', '').split('?')[0];
+            const pageName = path.split('/')[0] || 'dashboard';
+            setActivePage(pageName);
         };
         window.addEventListener('hashchange', handleHashChange);
-        handleHashChange();
+        handleHashChange(); 
         return () => window.removeEventListener('hashchange', handleHashChange);
     }, []);
 
     const renderPage = () => {
+        if (!currentUser || currentUser.workshopName === 'Loading...') {
+            return <div className="text-center p-12">Loading Admin Data...</div>;
+        }
+
         const hash = window.location.hash.replace('#/admin/', '');
         const [page, id] = hash.split('/');
+
         switch (page) {
-            case 'dashboard': return <DashboardPage />;
-            case 'bookings': if (id) { return <BookingDetailsPage bookingId={id} />; } return <BookingsPage />;
-            case 'users': return <UsersPage />;
-            case 'services': return <ServicesPage />;
-            // Pass setCurrentUser to ProfilePage so it can update header info
-            case 'profile': return <ProfilePage currentUser={currentUser} setCurrentUser={setCurrentUser} />; 
-            case 'chat': return <AdminChatPage />;
-            default: window.location.hash = '#/admin/dashboard'; return <DashboardPage />;
+            case 'dashboard':
+                return <DashboardPage />;
+            case 'bookings':
+                return id ? <BookingDetailsPage bookingId={id} /> : <BookingsPage />;
+            case 'users':
+                return <UsersPage currentUser={currentUser} />;
+            case 'services':
+                return <ServicesPage />;
+            case 'profile':
+                return <ProfilePage currentUser={currentUser} setCurrentUser={setCurrentUser} />;
+            case 'chat':
+                return <AdminChatPage />;
+            case 'workshops':
+                return id ? <SuperadminWorkshopDetailsPage workshopId={id} /> : <WorkshopManagementPage />;
+            case 'applications':
+                return <WorkshopApplicationsPage />;
+            default:
+                if (window.location.hash !== '#/admin/dashboard') {
+                    window.location.hash = '#/admin/dashboard';
+                }
+                return <DashboardPage />;
         }
     };
 
-    // Handle image error for profile picture in header
     const handleImageError = (e) => { e.target.onerror = null; e.target.src = `https://placehold.co/40x40/e2e8f0/4a5568?text=A`; }
-    const profilePictureSrc = currentUser.profilePicture ? `http://localhost:5050/${currentUser.profilePicture}` : `https://placehold.co/40x40/e2e8f0/4a5568?text=A`;
+    const profilePictureSrc = currentUser?.profilePicture ? `http://localhost:5050/${currentUser.profilePicture}` : `https://placehold.co/40x40/e2e8f0/4a5568?text=A`;
     
     return (
         <div className={`flex h-screen bg-gray-100 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100`}>
-            {/* Mobile Sidebar */}
             <div className={`fixed inset-0 z-40 flex lg:hidden transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="w-72 bg-white dark:bg-gray-800 shadow-lg flex flex-col">
-                    <SidebarContent activePage={activePage} onLinkClick={() => setIsSidebarOpen(false)} onLogoutClick={() => { setIsSidebarOpen(false); setLogoutConfirmOpen(true); }} onMenuClose={() => setIsSidebarOpen(false)} totalUnreadCount={totalUnreadCount} />
+                    <SidebarContent activePage={activePage} onLinkClick={() => setIsSidebarOpen(false)} onLogoutClick={() => { setIsSidebarOpen(false); setLogoutConfirmOpen(true); }} onMenuClose={() => setIsSidebarOpen(false)} totalUnreadCount={totalUnreadCount} userRole={currentUser?.role} />
                 </div>
                 <div className="flex-1 bg-black bg-opacity-50" onClick={() => setIsSidebarOpen(false)}></div>
             </div>
-            {/* Desktop Sidebar */}
             <aside className="w-72 bg-white dark:bg-gray-800 shadow-md hidden lg:flex flex-col flex-shrink-0">
-                <SidebarContent activePage={activePage} onLinkClick={() => { }} onLogoutClick={() => setLogoutConfirmOpen(true)} totalUnreadCount={totalUnreadCount} />
+                <SidebarContent activePage={activePage} onLinkClick={() => { }} onLogoutClick={() => setLogoutConfirmOpen(true)} totalUnreadCount={totalUnreadCount} userRole={currentUser?.role} />
             </aside>
 
             <main className="flex-1 flex flex-col overflow-hidden">
                 <header className="bg-white dark:bg-gray-800 shadow-sm p-4 flex justify-between items-center">
                     <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-gray-600 dark:text-gray-300"><Menu size={28} /></button>
-                    <div className="hidden lg:block" /> {/* Spacer to push items right */}
+                    <div className="hidden lg:block" /> 
                     <div className="flex items-center gap-4">
                         <button onClick={() => setIsDarkMode(!isDarkMode)} className="text-gray-600 dark:text-gray-300 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
                             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
@@ -3530,7 +5290,7 @@ const AdminDashboard = () => {
                         <div className="flex items-center gap-3">
                             <img key={profilePictureSrc} src={profilePictureSrc} alt="Admin" className="w-10 h-10 rounded-full object-cover" onError={handleImageError} />
                             <div>
-                                <p className="font-semibold text-sm">{currentUser.ownerName}</p>
+                                <p className="font-semibold text-sm">{currentUser?.ownerName || currentUser?.fullName || 'Admin'}</p>
                                 <p className="text-xs text-gray-500 dark:text-gray-400">Workshop Owner</p>
                             </div>
                         </div>
@@ -3543,8 +5303,6 @@ const AdminDashboard = () => {
 
             <ConfirmationModal isOpen={isLogoutConfirmOpen} onClose={() => setLogoutConfirmOpen(false)} onConfirm={handleLogoutConfirm} title="Confirm Logout" message="Are you sure you want to logout?" confirmText="Logout" confirmButtonVariant="danger" Icon={LogOut} />
             
-            {/* --- AI CHATBOT INTEGRATION --- */}
-            {/* The GeminiChatbot is placed here to be available on all admin pages */}
             <GeminiChatbot />
         </div>
     );
