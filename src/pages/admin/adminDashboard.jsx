@@ -1857,7 +1857,7 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
     const handleChange = (e) => { setProfile({ ...profile, [e.target.name]: e.target.value }); }
     const handleFileChange = (e) => {
         const file = e.target.files[0];
-        if (file) { setImage(file); setProfile(p => ({ ...p, profilePictureUrl: URL.createObjectURL(file), newProfilePicture: file })); }
+        if (file) {setProfile(p => ({ ...p, profilePictureUrl: URL.createObjectURL(file), newProfilePicture: file })); }
     };
     const handleUploadClick = () => { fileInputRef.current.click(); };
     const handleFetchLocation = () => {
