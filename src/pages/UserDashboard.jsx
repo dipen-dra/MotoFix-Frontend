@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useContext } from 'react';
 import {
     LayoutDashboard, CalendarDays, User, LogOut, Menu, X, Sun, Moon,
     PlusCircle, Bike, Wrench, Edit, Trash2, AlertTriangle, Camera, MapPin,
-    CreditCard, ArrowLeft, Gift, ArrowRight, ChevronDown, ChevronUp,
+    CreditCard, ArrowLeft, Gift, ArrowRight, ChevronDown, ChevronUp, // Import ChevronDown for the dropdown
     MessageSquare, Send, Paperclip, FileText, XCircle, Home,
     Search, ThumbsUp, Star, MessageCircle
 } from 'lucide-react';
@@ -1544,6 +1544,8 @@ const UserDashboard = () => {
     const [currentUser, setCurrentUser] = useState(null);
     const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('userTheme') === 'dark');
     const [unreadChatCount, setUnreadChatCount] = useState(0);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State for dropdown
+    const dropdownRef = useRef(null); // Ref for dropdown to detect outside clicks
 
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -1627,6 +1629,19 @@ const UserDashboard = () => {
         return () => window.removeEventListener('hashchange', handleHashChange);
     }, []);
 
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     const handleDiscountApplied = async (newPoints) => {
         const response = await apiFetchUser('/profile');
         const data = await response.json();
@@ -1636,6 +1651,12 @@ const UserDashboard = () => {
     const handleLogoutConfirm = () => {
         localStorage.clear();
         window.location.href = '/login';
+    };
+
+    // Function to handle navigation from dropdown
+    const handleDropdownNavigation = (page) => {
+        window.location.hash = `#/user/${page}`;
+        setIsDropdownOpen(false); // Close dropdown after navigation
     };
 
     const renderPage = () => {
@@ -1677,17 +1698,38 @@ const UserDashboard = () => {
             <main className="flex-1 flex flex-col overflow-hidden">
                 <header className="bg-white dark:bg-gray-800 shadow-sm p-4 flex justify-between items-center">
                     <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-gray-600 dark:text-gray-300"><Menu size={28} /></button>
-                    <div className="hidden lg:block" />
+                    <div className="hidden lg:block" /> {/* This div keeps the right content aligned */}
                     <div className="flex items-center gap-4">
                         <button onClick={() => setIsDarkMode(!isDarkMode)} className="text-gray-600 dark:text-gray-300 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
                             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
                         </button>
-                        <div className="flex items-center gap-3">
-                            <img key={profilePictureSrc} src={profilePictureSrc} alt="User" className="w-10 h-10 rounded-full object-cover" onError={handleImageError} />
-                            <div>
-                                <p className="font-semibold text-sm">{currentUser?.fullName}</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Customer</p>
-                            </div>
+                        {/* Profile Dropdown */}
+                        <div className="relative" ref={dropdownRef}>
+                            <button
+                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                className="flex items-center gap-2 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                            >
+                                <img key={profilePictureSrc} src={profilePictureSrc} alt="User" className="w-10 h-10 rounded-full object-cover" onError={handleImageError} />
+                                <span className="font-semibold text-sm hidden md:block">{currentUser?.fullName}</span>
+                                <ChevronDown size={16} className={`transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            {isDropdownOpen && (
+                                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg py-1 z-50">
+                                    <a
+                                        href="#/user/profile"
+                                        onClick={() => handleDropdownNavigation('profile')}
+                                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
+                                    >
+                                        <User size={18} /> Profile
+                                    </a>
+                                    <button
+                                        onClick={() => { setIsDropdownOpen(false); setLogoutConfirmOpen(true); }}
+                                        className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-800"
+                                    >
+                                        <LogOut size={18} /> Logout
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </header>
