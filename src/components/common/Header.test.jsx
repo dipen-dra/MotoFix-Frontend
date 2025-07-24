@@ -1,26 +1,42 @@
-import { render, screen } from '@testing-library/react';
-import { describe, test, expect } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
-import Header from '../../layouts/Header';
+import Header from '../../layouts/Header.jsx';
 
 describe('Header Component', () => {
-  test('shows Login and Register links when user is not authenticated', () => {
-    render(
-      <BrowserRouter>
-        <Header />
-      </BrowserRouter>
-    );
-
-    // Use `getAllByText` because mobile and desktop buttons are both in the DOM.
-    // This asserts that there is at least one "Login" button visible.
-    const loginButtons = screen.getAllByText(/login/i);
-    expect(loginButtons.length).toBeGreaterThan(0);
-
-    const registerButtons = screen.getAllByText(/register/i);
-    expect(registerButtons.length).toBeGreaterThan(0);
+  beforeEach(() => {
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
   });
 
-  // Note: The test for the authenticated state (showing "Dashboard" and "Logout")
-  // has been removed because the current Header.jsx component does not contain
-  // the logic for it. This test can be added back once that functionality is implemented.
+  test('renders the logo', () => {
+    render(<BrowserRouter><Header /></BrowserRouter>);
+    expect(screen.getByAltText(/motofix logo/i)).toBeInTheDocument();
+  });
+
+  test('renders all primary navigation links', () => {
+    render(<BrowserRouter><Header /></BrowserRouter>);
+    // Use `getAllBy` to handle separate mobile/desktop buttons
+    expect(screen.getAllByRole('button', { name: /home/i })[0]).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /services/i })[0]).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /about us/i })[0]).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /contact/i })[0]).toBeInTheDocument();
+  });
+
+  test('renders Login and Register buttons', () => {
+    render(<BrowserRouter><Header /></BrowserRouter>);
+    expect(screen.getAllByText(/login/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/register/i).length).toBeGreaterThan(0);
+  });
+
+  test('toggles the mobile menu on click', () => {
+    render(<BrowserRouter><Header /></BrowserRouter>);
+    const menuButton = screen.getByRole('button', { name: /toggle menu/i });
+    const mobileMenuContainer = menuButton.closest('nav').lastElementChild;
+
+    expect(mobileMenuContainer.className).toContain('hidden');
+    fireEvent.click(menuButton);
+    expect(mobileMenuContainer.className).toContain('block');
+    fireEvent.click(menuButton);
+    expect(mobileMenuContainer.className).toContain('hidden');
+  });
 });
