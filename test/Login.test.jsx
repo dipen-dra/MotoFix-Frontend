@@ -3,10 +3,10 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
-import { AuthContext } from '../auth/AuthContext';
-import { LoginForm } from '../components/auth/LoginForm.jsx';
-import { SignupForm } from '../components/auth/SignupForm.jsx';
-import { loginUserApi, registerUserApi } from '../api/authApi';
+import { AuthContext } from '../src/auth/AuthContext.jsx';
+import { LoginForm } from '../src/components/auth/LoginForm.jsx';
+import { SignupForm } from '../src/components/auth/SignupForm.jsx';
+import { loginUserApi, registerUserApi } from '../src/api/authApi.js';
 
 // --- Mocks ---
 const mockLogin = vi.fn();
@@ -20,7 +20,10 @@ vi.mock('react-toastify', () => ({
   },
 }));
 // Mock the API module
-vi.mock('../api/authApi');
+vi.mock('../src/api/authApi.js', () => ({
+  loginUserApi: vi.fn(),
+  registerUserApi: vi.fn(),
+}));
 
 // We need to import toast *after* the mock is defined.
 import { toast } from 'react-toastify';
