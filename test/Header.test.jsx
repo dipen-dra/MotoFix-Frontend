@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
-import Header from '../../layouts/Header.jsx';
+import Header from '../src/layouts/Header.jsx';
 
 describe('Header Component', () => {
   beforeEach(() => {
