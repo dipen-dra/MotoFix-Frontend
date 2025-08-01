@@ -1228,7 +1228,7 @@ const MyPaymentsPage = ({ currentUser, loyaltyPoints, onDiscountApplied }) => {
         }
         if (method === 'Khalti') {
             const khaltiConfig = {
-                publicKey: "test_public_key_dc74e0fd57cb46cd93832aee0a390234",
+                publicKey: "test_public_key_617c4c6fe77c441d88451ec1408a0c0e",
                 productIdentity: booking._id, productName: booking.serviceType, productUrl: window.location.href,
                 eventHandler: {
                     async onSuccess(payload) {
