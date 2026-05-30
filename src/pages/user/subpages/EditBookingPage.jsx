@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Wrench, Calendar, FileText } from 'lucide-react';
+import { ArrowLeft, Wrench, Calendar, FileText, MapPin, Truck } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { apiFetchUser } from '../../../services/api';
 import Card from '../../../components/ui/Card';
@@ -10,10 +10,23 @@ import Input from '../../../components/ui/Input';
 const EditBookingPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [formData, setFormData] = useState({ serviceId: '', bikeModel: '', date: '', notes: '' });
+    const [formData, setFormData] = useState({ 
+        serviceId: '', 
+        bikeModel: '', 
+        date: '', 
+        notes: '',
+        requestedPickupDropoff: false,
+        pickupAddress: '',
+        dropoffAddress: ''
+    });
     const [services, setServices] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const [isFetchingPickup, setIsFetchingPickup] = useState(false);
+    const [isFetchingDropoff, setIsFetchingDropoff] = useState(false);
+    const [pickupCoordinates, setPickupCoordinates] = useState({ lat: 27.7172, lng: 85.3240 });
+    const [dropoffCoordinates, setDropoffCoordinates] = useState({ lat: 27.7000, lng: 85.3000 });
 
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -37,8 +50,17 @@ const EditBookingPage = () => {
                         serviceId: service ? service._id : '',
                         bikeModel: booking.bikeModel,
                         date: new Date(booking.date).toISOString().split('T')[0],
-                        notes: booking.notes
+                        notes: booking.notes,
+                        requestedPickupDropoff: booking.requestedPickupDropoff || false,
+                        pickupAddress: booking.pickupAddress || '',
+                        dropoffAddress: booking.dropoffAddress || ''
                     });
+                    if (booking.pickupCoordinates) {
+                        setPickupCoordinates(booking.pickupCoordinates);
+                    }
+                    if (booking.dropoffCoordinates) {
+                        setDropoffCoordinates(booking.dropoffCoordinates);
+                    }
                 } else {
                     throw new Error("Booking not found.");
                 }
@@ -52,15 +74,71 @@ const EditBookingPage = () => {
         if (id) fetchInitialData();
     }, [id, navigate]);
 
-    const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+    const handleChange = (e) => {
+        const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+        setFormData({ ...formData, [e.target.name]: value });
+    };
+
+    const handleFetchLocation = (type) => {
+        if (!navigator.geolocation) {
+            toast.error("Geolocation is not supported by your browser.");
+            return;
+        }
+        if (type === 'pickup') setIsFetchingPickup(true);
+        if (type === 'dropoff') setIsFetchingDropoff(true);
+        
+        toast.info("Accessing GPS satellites for high-accuracy location pin...");
+        
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                try {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                    if (!response.ok) throw new Error('Failed to resolve coordinates to physical street address.');
+                    const data = await response.json();
+                    
+                    if (data && data.display_name) {
+                        const resolvedAddress = data.display_name;
+                        if (type === 'pickup') {
+                            setFormData(prev => ({ ...prev, pickupAddress: resolvedAddress }));
+                            setPickupCoordinates({ lat: latitude, lng: longitude });
+                            toast.success("Pickup location pinned successfully!");
+                        } else {
+                            setFormData(prev => ({ ...prev, dropoffAddress: resolvedAddress }));
+                            setDropoffCoordinates({ lat: latitude, lng: longitude });
+                            toast.success("Drop-off location pinned successfully!");
+                        }
+                    } else {
+                        throw new Error('Address not found at geocode location.');
+                    }
+                } catch (error) {
+                    toast.error(error.message || "Failed to resolve coordinates.");
+                } finally {
+                    if (type === 'pickup') setIsFetchingPickup(false);
+                    if (type === 'dropoff') setIsFetchingDropoff(false);
+                }
+            },
+            (error) => {
+                toast.error("GPS satellite permission denied. Please allow location access.");
+                if (type === 'pickup') setIsFetchingPickup(false);
+                if (type === 'dropoff') setIsFetchingDropoff(false);
+            },
+            { enableHighAccuracy: true, timeout: 8500 }
+        );
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
+            const submitData = {
+                ...formData,
+                pickupCoordinates: formData.requestedPickupDropoff ? pickupCoordinates : undefined,
+                dropoffCoordinates: formData.requestedPickupDropoff ? dropoffCoordinates : undefined
+            };
             const response = await apiFetchUser(`/bookings/${id}`, {
                 method: 'PUT',
-                body: JSON.stringify(formData),
+                body: JSON.stringify(submitData),
             });
             const data = await response.json();
             
@@ -167,6 +245,93 @@ const EditBookingPage = () => {
                             className="w-full px-4 py-2.5 bg-[#FDFDF8] border border-black/10 focus:border-[#F5C000] focus:outline-none focus:ring-1 focus:ring-[#F5C000]/30 text-[#111118] text-sm rounded-xl placeholder:text-[#8A8AA8] transition-colors"
                             placeholder="Explain the problems you want serviced on the workshop floor..."
                         ></textarea>
+                    </div>
+
+                    {/* Valet door-to-door switch & address layout */}
+                    <div className="space-y-4 pt-4 border-t border-black/07">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-xs font-bold text-[#111118] uppercase tracking-wider">
+                                    Valet Doorstep Logistics
+                                </p>
+                                <p className="text-[11px] text-[#8A8AA8] mt-0.5">
+                                    Toggle professional valet courier vehicle retrieval & hand-back service
+                                </p>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input 
+                                    type="checkbox" 
+                                    name="requestedPickupDropoff" 
+                                    checked={formData.requestedPickupDropoff} 
+                                    onChange={handleChange} 
+                                    className="sr-only peer" 
+                                />
+                                <div className="w-11 h-6 bg-[#FDFDF8] peer-focus:outline-none rounded-full border border-black/10 peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-[#8A8AA8] after:border-[#8A8AA8] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:bg-[#F5C000] peer-checked:after:border-[#F5C000] peer-checked:border-[#F5C000]/50"></div>
+                            </label>
+                        </div>
+
+                        {formData.requestedPickupDropoff && (
+                            <div className="p-4 bg-[#FDFDF8] border border-black/08 rounded-2xl space-y-4 animate-in fade-in duration-200">
+                                <p className="text-[10px] text-[#B8860B] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                    <Truck size={14} /> Valet Street Addresses
+                                </p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-1.5 w-full">
+                                        <label htmlFor="pickupAddress" className="block text-xs font-semibold uppercase tracking-widest text-[#4A4A65]">
+                                            Pickup Street Address*
+                                        </label>
+                                        <div className="flex gap-2">
+                                            <input 
+                                                id="pickupAddress" 
+                                                name="pickupAddress"
+                                                type="text" 
+                                                className="w-full px-4 py-3 bg-[#FDFDF8] border border-black/10 focus:border-[#F5C000] focus:shadow-[0_0_0_3px_rgba(245,192,0,0.12)] focus:outline-none text-[#111118] text-sm rounded-xl placeholder:text-[#8A8AA8] transition-all hover:border-[rgba(0,0,0,0.18)] disabled:opacity-50 disabled:cursor-not-allowed"
+                                                value={formData.pickupAddress}
+                                                onChange={handleChange}
+                                                placeholder="e.g. Gongabu, Kathmandu"
+                                                disabled={isFetchingPickup}
+                                            />
+                                            <button 
+                                                type="button" 
+                                                onClick={() => handleFetchLocation('pickup')} 
+                                                disabled={isFetchingPickup} 
+                                                className="shrink-0 rounded-xl border border-black/10 hover:border-[#F5C000] bg-[#FDFDF8] hover:bg-[#F5F3E7] text-[#4A4A65] hover:text-[#B8860B] transition-colors w-12 h-12 flex items-center justify-center cursor-pointer disabled:opacity-50"
+                                                title="Pin Pickup via GPS Satellite"
+                                            >
+                                                <MapPin size={18} className={isFetchingPickup ? 'animate-bounce text-[#B8860B]' : ''} />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-1.5 w-full">
+                                        <label htmlFor="dropoffAddress" className="block text-xs font-semibold uppercase tracking-widest text-[#4A4A65]">
+                                            Drop-off Delivery Address*
+                                        </label>
+                                        <div className="flex gap-2">
+                                            <input 
+                                                id="dropoffAddress" 
+                                                name="dropoffAddress"
+                                                type="text" 
+                                                className="w-full px-4 py-3 bg-[#FDFDF8] border border-black/10 focus:border-[#F5C000] focus:shadow-[0_0_0_3px_rgba(245,192,0,0.12)] focus:outline-none text-[#111118] text-sm rounded-xl placeholder:text-[#8A8AA8] transition-all hover:border-[rgba(0,0,0,0.18)] disabled:opacity-50 disabled:cursor-not-allowed"
+                                                value={formData.dropoffAddress}
+                                                onChange={handleChange}
+                                                placeholder="e.g. Gongabu, Kathmandu"
+                                                disabled={isFetchingDropoff}
+                                            />
+                                            <button 
+                                                type="button" 
+                                                onClick={() => handleFetchLocation('dropoff')} 
+                                                disabled={isFetchingDropoff} 
+                                                className="shrink-0 rounded-xl border border-black/10 hover:border-[#F5C000] bg-[#FDFDF8] hover:bg-[#F5F3E7] text-[#4A4A65] hover:text-[#B8860B] transition-colors w-12 h-12 flex items-center justify-center cursor-pointer disabled:opacity-50"
+                                                title="Pin Drop-off via GPS Satellite"
+                                            >
+                                                <MapPin size={18} className={isFetchingDropoff ? 'animate-bounce text-[#B8860B]' : ''} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex justify-end gap-3 pt-6 border-t border-black/07">
