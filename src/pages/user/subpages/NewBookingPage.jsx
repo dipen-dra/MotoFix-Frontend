@@ -66,8 +66,6 @@ const NewBookingPage = () => {
                     const matched = serviceList.find(s => s._id === id);
                     if (matched) {
                         setSelectedService(matched);
-                        // Skip to step 2 since service is pre-chosen
-                        setStep(2);
                     }
                 }
             } catch (err) {
