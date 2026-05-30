@@ -24,7 +24,7 @@ export const LoginForm = ({ onSwitch }) => {
     setLoading(true);
     try {
       const data = await loginUserApi(formData);
-      login(data.data, data.data.token);
+      login(data.data.data, data.data.token);
       toast.success('Login successful!');
     } catch (err) {
       toast.error(err.message || 'Login failed. Please try again.');
