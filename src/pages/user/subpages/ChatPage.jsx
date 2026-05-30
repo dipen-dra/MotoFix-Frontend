@@ -62,7 +62,7 @@ const ChatPage = ({ currentUser }) => {
                 setPreviewUrl(null);
             }
         }
-        event.target.value = null; // Reset file input
+        event.target.value = null;
     };
 
     const handleRemovePreview = () => {
@@ -86,10 +86,14 @@ const ChatPage = ({ currentUser }) => {
             }
 
             try {
-                await apiFetchUser('/chat/upload', {
+                const response = await apiFetchUser('/chat/upload', {
                     method: 'POST',
                     body: formData,
                 });
+                
+                if (!response.ok) {
+                    throw new Error("File upload failed.");
+                }
             } catch (error) {
                 toast.error(`File upload failed: ${error.message}`);
             } finally {
@@ -113,80 +117,163 @@ const ChatPage = ({ currentUser }) => {
         if (msg.fileType?.startsWith('image/')) {
             return (
                 <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" className="block">
-                    <img src={msg.fileUrl} alt={msg.fileName || 'Sent Image'} className="max-w-xs rounded-lg mt-1" />
+                    <img src={msg.fileUrl} alt={msg.fileName || 'Sent Image'} className="max-w-xs rounded-lg mt-1 border border-black/10" />
                 </a>
             );
         }
         return (
             <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" download={msg.fileName}
-               className="flex items-center gap-3 bg-black/10 dark:bg-white/10 p-3 rounded-lg hover:bg-black/20 dark:hover:bg-white/20 transition-colors mt-1">
-                <FileText size={32} className="flex-shrink-0" />
-                <span className="truncate font-medium">{msg.fileName || 'Download File'}</span>
+               className="flex items-center gap-3 bg-[#FDFDF8] border border-black/10 p-3 rounded-xl hover:border-[#F5C000]/50 transition-all mt-1">
+                <FileText size={24} className="flex-shrink-0 text-[#B8860B]" />
+                <span className="truncate font-semibold text-xs text-[#111118]">{msg.fileName || 'Download File'}</span>
             </a>
         );
     };
 
     return (
-        <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Live Chat with Admin</h1>
-            <Card className="p-0 flex flex-col" style={{ height: 'calc(80vh - 2rem)' }}>
-                <div className="p-3 border-b dark:border-gray-700 flex items-center gap-3 shadow-sm">
-                    <img src="/motofix-removebg-preview.png" alt="Support" className="w-10 h-10 rounded-full object-contain bg-gray-100 dark:bg-gray-900 p-1" />
-                    <div>
-                        <h3 className="font-semibold">MotoFix Support</h3>
-                        <p className="text-sm text-gray-500 flex items-center gap-1.5">
-                            <span className="h-2 w-2 rounded-full bg-green-500"></span> Online
-                        </p>
+        <div className="space-y-6 max-w-5xl mx-auto text-[#111118]">
+            {/* Header section */}
+            <div className="border-b border-black/08 pb-5 text-left">
+                <h1 className="text-3xl font-black tracking-tight leading-none">
+                    Workshop Support Chat
+                </h1>
+                <p className="text-sm text-[#4A4A65] mt-1.5">
+                    Connect instantly with our master mechanics and support staff.
+                </p>
+            </div>
+
+            <Card className="p-0 flex flex-col border border-black/08 bg-white shadow-sm overflow-hidden relative" style={{ height: 'calc(80vh - 4rem)' }}>
+                <div className="absolute top-0 left-0 w-full h-1 bg-[#F5C000]" />
+
+                {/* Chat Top Support Header */}
+                <div className="p-4 border-b border-black/07 bg-[#FDFDF8] flex items-center justify-between shadow-sm z-10">
+                    <div className="flex items-center gap-3">
+                        <div className="relative">
+                            <img 
+                                src="/motofix-removebg-preview.png" 
+                                alt="Support Logo" 
+                                className="w-10 h-10 rounded-lg object-contain bg-white border border-black/08 p-1" 
+                                onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=MotoFix&background=F5F3E7&color=111118&size=64`; }}
+                            />
+                            <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white animate-pulse"></span>
+                        </div>
+                        <div className="text-left">
+                            <h3 className="font-bold text-sm text-[#111118] uppercase tracking-wider leading-none">MotoFix Concierge</h3>
+                            <p className="text-[10px] text-[#B8860B] font-bold uppercase tracking-wider mt-1">
+                                ACTIVE HELPDESK ENGINE
+                            </p>
+                        </div>
                     </div>
                 </div>
 
-                <div className="flex-grow overflow-y-auto p-4 space-y-1" ref={chatBodyRef}>
-                    {messageList.map((msg, index) => {
-                        const isUserMessage = msg.authorId === authorId;
-                        return (
-                            <div key={index} className={`flex items-end gap-2 ${isUserMessage ? 'justify-end' : 'justify-start'}`}>
-                                {!isUserMessage && (
-                                    <div className="w-8 flex-shrink-0 self-end">
-                                         <img src="/motofix-removebg-preview.png" alt="S" className="w-7 h-7 rounded-full object-contain bg-gray-100 dark:bg-gray-900 p-0.5" />
-                                    </div>
-                                )}
-                                <div className={`py-2 px-3 max-w-md rounded-2xl ${isUserMessage ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
-                                    {msg.fileUrl && renderFileContent(msg)}
-                                    {msg.message && <p className="text-md" style={{ overflowWrap: 'break-word' }}>{msg.message}</p>}
-                                    <p className={`text-xs text-right mt-1 opacity-70`}>
-                                        {new Date(msg.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </p>
-                                </div>
+                {/* Message Threads Body */}
+                <div className="flex-grow overflow-y-auto p-6 space-y-4 bg-white" ref={chatBodyRef}>
+                    {messageList.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-full text-center space-y-3">
+                            <div className="w-12 h-12 rounded-full bg-[#FFFCEE] text-[#B8860B] flex items-center justify-center border border-[#F5C000]/20">
+                                💬
                             </div>
-                        );
-                    })}
+                            <div>
+                                <h4 className="text-sm font-bold text-[#111118] uppercase tracking-wider">Awaiting Messages</h4>
+                                <p className="text-xs text-[#4A4A65] max-w-[240px] mx-auto mt-2 leading-relaxed">
+                                    Type a support query below to resolve scheduling changes, fluid specs, or custom diagnostics.
+                                </p>
+                            </div>
+                        </div>
+                    ) : (
+                        messageList.map((msg, index) => {
+                            const isUserMessage = msg.authorId === authorId;
+                            return (
+                                <div key={index} className={`flex items-end gap-2.5 ${isUserMessage ? 'justify-end' : 'justify-start'}`}>
+                                    {!isUserMessage && (
+                                        <img 
+                                            src="/motofix-removebg-preview.png" 
+                                            alt="Support" 
+                                            className="w-7 h-7 rounded-lg object-contain bg-white border border-black/10 p-0.5 shadow-sm self-end" 
+                                            onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=Admin&background=FDFDF8&color=B8860B&size=32`; }}
+                                        />
+                                    )}
+                                    <div className="flex flex-col space-y-1">
+                                        <div className={`py-2.5 px-4 max-w-md rounded-2xl shadow-sm text-sm ${
+                                            isUserMessage 
+                                                ? 'bg-[#F5C000] text-[#0D0D14] rounded-br-none font-medium' 
+                                                : 'bg-[#F5F3E7] border border-black/05 text-[#111118] rounded-bl-none'
+                                        }`}>
+                                            {msg.fileUrl && renderFileContent(msg)}
+                                            {msg.message && <p className="leading-relaxed text-left" style={{ overflowWrap: 'break-word' }}>{msg.message}</p>}
+                                        </div>
+                                        <span className={`text-[9px] uppercase tracking-wider font-mono opacity-60 text-[#8A8AA8] ${isUserMessage ? 'text-right' : 'text-left'}`}>
+                                            {new Date(msg.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
                 </div>
 
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                {/* Chat Footer Input Area */}
+                <div className="p-4 border-t border-black/07 bg-[#FDFDF8]">
                     {(previewUrl || selectedFile) && (
-                        <div className="mb-2 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-between">
-                            {previewUrl ? <img src={previewUrl} alt="Preview" className="h-16 w-16 object-cover rounded" /> : <div className="flex items-center gap-2 text-gray-500"><FileText /><span>{selectedFile.name}</span></div>}
-                            <button onClick={handleRemovePreview} className="text-gray-500 hover:text-red-500"><XCircle size={20} /></button>
+                        <div className="mb-3 p-3 bg-white rounded-xl flex items-center justify-between border border-black/08 animate-in fade-in duration-200 shadow-sm">
+                            <div className="flex items-center gap-3">
+                                {previewUrl ? (
+                                    <img src={previewUrl} alt="Preview" className="h-14 w-14 object-cover rounded-lg shadow-sm border border-black/08" />
+                                ) : (
+                                    <div className="w-10 h-10 rounded-lg bg-[#FDFDF8] border border-black/08 flex items-center justify-center text-[#8A8AA8]">
+                                        <FileText size={20} />
+                                    </div>
+                                )}
+                                <div className="text-left">
+                                    <p className="text-xs font-bold text-[#111118] truncate max-w-xs">{selectedFile?.name}</p>
+                                    <p className="text-[10px] text-[#B8860B] font-bold uppercase tracking-wider mt-0.5">Ready for upload</p>
+                                </div>
+                            </div>
+                            <button onClick={handleRemovePreview} className="text-[#8A8AA8] hover:text-red-600 transition-colors cursor-pointer bg-transparent border-none">
+                                <XCircle size={18} />
+                            </button>
                         </div>
                     )}
                     <div className="flex items-center gap-3">
-                        <div className="flex">
+                        <div className="flex items-center">
                             <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
                             <input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" />
-                            <button onClick={() => fileInputRef.current.click()} className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"><Paperclip size={22} /></button>
-                            <button onClick={() => cameraInputRef.current.click()} className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"><Camera size={22} /></button>
+                            <button 
+                                onClick={() => fileInputRef.current.click()} 
+                                className="p-2 text-[#8A8AA8] hover:text-[#B8860B] transition-colors cursor-pointer bg-transparent border-none"
+                                title="Attach File"
+                                disabled={isUploading}
+                            >
+                                <Paperclip size={18} />
+                            </button>
+                            <button 
+                                onClick={() => cameraInputRef.current.click()} 
+                                className="p-2 text-[#8A8AA8] hover:text-[#B8860B] transition-colors cursor-pointer bg-transparent border-none"
+                                title="Access Camera"
+                                disabled={isUploading}
+                            >
+                                <Camera size={18} />
+                            </button>
                         </div>
                         <input
                             type="text"
                             value={currentMessage}
                             onChange={(e) => setCurrentMessage(e.target.value)}
                             onKeyPress={(e) => e.key === "Enter" && !isUploading && sendMessage()}
-                            placeholder="Message..."
-                            className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 border-2 border-transparent rounded-full focus:ring-blue-500 focus:border-blue-500 transition"
+                            placeholder="Instruct support desk here..."
+                            className="flex-grow px-5 py-3 bg-white border border-black/10 focus:border-[#F5C000] focus:outline-none focus:ring-1 focus:ring-[#F5C000]/30 text-[#111118] text-sm rounded-xl placeholder:text-[#8A8AA8] transition-colors disabled:opacity-50"
                             disabled={isUploading}
                         />
-                        <Button onClick={sendMessage} disabled={isUploading || (!currentMessage.trim() && !selectedFile)} className="!rounded-full !w-12 !h-12 !p-0">
-                            {isUploading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Send size={20} />}
+                        <Button 
+                            onClick={sendMessage} 
+                            disabled={isUploading || (!currentMessage.trim() && !selectedFile)} 
+                            className="!rounded-xl !w-11 !h-11 !p-0 shadow-md shadow-[#F5C000]/10 shrink-0 cursor-pointer flex items-center justify-center text-[#0D0D14] bg-gradient-to-r from-[#F5C000] to-[#E6B000]"
+                        >
+                            {isUploading ? (
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                                <Send size={15} />
+                            )}
                         </Button>
                     </div>
                 </div>

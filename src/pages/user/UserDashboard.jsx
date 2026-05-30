@@ -214,7 +214,7 @@ import ConfirmationModal from '../../components/ui/ConfirmationModal';
 // --- Loading Spinner Component ---
 const LoadingFallback = () => (
     <div className="flex justify-center items-center h-full">
-        <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-3 border-[rgba(245,192,0,0.2)] border-t-[#F5C000] rounded-full animate-spin"></div>
     </div>
 );
 
@@ -306,40 +306,53 @@ const UserDashboard = () => {
     const profilePictureSrc = currentUser?.profilePicture ? `http://localhost:5050/${currentUser.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser?.fullName || 'U')}&background=e2e8f0&color=4a5568&size=40`;
 
     return (
-        <div className={`flex h-screen bg-gray-100 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100`}>
-            {/* --- Mobile Sidebar (Off-canvas) --- */}
+        <div className="flex h-screen font-sans" style={{ background: '#FAFAF5' }}>
+            {/* Mobile Sidebar */}
             <div className={`fixed inset-0 z-40 flex lg:hidden transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                <div className="w-72 bg-white dark:bg-gray-800 shadow-lg flex flex-col">
-                    <UserSidebarContent activePage={activePage} onLinkClick={() => setIsSidebarOpen(false)} onLogoutClick={() => { setIsSidebarOpen(false); setLogoutConfirmOpen(true); }} onMenuClose={() => setIsSidebarOpen(false)} unreadChatCount={unreadChatCount} />
+                <div className="w-64 bg-[#F5F3E7] border-r border-black/08 shadow-lg flex flex-col">
+                    <UserSidebarContent activePage={activePage} onLogoutClick={() => { setIsSidebarOpen(false); setLogoutConfirmOpen(true); }} onMenuClose={() => setIsSidebarOpen(false)} unreadChatCount={unreadChatCount} />
                 </div>
-                <div className="flex-1 bg-black bg-opacity-50" onClick={() => setIsSidebarOpen(false)}></div>
+                <div className="flex-1 bg-black/60 backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)}></div>
             </div>
 
-            {/* --- Desktop Sidebar (Static) --- */}
-            <aside className="w-72 bg-white dark:bg-gray-800 shadow-md hidden lg:flex flex-col flex-shrink-0">
-                <UserSidebarContent activePage={activePage} onLinkClick={() => {}} onLogoutClick={() => setLogoutConfirmOpen(true)} unreadChatCount={unreadChatCount} />
+            {/* Desktop Sidebar */}
+            <aside className="w-64 bg-[#F5F3E7] border-r border-black/08 hidden lg:flex flex-col flex-shrink-0 shadow-[2px_0_8px_rgba(0,0,0,0.06)]">
+                <UserSidebarContent activePage={activePage} onLogoutClick={() => setLogoutConfirmOpen(true)} unreadChatCount={unreadChatCount} />
             </aside>
 
-            {/* --- Main Content Area --- */}
+            {/* Main Content */}
             <main className="flex-1 flex flex-col overflow-hidden">
-                <header className="bg-white dark:bg-gray-800 shadow-sm p-4 flex justify-between items-center flex-shrink-0">
-                    <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-gray-600 dark:text-gray-300"><Menu size={28} /></button>
-                    <div className="hidden lg:block" />
-                    <div className="flex items-center gap-4">
-                        <button onClick={() => setIsDarkMode(!isDarkMode)} className="text-gray-600 dark:text-gray-300 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+                {/* Top Header */}
+                <header className="bg-white border-b border-[rgba(0,0,0,0.07)] shadow-[0_1px_8px_rgba(0,0,0,0.05)] px-6 py-3.5 flex justify-between items-center flex-shrink-0 z-10">
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-[#4A4A65] hover:text-[#111118] transition-colors">
+                            <Menu size={22} />
                         </button>
-                        <div className="flex items-center gap-3">
-                            <img key={profilePictureSrc} src={profilePictureSrc} alt="User" className="w-10 h-10 rounded-full object-cover" onError={handleImageError} />
-                            <div>
-                                <p className="font-semibold text-sm">{currentUser?.fullName || 'Loading...'}</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Customer</p>
+                        <div className="hidden lg:flex items-center gap-2">
+                            <span className="text-xs font-medium text-[#8A8AA8] capitalize">
+                                {activePage.charAt(0).toUpperCase() + activePage.slice(1) || 'Dashboard'}
+                            </span>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 pl-3 border-l border-[rgba(0,0,0,0.08)]">
+                            <img
+                                key={profilePictureSrc}
+                                src={profilePictureSrc}
+                                alt="User"
+                                className="w-8 h-8 rounded-lg object-cover ring-2 ring-[rgba(245,192,0,0.3)]"
+                                onError={handleImageError}
+                            />
+                            <div className="hidden sm:block">
+                                <p className="font-semibold text-sm text-[#111118] leading-tight">{currentUser?.fullName || 'Loading...'}</p>
+                                <p className="text-[10px] text-[#8A8AA8] mt-0.5">Customer</p>
                             </div>
                         </div>
                     </div>
                 </header>
 
-                <div className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 md:p-8">
+                {/* Page Content */}
+                <div className="flex-1 overflow-x-hidden overflow-y-auto p-6 md:p-8" style={{ background: '#FAFAF5' }}>
                     <Suspense fallback={<LoadingFallback />}>
                         <Routes>
                             <Route index element={<UserHomePage />} />
@@ -351,7 +364,7 @@ const UserDashboard = () => {
                             <Route path="profile" element={<UserProfilePage currentUser={currentUser} setCurrentUser={setCurrentUser} />} />
                             <Route path="chat" element={<ChatPage currentUser={currentUser} />} />
                             <Route path="service/:id" element={<ServiceDetailsPage />} />
-                             <Route path="book-service/:id" element={<NewBookingPage />} />
+                            <Route path="book-service/:id" element={<NewBookingPage />} />
                             <Route path="*" element={<Navigate to="/user/dashboard" replace />} />
                         </Routes>
                     </Suspense>

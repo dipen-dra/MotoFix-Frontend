@@ -26,7 +26,7 @@
 //   }
 
 //   // Redirect to the correct dashboard root based on user role
-//   if (user.data.role === 'admin') {
+//   if (user.role === 'admin') {
 //     return <Navigate to="/admin" replace />;
 //   }
 
@@ -107,7 +107,7 @@ import { AuthContext } from './auth/AuthContext';
 import ProtectedRoute from './routers/ProtectedRoutes';
 import HomePage from './pages/HomePage';
 import AdminDashboard from './pages/admin/adminDashboard';
-import UserDashboard from './pages/UserDashboard';
+import UserDashboard from './pages/user/UserDashboard';
 import EsewaSuccess from './pages/EsewaSuccess';
 import EsewaFailure from './pages/EsewaFailure';
 import ForgotPasswordPage from './pages/ForgetPasswordPage';
@@ -123,7 +123,7 @@ const DashboardRedirect = () => {
   }
 
   // Redirect to the correct dashboard root based on user role
-  if (user.data.role === 'admin') {
+  if (user.role === 'admin') {
     return <Navigate to="/admin" replace />;
   }
 
@@ -146,7 +146,7 @@ function App() {
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black">
       <ToastContainer
-        position="bottom-right"
+        position="top-center"
         autoClose={2000}
         hideProgressBar={false}
         newestOnTop={false}

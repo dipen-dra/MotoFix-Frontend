@@ -48,22 +48,26 @@ const StarRating = ({ rating = 0 }) => {
 
 const getStatusColor = (status) => {
     switch (status) {
-        case 'Completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-        case 'In Progress': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-        case 'Pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-        case 'Cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-        default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+        case 'Completed': return 'bg-[rgba(22,163,74,0.1)] text-[#16A34A] border border-[rgba(22,163,74,0.2)]';
+        case 'In Progress': return 'bg-[rgba(245,192,0,0.1)] text-[#B8860B] border border-[rgba(245,192,0,0.25)]';
+        case 'Pending': return 'bg-[rgba(217,119,6,0.1)] text-[#D97706] border border-[rgba(217,119,6,0.2)]';
+        case 'Cancelled': return 'bg-[rgba(220,38,38,0.1)] text-[#DC2626] border border-[rgba(220,38,38,0.2)]';
+        default: return 'bg-[rgba(0,0,0,0.05)] text-[#4A4A65] border border-[rgba(0,0,0,0.1)]';
     }
 };
-const Card = ({ children, className = '', ...props }) => (<div {...props} className={`bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 transition-all duration-300 ${className}`}>{children}</div>);
+const Card = ({ children, className = '', ...props }) => (
+    <div {...props} className={`bg-white border border-[rgba(0,0,0,0.08)] rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] p-6 transition-all duration-200 ${className}`}>
+        {children}
+    </div>
+);
 const Modal = ({ isOpen, onClose, title, children }) => {
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-                <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center flex-shrink-0">
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><X size={24} /></button>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center p-4" style={{ animation: 'fadeIn 0.2s ease' }}>
+            <div className="bg-white border border-[rgba(0,0,0,0.08)] rounded-2xl shadow-[0_16px_64px_rgba(0,0,0,0.18)] w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden" style={{ animation: 'scaleIn 0.25s ease' }}>
+                <div className="px-6 py-5 border-b border-[rgba(0,0,0,0.07)] flex justify-between items-center flex-shrink-0">
+                    <h3 className="text-base font-bold text-[#111118] tracking-tight">{title}</h3>
+                    <button onClick={onClose} className="p-1.5 rounded-lg bg-[#F5F3E7] hover:bg-[#EDE9D5] text-[#4A4A65] hover:text-[#111118] transition-colors"><X size={17} /></button>
                 </div>
                 <div className="p-6 overflow-y-auto">{children}</div>
             </div>
@@ -71,47 +75,60 @@ const Modal = ({ isOpen, onClose, title, children }) => {
     );
 };
 const Button = ({ children, onClick, className = '', variant = 'primary', ...props }) => {
-    const baseClasses = "px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed";
+    const baseClasses = "px-4 py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all duration-200 focus:outline-none active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 text-sm cursor-pointer";
     const variants = {
-        primary: "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
-        secondary: "bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 focus:ring-gray-500",
-        danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
+        primary: "bg-gradient-to-r from-[#F5C000] to-[#E6B000] text-[#0D0D14] shadow-[0_4px_14px_rgba(245,192,0,0.3)] hover:shadow-[0_6px_20px_rgba(245,192,0,0.45)] hover:-translate-y-0.5",
+        secondary: "bg-[#FDFDF8] text-[#4A4A65] hover:text-[#111118] border border-[rgba(0,0,0,0.1)] hover:border-[rgba(0,0,0,0.2)] hover:bg-[#F5F3E7]",
+        danger: "bg-[rgba(220,38,38,0.1)] text-[#DC2626] border border-[rgba(220,38,38,0.2)] hover:bg-[rgba(220,38,38,0.18)] hover:border-[rgba(220,38,38,0.4)]",
     };
     return (<button onClick={onClick} className={`${baseClasses} ${variants[variant]} ${className}`} {...props}>{children}</button>);
 };
-const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm', confirmButtonVariant = 'danger', Icon = AlertTriangle, iconColor = 'text-red-600 dark:text-red-400', iconBgColor = 'bg-red-100 dark:bg-red-900/50' }) => {
+const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm', confirmButtonVariant = 'danger', Icon = AlertTriangle, iconColor = 'text-[#DC2626]', iconBgColor = 'bg-[rgba(220,38,38,0.08)]' }) => {
     if (!isOpen) return null;
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="">
-            <div className="text-center">
-                <div className={`mx-auto flex items-center justify-center h-12 w-12 rounded-full ${iconBgColor}`}><Icon className={`h-6 w-6 ${iconColor}`} /></div>
-                <h3 className="mt-5 text-lg font-medium text-gray-900 dark:text-white">{title}</h3>
-                <div className="mt-2 px-7 py-3"><p className="text-sm text-gray-500 dark:text-gray-400">{message}</p></div>
-                <div className="flex justify-center gap-3 mt-4">
-                    <Button variant="secondary" onClick={onClose}>Cancel</Button>
-                    <Button variant={confirmButtonVariant} onClick={onConfirm}>{confirmText}</Button>
+            <div className="text-center py-4">
+                <div className={`mx-auto flex items-center justify-center h-12 w-12 rounded-xl border border-[rgba(0,0,0,0.08)] ${iconBgColor}`}><Icon className={`h-6 w-6 ${iconColor}`} /></div>
+                <h3 className="mt-5 text-lg font-bold text-[#111118] tracking-tight">{title}</h3>
+                <div className="mt-2 px-4 py-2"><p className="text-sm text-[#4A4A65]">{message}</p></div>
+                <div className="flex justify-center gap-3 mt-6">
+                    <Button variant="secondary" onClick={onClose} className="!px-6">Cancel</Button>
+                    <Button variant={confirmButtonVariant} onClick={onConfirm} className="!px-6">{confirmText}</Button>
                 </div>
             </div>
         </Modal>
     );
 };
-const Input = ({ id, label, ...props }) => (
-    <div>
-        <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
-        <input id={id} {...props} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white disabled:opacity-70 disabled:cursor-not-allowed" />
+const Input = ({ id, label, className = '', ...props }) => (
+    <div className="space-y-1.5 w-full">
+        {label && <label htmlFor={id} className="block text-xs font-semibold uppercase tracking-widest text-[#4A4A65]">{label}</label>}
+        <input id={id} {...props} className={`w-full px-4 py-2.5 bg-[#FDFDF8] border border-[rgba(0,0,0,0.1)] rounded-xl text-sm text-[#111118] placeholder-[#8A8AA8] focus:outline-none focus:border-[#F5C000] focus:shadow-[0_0_0_3px_rgba(245,192,0,0.12)] disabled:bg-[#F5F3E7] disabled:text-[#8A8AA8] disabled:cursor-not-allowed transition-all duration-200 hover:border-[rgba(0,0,0,0.18)] ${className}`} />
     </div>
 );
-const StatusBadge = ({ status }) => (<span className={`px-2.5 py-1 text-xs font-semibold rounded-full capitalize ${getStatusColor(status)}`}>{status}</span>);
+const StatusBadge = ({ status }) => {
+    const dotColors = {
+        'Completed': 'bg-[#16A34A]',
+        'In Progress': 'bg-[#F5C000] animate-pulse',
+        'Pending': 'bg-[#D97706] animate-pulse',
+        'Cancelled': 'bg-[#DC2626]',
+    };
+    return (
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold rounded-full ${getStatusColor(status)}`}>
+            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColors[status] || 'bg-[#8A8AA8]'}`}></span>
+            {status}
+        </span>
+    );
+};
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     if (totalPages <= 1) return null;
     return (
-        <div className="flex items-center justify-between pt-3 mt-auto border-t border-gray-200 dark:border-gray-700">
-            <Button variant="secondary" onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className="!px-3 !py-1.5 text-sm">
-                <ChevronLeft size={16} /> Previous
+        <div className="flex items-center justify-between pt-4 mt-auto border-t border-[rgba(0,0,0,0.06)]">
+            <Button variant="secondary" onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className="!px-3 !py-2 !text-xs">
+                <ChevronLeft size={13} /> Prev
             </Button>
-            <span className="text-sm text-gray-700 dark:text-gray-300">Page {totalPages > 0 ? currentPage : 0} of {totalPages > 0 ? totalPages : 0}</span>
-            <Button variant="secondary" onClick={() => onPageChange(currentPage + 1)} disabled={currentPage >= totalPages} className="!px-3 !py-1.5 text-sm">
-                Next <ChevronRight size={16} />
+            <span className="text-xs font-semibold text-[#4A4A65]">Page {totalPages > 0 ? currentPage : 0} / {totalPages > 0 ? totalPages : 0}</span>
+            <Button variant="secondary" onClick={() => onPageChange(currentPage + 1)} disabled={currentPage >= totalPages} className="!px-3 !py-2 !text-xs">
+                Next <ChevronRight size={13} />
             </Button>
         </div>
     );
@@ -146,38 +163,38 @@ const ReviewsModal = ({ isOpen, onClose, serviceId }) => {
     }, [isOpen, serviceId]);
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={`Reviews for "${service?.name || ''}"`}>
+        <Modal isOpen={isOpen} onClose={onClose} title={`Reviews — "${service?.name || ''}"` }>
             {isLoading ? (
-                <div className="text-center p-8">Loading reviews...</div>
+                <div className="text-center p-8 text-garage-400 font-body">Loading reviews...</div>
             ) : !service || service.reviews.length === 0 ? (
-                <div className="text-center p-8 text-gray-500">
-                    <ReviewIcon size={48} className="mx-auto text-gray-400" />
-                    <p className="mt-4">No reviews have been submitted for this service yet.</p>
+                <div className="text-center p-8">
+                    <ReviewIcon size={44} className="mx-auto text-garage-600" />
+                    <p className="mt-4 text-sm text-garage-400 font-body">No reviews have been submitted for this service yet.</p>
                 </div>
             ) : (
-                <div className="space-y-6">
+                <div className="space-y-5">
                     {service.reviews.slice().reverse().map((review) => (
-                        <div key={review._id} className="flex gap-4 border-b dark:border-gray-700 pb-4 last:pb-0 last:border-b-0">
+                        <div key={review._id} className="flex gap-4 border-b border-garage-600 pb-5 last:pb-0 last:border-b-0">
                             <div className="flex-shrink-0">
                                 {review.user && review.user.profilePicture ? (
                                     <img
                                         src={`http://localhost:5050/${review.user.profilePicture}`}
                                         alt={review.user.fullName}
-                                        className="w-10 h-10 rounded-full object-cover bg-gray-200"
+                                        className="w-10 h-10 rounded-full object-cover bg-garage-700 ring-2 ring-garage-600"
                                     />
                                 ) : (
-                                    <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center font-bold text-lg text-indigo-600 dark:text-indigo-300">
+                                    <div className="w-10 h-10 rounded-full bg-spark-500/10 border border-spark-500/30 flex items-center justify-center font-black text-lg text-spark-500 font-display">
                                         {(review.user?.fullName || review.username || 'U').charAt(0).toUpperCase()}
                                     </div>
                                 )}
                             </div>
                             <div className="flex-1">
                                 <div className="flex items-center justify-between">
-                                    <h4 className="font-bold text-gray-800 dark:text-white">{review.user?.fullName || review.username}</h4>
-                                    <span className="text-xs text-gray-500 dark:text-gray-400">{new Date(review.createdAt).toLocaleDateString()}</span>
+                                    <h4 className="font-bold text-chrome-500 font-display text-sm">{review.user?.fullName || review.username}</h4>
+                                    <span className="text-[10px] text-garage-500 font-mono">{new Date(review.createdAt).toLocaleDateString()}</span>
                                 </div>
                                 <div className="my-1"><StarRating rating={review.rating} /></div>
-                                <p className="text-gray-600 dark:text-gray-300">{review.comment}</p>
+                                <p className="text-garage-300 text-sm font-body">{review.comment}</p>
                             </div>
                         </div>
                     ))}
@@ -354,34 +371,41 @@ const AdminChatPage = () => {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Customer Chats</h1>
-            <Card className="p-0 flex" style={{ height: 'calc(80vh - 2rem)' }}>
-                <div className="w-1/3 border-r dark:border-gray-700 overflow-y-auto">
-                    <div className="p-4 border-b dark:border-gray-600"><h2 className="font-semibold text-lg">Conversations</h2></div>
-                    <ul className="divide-y dark:divide-gray-700">
+            <div className="border-b border-garage-600 pb-5">
+                <h1 className="text-3xl md:text-4xl font-black font-display text-chrome-500 uppercase tracking-wider">// CUSTOMER CHATS</h1>
+                <p className="text-xs text-garage-400 font-body mt-1">Real-time support thread management with all customers.</p>
+            </div>
+            <Card className="p-0 flex overflow-hidden" style={{ height: 'calc(80vh - 2rem)' }}>
+                {/* Conversation List */}
+                <div className="w-80 flex-shrink-0 border-r border-garage-600 flex flex-col bg-garage-900">
+                    <div className="p-4 border-b border-garage-600">
+                        <h2 className="text-[10px] font-black font-display text-garage-400 uppercase tracking-widest">// Conversations</h2>
+                    </div>
+                    <ul className="divide-y divide-garage-700/50 overflow-y-auto flex-1">
                         {conversations.map(user => (
-                            <li key={user._id} className={`flex items-center gap-3 relative transition-colors group ${activeConversation?._id === user._id ? 'bg-blue-100 dark:bg-blue-900/50' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}>
+                            <li key={user._id} className={`flex items-center gap-3 relative transition-colors group ${activeConversation?._id === user._id ? 'bg-spark-500/10 border-l-2 border-spark-500' : 'border-l-2 border-transparent hover:bg-garage-800/60'}`}>
                                 <div onClick={() => handleSelectConversation(user)} className="p-4 flex-grow flex items-center gap-3 cursor-pointer">
-                                    <img src={user.profilePicture ? `http://localhost:5050/${user.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || 'U')}&background=0D8ABC&color=fff&size=40`} alt={user.fullName} className="w-10 h-10 rounded-full object-cover" data-name={user.fullName} onError={handleImageError} />
+                                    <img src={user.profilePicture ? `http://localhost:5050/${user.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || 'U')}&background=FF6B00&color=fff&size=40`} alt={user.fullName} className="w-9 h-9 rounded-full object-cover ring-2 ring-garage-600" data-name={user.fullName} onError={handleImageError} />
                                     <div className="flex-grow overflow-hidden">
-                                        <p className={`truncate ${user.unreadCount > 0 ? 'font-bold' : 'font-semibold'}`}>{user.fullName}</p>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{user.lastMessage}</p>
+                                        <p className={`truncate text-sm font-display ${user.unreadCount > 0 ? 'font-black text-chrome-500' : 'font-bold text-garage-200'}`}>{user.fullName}</p>
+                                        <p className="text-[10px] text-garage-500 truncate font-body mt-0.5">{user.lastMessage}</p>
                                     </div>
-                                    {user.unreadCount > 0 && <span className="absolute right-4 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">{user.unreadCount}</span>}
+                                    {user.unreadCount > 0 && <span className="bg-spark-500 text-white text-[10px] font-black rounded-full h-5 w-5 flex items-center justify-center flex-shrink-0">{user.unreadCount}</span>}
                                 </div>
                                 <div className="pr-2">
-                                    <button onClick={() => handleClearClick(user)} className="p-2 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/50 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity" title={`Clear chat with ${user.fullName}`}><Trash2 size={18} /></button>
+                                    <button onClick={() => handleClearClick(user)} className="p-1.5 rounded text-garage-500 hover:bg-signal-red/10 hover:text-signal-red opacity-0 group-hover:opacity-100 transition-all" title={`Clear chat with ${user.fullName}`}><Trash2 size={14} /></button>
                                 </div>
                             </li>
                         ))}
                     </ul>
                 </div>
-                <div className="w-2/3 flex flex-col bg-white dark:bg-gray-900/50">
+                {/* Chat Window */}
+                <div className="flex-1 flex flex-col bg-garage-950">
                     {activeConversation ? (
                         <>
-                            <div className="p-3 border-b dark:border-gray-700 flex items-center gap-3 shadow-sm">
-                                <img src={activeConversation.profilePicture ? `http://localhost:5050/${activeConversation.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(activeConversation.fullName || 'U')}&background=0D8ABC&color=fff&size=40`} alt={activeConversation.fullName} className="w-10 h-10 rounded-full object-cover" data-name={activeConversation.fullName} onError={handleImageError} />
-                                <div><h3 className="font-semibold">{activeConversation.fullName}</h3><p className="text-sm text-gray-500">{activeConversation.email}</p></div>
+                            <div className="p-4 border-b border-garage-600 flex items-center gap-3 bg-garage-900/80 flex-shrink-0">
+                                <img src={activeConversation.profilePicture ? `http://localhost:5050/${activeConversation.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(activeConversation.fullName || 'U')}&background=FF6B00&color=fff&size=40`} alt={activeConversation.fullName} className="w-9 h-9 rounded-full object-cover ring-2 ring-spark-500/30" data-name={activeConversation.fullName} onError={handleImageError} />
+                                <div><h3 className="font-bold text-chrome-500 text-sm font-display">{activeConversation.fullName}</h3><p className="text-[10px] text-garage-500 font-mono">{activeConversation.email}</p></div>
                             </div>
                             <div className="flex-grow overflow-y-auto p-4 space-y-1" ref={chatBodyRef}>
                                 {messages.map((msg, index) => {
@@ -392,28 +416,31 @@ const AdminChatPage = () => {
                                     return (
                                         <div key={msg._id || index} className={`flex items-end gap-2 ${isAdmin ? 'justify-end' : 'justify-start'}`}>
                                             {!isAdmin && (<div className="w-8 flex-shrink-0 self-end">{isLastInGroup && <img src={activeConversation.profilePicture ? `http://localhost:5050/${activeConversation.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(activeConversation.fullName || 'U')}&background=e2e8f0&color=4a5568&size=40`} alt="p" className="w-7 h-7 rounded-full object-cover" />}</div>)}
-                                            <div className={`py-2 px-3 max-w-md ${isAdmin ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white'} ${isFirstInGroup && isLastInGroup ? 'rounded-2xl' : ''} ${isAdmin ? `${isFirstInGroup ? 'rounded-t-2xl rounded-bl-2xl' : 'rounded-l-2xl'} ${isLastInGroup ? 'rounded-b-2xl' : ''} ${!isFirstInGroup && !isLastInGroup ? 'rounded-l-2xl rounded-r-md' : ''} ${isFirstInGroup && !isLastInGroup ? 'rounded-tr-md' : ''} ${!isFirstInGroup && isLastInGroup ? 'rounded-br-md' : ''}` : `${isFirstInGroup ? 'rounded-t-2xl rounded-br-2xl' : 'rounded-r-2xl'} ${isLastInGroup ? 'rounded-b-2xl' : ''} ${!isFirstInGroup && !isLastInGroup ? 'rounded-r-2xl rounded-l-md' : ''} ${isFirstInGroup && !isLastInGroup ? 'rounded-tl-md' : ''} ${!isFirstInGroup && isLastInGroup ? 'rounded-bl-md' : ''}`}`}>
+                                            <div className={`py-2.5 px-3.5 max-w-md ${isAdmin ? 'bg-spark-500 text-white' : 'bg-garage-800 border border-garage-600 text-garage-100'} ${isFirstInGroup && isLastInGroup ? 'rounded-2xl' : ''} ${isAdmin ? `${isFirstInGroup ? 'rounded-t-2xl rounded-bl-2xl' : 'rounded-l-2xl'} ${isLastInGroup ? 'rounded-b-2xl' : ''} ${!isFirstInGroup && !isLastInGroup ? 'rounded-l-2xl rounded-r-md' : ''} ${isFirstInGroup && !isLastInGroup ? 'rounded-tr-md' : ''} ${!isFirstInGroup && isLastInGroup ? 'rounded-br-md' : ''}` : `${isFirstInGroup ? 'rounded-t-2xl rounded-br-2xl' : 'rounded-r-2xl'} ${isLastInGroup ? 'rounded-b-2xl' : ''} ${!isFirstInGroup && !isLastInGroup ? 'rounded-r-2xl rounded-l-md' : ''} ${isFirstInGroup && !isLastInGroup ? 'rounded-tl-md' : ''} ${!isFirstInGroup && isLastInGroup ? 'rounded-bl-md' : ''}`}`}>
                                                 {msg.fileUrl && renderFileContent(msg)}
-                                                {msg.message && <p className="text-md" style={{ overflowWrap: 'break-word' }}>{msg.message}</p>}
-                                                <p className={`text-xs text-right mt-1 opacity-70`}>{new Date(msg.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                                {msg.message && <p className="text-sm font-body" style={{ overflowWrap: 'break-word' }}>{msg.message}</p>}
+                                                <p className={`text-[10px] text-right mt-1 ${isAdmin ? 'text-white/60' : 'text-garage-500'}`}>{new Date(msg.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                                             </div>
                                         </div>
                                     );
                                 })}
                             </div>
-                            <div className="p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800">
-                                {(previewUrl || selectedFile) && (<div className="mb-2 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-between">{previewUrl ? <img src={previewUrl} alt="Preview" className="h-16 w-16 object-cover rounded" /> : <div className="flex items-center gap-2 text-gray-500"><FileText /><span>{selectedFile.name}</span></div>}<button onClick={handleRemovePreview} className="text-gray-500 hover:text-red-500"><XCircle size={20} /></button></div>)}
-                                <div className="flex items-center gap-3">
+                            <div className="p-3 border-t border-garage-600 bg-garage-900/50 flex-shrink-0">
+                                {(previewUrl || selectedFile) && (<div className="mb-2 p-2 bg-garage-800 border border-garage-600 rounded-lg flex items-center justify-between">{previewUrl ? <img src={previewUrl} alt="Preview" className="h-14 w-14 object-cover rounded border border-garage-600" /> : <div className="flex items-center gap-2 text-garage-400 text-xs font-body"><FileText size={16} /><span>{selectedFile.name}</span></div>}<button onClick={handleRemovePreview} className="text-garage-500 hover:text-signal-red transition-colors"><XCircle size={18} /></button></div>)}
+                                <div className="flex items-center gap-2">
                                     <div className="flex">
                                         <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" /><input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" />
-                                        <button onClick={() => fileInputRef.current.click()} className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"><Paperclip size={22} /></button><button onClick={() => cameraInputRef.current.click()} className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"><Camera size={22} /></button>
+                                        <button onClick={() => fileInputRef.current.click()} className="p-2 text-garage-500 hover:text-spark-500 transition-colors"><Paperclip size={20} /></button><button onClick={() => cameraInputRef.current.click()} className="p-2 text-garage-500 hover:text-spark-500 transition-colors"><Camera size={20} /></button>
                                     </div>
-                                    <input type="text" value={currentMessage} onChange={(e) => setCurrentMessage(e.target.value)} onKeyPress={(e) => e.key === "Enter" && !isUploading && handleSendMessage()} placeholder="Message..." className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 border-2 border-transparent rounded-full focus:ring-blue-500 focus:border-blue-500 transition" disabled={isUploading} />
-                                    <Button onClick={handleSendMessage} disabled={isUploading || (!currentMessage.trim() && !selectedFile)} className="!rounded-full !w-12 !h-12 !p-0">{isUploading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Send size={20} />}</Button>
+                                    <input type="text" value={currentMessage} onChange={(e) => setCurrentMessage(e.target.value)} onKeyPress={(e) => e.key === "Enter" && !isUploading && handleSendMessage()} placeholder="Message..." className="flex-1 px-4 py-2.5 bg-garage-800 border border-garage-600 focus:border-spark-500 focus:outline-none focus:ring-1 focus:ring-spark-500/30 rounded-lg text-sm text-garage-100 font-body placeholder-garage-500 transition-colors" disabled={isUploading} />
+                                    <Button onClick={handleSendMessage} disabled={isUploading || (!currentMessage.trim() && !selectedFile)} className="!rounded-full !w-10 !h-10 !p-0 flex-shrink-0">{isUploading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Send size={16} />}</Button>
                                 </div>
                             </div>
                         </>
-                    ) : (<div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400"><Inbox size={64} /><p className="mt-4 text-lg">Select a conversation to start chatting</p></div>)}
+                    ) : (<div className="flex flex-col items-center justify-center h-full text-garage-600">
+                        <Inbox size={52} />
+                        <p className="mt-4 text-sm text-garage-500 font-body">Select a conversation to start chatting</p>
+                    </div>)}
                 </div>
             </Card>
             <ConfirmationModal isOpen={isConfirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={confirmClearChat} title="Clear Chat History" message={`Are you sure you want to clear your view of the chat history with ${itemToClear?.fullName}? This will not affect the user's view.`} confirmText="Clear" />
@@ -439,28 +466,114 @@ const DashboardPage = () => {
         fetchDashboardData();
     }, []);
     return (
-        <div className="space-y-8">
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Analytics Dashboard</h1>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Card><div className="flex items-center gap-4"><div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full"><DollarSign className="text-blue-600 dark:text-blue-300" size={28} /></div><div><p className="text-gray-500 dark:text-gray-400 text-sm">Total Revenue</p><p className="text-2xl font-bold text-gray-800 dark:text-white">रु{analytics.totalRevenue.toLocaleString()}</p></div></div></Card>
-                <Card><div className="flex items-center gap-4"><div className="p-3 bg-green-100 dark:bg-green-900 rounded-full"><List className="text-green-600 dark:text-green-300" size={28} /></div><div><p className="text-gray-500 dark:text-gray-400 text-sm">Total Bookings</p><p className="text-2xl font-bold text-gray-800 dark:text-white">{analytics.totalBookings}</p></div></div></Card>
-                <Card><div className="flex items-center gap-4"><div className="p-3 bg-indigo-100 dark:bg-indigo-900 rounded-full"><Users className="text-indigo-600 dark:text-indigo-300" size={28} /></div><div><p className="text-gray-500 dark:text-gray-400 text-sm">New Users This Month</p><p className="text-2xl font-bold text-gray-800 dark:text-white">{analytics.newUsers}</p></div></div></Card>
+        <div className="space-y-8 max-w-7xl mx-auto">
+            <div className="pb-5">
+                <h1 className="text-2xl font-bold text-[#111118] tracking-tight">Analytics Overview</h1>
+                <p className="text-sm text-[#4A4A65] mt-1">Live operational reporting, revenue tracking, and technician resource utilization.</p>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <Card><h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Revenue Overview</h2><ResponsiveContainer width="100%" height={300}><LineChart data={analytics.revenueData}><CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} /><XAxis dataKey="name" stroke="rgb(107 114 128)" /><YAxis stroke="rgb(107 114 128)" /><Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', border: 'none', borderRadius: '0.5rem', color: '#fff' }} /><Legend /><Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={2} activeDot={{ r: 8 }} /></LineChart></ResponsiveContainer></Card>
-                <Card><h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Popular Services</h2><ResponsiveContainer width="100%" height={300}><BarChart data={analytics.servicesData}><CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} /><XAxis dataKey="name" angle={0} textAnchor="end" height={50} stroke="rgb(107 114 128)" /><YAxis stroke="rgb(107 114 128)" /><Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', border: 'none', borderRadius: '0.5rem', color: '#fff' }} /><Legend /><Bar dataKey="bookings" fill="#10b981" /></BarChart></ResponsiveContainer></Card>
+
+            {/* Metrics cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <Card className="relative overflow-hidden border-l-4 border-l-[#F5C000]">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-[rgba(245,192,0,0.1)] border border-[rgba(245,192,0,0.2)] text-[#B8860B] rounded-xl">
+                            <DollarSign size={20} />
+                        </div>
+                        <div>
+                            <p className="text-xs font-semibold text-[#8A8AA8] uppercase tracking-wider">Gross Revenue</p>
+                            <p className="text-2xl font-bold text-[#111118] mt-0.5">रु{analytics.totalRevenue.toLocaleString()}</p>
+                        </div>
+                    </div>
+                </Card>
+                <Card className="relative overflow-hidden border-l-4 border-l-[#16A34A]">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-[rgba(22,163,74,0.1)] border border-[rgba(22,163,74,0.2)] text-[#16A34A] rounded-xl">
+                            <List size={20} />
+                        </div>
+                        <div>
+                            <p className="text-xs font-semibold text-[#8A8AA8] uppercase tracking-wider">Total Bookings</p>
+                            <p className="text-2xl font-bold text-[#111118] mt-0.5">{analytics.totalBookings}</p>
+                        </div>
+                    </div>
+                </Card>
+                <Card className="relative overflow-hidden border-l-4 border-l-[#2563EB]">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-[rgba(37,99,235,0.1)] border border-[rgba(37,99,235,0.2)] text-[#2563EB] rounded-xl">
+                            <Users size={20} />
+                        </div>
+                        <div>
+                            <p className="text-xs font-semibold text-[#8A8AA8] uppercase tracking-wider">New Users</p>
+                            <p className="text-2xl font-bold text-[#111118] mt-0.5">{analytics.newUsers}</p>
+                        </div>
+                    </div>
+                </Card>
             </div>
-            <Card>
-                <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Recent Bookings</h2>
-                <div className="overflow-x-auto"><table className="w-full text-left"><thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700"><tr><th className="p-3">Customer</th><th className="p-3">Service</th><th className="p-3">Status</th><th className="p-3">Date</th><th className="p-3 text-right">Cost</th></tr></thead><tbody>
-                    {recentBookings.length > 0 ? recentBookings.map(booking => (<tr key={booking._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
-                        <td className="p-3 font-medium text-gray-900 dark:text-white"><a href={`#/admin/bookings/${booking._id}`} className="hover:underline">{booking.customer?.fullName || 'N/A'}</a></td>
-                        <td className="p-3 text-gray-600 dark:text-gray-300">{booking.serviceType || 'N/A'}</td>
-                        <td className="p-3"><StatusBadge status={booking.status} /></td>
-                        <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
-                        <td className="p-3 text-right font-medium text-gray-900 dark:text-white">रु{booking.totalCost}</td>
-                    </tr>)) : (<tr><td colSpan="5" className="text-center py-8 text-gray-500">No recent bookings found.</td></tr>)}
-                </tbody></table></div>
+
+            {/* Charts section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                    <h3 className="text-sm font-semibold text-[#111118] mb-5 pb-3 border-b border-[rgba(0,0,0,0.06)]">Revenue Trend</h3>
+                    <ResponsiveContainer width="100%" height={260}>
+                        <LineChart data={analytics.revenueData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
+                            <XAxis dataKey="name" stroke="#8A8AA8" style={{ fontSize: '11px', fontFamily: 'Inter, sans-serif' }} />
+                            <YAxis stroke="#8A8AA8" style={{ fontSize: '11px', fontFamily: 'Inter, sans-serif' }} />
+                            <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '12px', color: '#111118', fontSize: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} />
+                            <Legend wrapperStyle={{ fontSize: '12px', color: '#4A4A65' }} />
+                            <Line type="monotone" dataKey="revenue" stroke="#F5C000" strokeWidth={2.5} dot={{ r: 3, fill: '#F5C000' }} activeDot={{ r: 6, fill: '#E6B000' }} />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </Card>
+                <Card>
+                    <h3 className="text-sm font-semibold text-[#111118] mb-5 pb-3 border-b border-[rgba(0,0,0,0.06)]">Popular Categories</h3>
+                    <ResponsiveContainer width="100%" height={260}>
+                        <BarChart data={analytics.servicesData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
+                            <XAxis dataKey="name" stroke="#8A8AA8" style={{ fontSize: '10px', fontFamily: 'Inter, sans-serif' }} />
+                            <YAxis stroke="#8A8AA8" style={{ fontSize: '11px', fontFamily: 'Inter, sans-serif' }} />
+                            <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '12px', color: '#111118', fontSize: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} />
+                            <Legend wrapperStyle={{ fontSize: '12px', color: '#4A4A65' }} />
+                            <Bar dataKey="bookings" fill="#F5C000" radius={[4, 4, 0, 0]} opacity={0.9} />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </Card>
+            </div>
+
+            {/* Recent Bookings table */}
+            <Card className="p-0 overflow-hidden">
+                <div className="px-6 py-4 border-b border-[rgba(0,0,0,0.06)]">
+                    <h3 className="text-sm font-semibold text-[#111118]">Recent Activity</h3>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="border-b border-[rgba(0,0,0,0.06)] text-xs font-semibold text-[#8A8AA8] uppercase tracking-wider bg-[#FAFAF5]">
+                                <th className="py-3.5 px-5">Customer</th>
+                                <th className="py-3.5 px-5">Service Type</th>
+                                <th className="py-3.5 px-5">Status</th>
+                                <th className="py-3.5 px-5">Date</th>
+                                <th className="py-3.5 px-5 text-right">Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {recentBookings.length > 0 ? recentBookings.map(booking => (
+                                <tr key={booking._id} className="border-b border-[rgba(0,0,0,0.04)] hover:bg-[#FAFAF5] transition-colors duration-150">
+                                    <td className="py-3.5 px-5 font-semibold text-sm text-[#111118]">
+                                        <a href={`#/admin/bookings/${booking._id}`} className="hover:text-[#B8860B] transition-colors">
+                                            {booking.customer?.fullName || 'N/A'}
+                                        </a>
+                                    </td>
+                                    <td className="py-3.5 px-5 text-sm text-[#4A4A65]">{booking.serviceType || 'N/A'}</td>
+                                    <td className="py-3.5 px-5"><StatusBadge status={booking.status} /></td>
+                                    <td className="py-3.5 px-5 text-sm text-[#8A8AA8]">{new Date(booking.date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                                    <td className="py-3.5 px-5 text-right font-semibold text-sm text-[#111118]">रु{booking.totalCost}</td>
+                                </tr>
+                            )) : (
+                                <tr><td colSpan="5" className="text-center py-12 text-sm text-[#8A8AA8]">No recent bookings recorded.</td></tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </Card>
         </div>
     );
@@ -509,40 +622,57 @@ const BookingsPage = () => {
     const closeModal = () => { setIsModalOpen(false); setEditingBooking(null); };
     return (
         <div className="space-y-6 flex flex-col flex-grow">
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Bookings Management</h1>
-            <Card className="flex flex-col flex-grow">
-                <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
-                    <div className="relative w-full md:w-auto">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                        <input type="text" placeholder="Search bookings..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-full md:w-80 pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <div className="pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-[#111118] tracking-tight">Bookings Management</h1>
+                    <p className="text-sm text-[#4A4A65] mt-1">View, update and manage all customer workshop reservations.</p>
+                </div>
+            </div>
+            <Card className="flex flex-col flex-grow p-0 overflow-hidden">
+                <div className="p-4 border-b border-[rgba(0,0,0,0.06)] bg-[#FAFAF5]">
+                    <div className="relative w-full md:w-80">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8A8AA8]" size={15} />
+                        <input type="text" placeholder="Search bookings..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-full pl-9 pr-4 py-2.5 bg-white border border-[rgba(0,0,0,0.1)] focus:border-[#F5C000] focus:shadow-[0_0_0_3px_rgba(245,192,0,0.12)] focus:outline-none rounded-xl text-sm text-[#111118] placeholder-[#8A8AA8] transition-all duration-200" />
                     </div>
                 </div>
                 <div className="overflow-x-auto flex-grow">
                     <table className="w-full text-left">
-                        <thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700"><tr><th className="p-3">Customer</th><th className="p-3">Vehicle</th><th className="p-3">Service</th><th className="p-3">Date</th><th className="p-3">Status</th><th className="p-3">P/D</th> {/* New column for Pickup/Dropoff */} <th className="p-3 text-right">Cost</th><th className="p-3 text-center">Actions</th></tr></thead>
+                        <thead>
+                            <tr className="border-b border-[rgba(0,0,0,0.06)] text-xs font-semibold text-[#8A8AA8] uppercase tracking-wider bg-[#FAFAF5]">
+                                <th className="py-3.5 px-4">Customer</th><th className="py-3.5 px-4">Vehicle</th><th className="py-3.5 px-4">Service</th><th className="py-3.5 px-4">Date</th><th className="py-3.5 px-4">Status</th><th className="py-3.5 px-4">P/D</th><th className="py-3.5 px-4 text-right">Cost</th><th className="py-3.5 px-4 text-center">Actions</th>
+                            </tr>
+                        </thead>
                         <tbody>
                             {bookings.length > 0 ? bookings.map(booking => (
-                                <tr key={booking._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
-                                    <td className="p-3 font-medium text-gray-900 dark:text-white">{booking.customer?.fullName || 'N/A'}</td>
-                                    <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel || 'N/A'}</td>
-                                    <td className="p-3 text-gray-600 dark:text-gray-300">{booking.serviceType || 'N/A'}</td>
-                                    <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
-                                    <td className="p-3"><StatusBadge status={booking.status} /></td>
-                                    <td className="p-3 text-center"> {/* Pickup/Dropoff status */}
+                                <tr key={booking._id} className="border-b border-[rgba(0,0,0,0.04)] hover:bg-[#FAFAF5] transition-colors duration-150">
+                                    <td className="py-3 px-4 font-semibold text-sm text-[#111118]">{booking.customer?.fullName || 'N/A'}</td>
+                                    <td className="py-3 px-4 text-sm text-[#4A4A65]">{booking.bikeModel || 'N/A'}</td>
+                                    <td className="py-3 px-4 text-sm text-[#4A4A65]">{booking.serviceType || 'N/A'}</td>
+                                    <td className="py-3 px-4 text-sm text-[#8A8AA8]">{new Date(booking.date).toLocaleDateString()}</td>
+                                    <td className="py-3 px-4"><StatusBadge status={booking.status} /></td>
+                                    <td className="py-3 px-4 text-center">
                                         {booking.requestedPickupDropoff ? (
-                                            <span className="text-green-600 dark:text-green-400 font-semibold">Yes</span>
+                                            <span className="text-[#16A34A] font-semibold text-xs">Yes</span>
                                         ) : (
-                                            <span className="text-gray-500 dark:text-gray-400">No</span>
+                                            <span className="text-[#8A8AA8] text-xs">No</span>
                                         )}
                                     </td>
-                                    <td className="p-3 text-right font-medium">रु{booking.finalAmount}</td> {/* Display final amount here */}
-                                    <td className="p-3 text-center"><div className="flex justify-center items-center gap-2"><a href={`#/admin/bookings/${booking._id}`} className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 p-1" title="View Details"><Search size={18} /></a><button onClick={() => handleEdit(booking)} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-1" title="Edit Booking"><Edit size={18} /></button><button onClick={() => handleDeleteClick(booking._id)} className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1" title="Delete Booking"><Trash2 size={18} /></button></div></td>
+                                    <td className="py-3 px-4 text-right font-semibold text-sm text-[#111118]">रु{booking.finalAmount}</td>
+                                    <td className="py-3 px-4 text-center">
+                                        <div className="flex justify-center items-center gap-1.5">
+                                            <a href={`#/admin/bookings/${booking._id}`} className="p-1.5 rounded bg-garage-700 hover:bg-garage-600 text-garage-400 hover:text-emerald-400 border border-garage-600 transition-colors" title="View Details"><Search size={14} /></a>
+                                            <button onClick={() => handleEdit(booking)} className="p-1.5 rounded bg-garage-700 hover:bg-garage-600 text-garage-400 hover:text-spark-400 border border-garage-600 transition-colors" title="Edit Booking"><Edit size={14} /></button>
+                                            <button onClick={() => handleDeleteClick(booking._id)} className="p-1.5 rounded bg-garage-700 hover:bg-signal-red/20 text-garage-400 hover:text-signal-red border border-garage-600 transition-colors" title="Delete Booking"><Trash2 size={14} /></button>
+                                        </div>
+                                    </td>
                                 </tr>
-                            )) : (<tr><td colSpan="8" className="text-center py-10 text-gray-500">No bookings found.</td></tr>)}
+                            )) : (<tr><td colSpan="8" className="text-center py-12 text-sm text-garage-600 font-body">No bookings found.</td></tr>)}
                         </tbody>
                     </table>
                 </div>
-                <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+                <div className="p-4 border-t border-garage-600 bg-garage-900/20">
+                    <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+                </div>
             </Card>
             <BookingFormModal isOpen={isModalOpen} onClose={closeModal} booking={editingBooking} onSave={handleSave} />
             <ConfirmationModal isOpen={isConfirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={confirmDelete} title="Delete Booking" message="Are you sure you want to delete this booking? This action cannot be undone." />
@@ -616,70 +746,69 @@ const BookingDetailsPage = ({ bookingId }) => {
         }
     };
 
-    if (loading) return <div className="text-center py-10">Loading booking details...</div>;
-    if (error) return <div className="text-center py-10 text-red-500">Error: {error}</div>;
-    if (!booking) return <div className="text-center py-10">Booking not found.</div>;
+    if (loading) return <div className="flex items-center justify-center py-20 text-garage-500 font-body"><div className="w-8 h-8 border-2 border-spark-500 border-t-transparent rounded-full animate-spin mr-3" />Loading booking details...</div>;
+    if (error) return <div className="text-center py-10 text-signal-red font-body">Error: {error}</div>;
+    if (!booking) return <div className="text-center py-10 text-garage-500 font-body">Booking not found.</div>;
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center gap-4">
+        <div className="space-y-6 max-w-5xl mx-auto">
+            <div className="flex justify-between items-center border-b border-garage-600 pb-5">
                 <div className="flex items-center gap-4">
-                    <a href="#/admin/bookings" className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                        <ArrowLeft size={22} />
+                    <a href="#/admin/bookings" className="p-2.5 rounded-lg bg-garage-800 hover:bg-garage-700 border border-garage-600 hover:border-spark-500/50 text-garage-300 hover:text-spark-500 transition-all duration-200">
+                        <ArrowLeft size={16} />
                     </a>
-                    <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Booking Details</h1>
+                    <div>
+                        <h1 className="text-3xl font-black font-display text-chrome-500 uppercase tracking-wider">// Booking Details</h1>
+                        <p className="text-xs text-garage-400 font-body mt-0.5">Full record for booking ID: <span className="font-mono text-spark-500">{booking._id}</span></p>
+                    </div>
                 </div>
-                {/* --- NEW: Conditionally render the download button for paid bookings --- */}
                 {booking.isPaid && (
-                    <Button 
-                        onClick={handleDownloadInvoice} 
-                        disabled={isDownloading}
-                        variant="primary"
-                    >
-                        <DownloadIcon size={18} />
+                    <Button onClick={handleDownloadInvoice} disabled={isDownloading} variant="primary">
+                        <DownloadIcon size={16} />
                         {isDownloading ? 'Generating...' : 'Download Invoice'}
                     </Button>
                 )}
             </div>
             
-            <Card>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
-                    <div>
-                        <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 border-b pb-2">Customer Information</h2>
-                        <div className="space-y-2 mt-4 text-gray-600 dark:text-gray-400">
-                            <p><strong>Name:</strong> {booking.customer?.fullName || 'N/A'}</p>
-                            <p><strong>Email:</strong> {booking.customer?.email || 'N/A'}</p>
-                            <p><strong>Phone:</strong> {booking.customer?.phone || 'N/A'}</p>
-                            <p><strong>Address:</strong> {booking.customer?.address || 'N/A'}</p>
-                        </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card className="relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-0.5 h-full bg-spark-500" />
+                    <h2 className="text-[11px] font-black font-display text-garage-500 uppercase tracking-widest mb-4 border-b border-garage-600 pb-3 pl-3">// Customer Info</h2>
+                    <div className="space-y-3 pl-3">
+                        {[['Name', booking.customer?.fullName], ['Email', booking.customer?.email], ['Phone', booking.customer?.phone], ['Address', booking.customer?.address]].map(([label, val]) => (
+                            <div key={label} className="flex justify-between items-start gap-4">
+                                <span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest flex-shrink-0">{label}</span>
+                                <span className="text-sm text-garage-200 font-body text-right">{val || 'N/A'}</span>
+                            </div>
+                        ))}
                     </div>
-                    <div>
-                        <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 border-b pb-2">Booking Information</h2>
-                        <div className="space-y-2 mt-4 text-gray-600 dark:text-gray-400">
-                            <p><strong>Service:</strong> {booking.serviceType || 'N/A'}</p>
-                            <p><strong>Date:</strong> {new Date(booking.date).toLocaleDateString()}</p>
-                            <p><strong>Final Amount:</strong> रु{booking.finalAmount}</p>
-                            <p><strong>Status:</strong> <StatusBadge status={booking.status} /></p>
-                            <p><strong>Payment:</strong> {booking.isPaid ? `Paid via ${booking.paymentMethod}` : 'Pending'}</p>
-                            {/* New: Display pickup/dropoff status and details */}
-                            <p><strong>Pick-up/Drop-off Requested:</strong> {booking.requestedPickupDropoff ? 'Yes' : 'No'}</p>
-                            {booking.requestedPickupDropoff && (
-                                <>
-                                    <p><strong>Pickup Address:</strong> {booking.pickupAddress || 'N/A'}</p>
-                                    <p><strong>Dropoff Address:</strong> {booking.dropoffAddress || 'N/A'}</p>
-                                    <p><strong>Distance:</strong> {booking.pickupDropoffDistance ? `${booking.pickupDropoffDistance.toFixed(2)} km` : 'N/A'}</p>
-                                    <p><strong>P/D Cost:</strong> रु{booking.pickupDropoffCost ? booking.pickupDropoffCost.toFixed(2) : '0.00'}</p>
-                                </>
-                            )}
-                        </div>
+                </Card>
+                <Card className="relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-0.5 h-full bg-emerald-500" />
+                    <h2 className="text-[11px] font-black font-display text-garage-500 uppercase tracking-widest mb-4 border-b border-garage-600 pb-3 pl-3">// Booking Info</h2>
+                    <div className="space-y-3 pl-3">
+                        <div className="flex justify-between"><span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest">Service</span><span className="text-sm text-garage-200 font-body">{booking.serviceType}</span></div>
+                        <div className="flex justify-between"><span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest">Date</span><span className="text-sm font-mono text-garage-300">{new Date(booking.date).toLocaleDateString()}</span></div>
+                        <div className="flex justify-between items-center"><span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest">Status</span><StatusBadge status={booking.status} /></div>
+                        <div className="flex justify-between"><span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest">Final Amount</span><span className="text-sm font-black font-mono text-chrome-500">रु{booking.finalAmount}</span></div>
+                        <div className="flex justify-between"><span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest">Payment</span><span className="text-sm text-garage-200 font-body">{booking.isPaid ? `Paid via ${booking.paymentMethod}` : 'Pending'}</span></div>
+                        <div className="flex justify-between"><span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest">Pick-up/Drop-off</span><span className="text-sm text-garage-200 font-body">{booking.requestedPickupDropoff ? 'Yes' : 'No'}</span></div>
+                        {booking.requestedPickupDropoff && (
+                            <>
+                                <div className="flex justify-between"><span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest">Pickup Addr</span><span className="text-xs text-garage-300 font-body text-right max-w-[60%]">{booking.pickupAddress || 'N/A'}</span></div>
+                                <div className="flex justify-between"><span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest">Distance</span><span className="text-sm font-mono text-garage-300">{booking.pickupDropoffDistance ? `${booking.pickupDropoffDistance.toFixed(2)} km` : 'N/A'}</span></div>
+                                <div className="flex justify-between"><span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest">P/D Cost</span><span className="text-sm font-black font-mono text-spark-400">रु{booking.pickupDropoffCost ? booking.pickupDropoffCost.toFixed(2) : '0.00'}</span></div>
+                            </>
+                        )}
                     </div>
-                </div>
-                <div className="p-6 border-t border-gray-200 dark:border-gray-700">
-                    <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 border-b pb-2">Problem & Vehicle Details</h2>
-                    <div className="space-y-2 mt-4 text-gray-600 dark:text-gray-400">
-                        <p><strong>Vehicle Details:</strong> {booking.bikeModel || 'Not provided'}</p>
-                        <p><strong>Problem Description:</strong> {booking.notes || 'Not provided'}</p>
-                    </div>
+                </Card>
+            </div>
+            <Card className="relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-0.5 h-full bg-amber-500" />
+                <h2 className="text-[11px] font-black font-display text-garage-500 uppercase tracking-widest mb-4 border-b border-garage-600 pb-3 pl-3">// Vehicle & Problem Notes</h2>
+                <div className="space-y-3 pl-3">
+                    <div className="flex justify-between"><span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest">Vehicle</span><span className="text-sm text-garage-200 font-body">{booking.bikeModel || 'Not provided'}</span></div>
+                    <div className="pt-2"><p className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest mb-2">Problem Description</p><p className="text-sm text-garage-300 font-body bg-garage-900/40 rounded-lg p-3 border border-garage-600">{booking.notes || 'Not provided'}</p></div>
                 </div>
             </Card>
         </div>
@@ -732,46 +861,54 @@ const UsersPage = ({ onSave: parentOnSave }) => {
     const closeModal = () => { setIsModalOpen(false); setEditingUser(null); };
     return (
         <div className="space-y-6 flex flex-col flex-grow">
-            <div className="flex justify-between items-center"><h1 className="text-3xl font-bold text-gray-800 dark:text-white">User Management</h1><Button onClick={handleAddNew}><Plus size={20} />Add New User</Button></div>
-            <Card className="flex flex-col flex-grow">
-                <div className="flex justify-between items-center mb-4">
-                    <div className="relative w-full md:w-auto">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                        <input type="text" placeholder="Search users..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-full md:w-80 pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <div className="border-b border-garage-600 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl md:text-4xl font-black font-display text-chrome-500 uppercase tracking-wider">// User Management</h1>
+                    <p className="text-xs text-garage-400 font-body mt-1">Manage customer accounts and admin access credentials.</p>
+                </div>
+                <Button onClick={handleAddNew}><Plus size={16} />Add New User</Button>
+            </div>
+            <Card className="flex flex-col flex-grow p-0 overflow-hidden">
+                <div className="p-4 border-b border-garage-600 bg-garage-900/30">
+                    <div className="relative w-full md:w-80">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-garage-500" size={16} />
+                        <input type="text" placeholder="Search users..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-full pl-9 pr-4 py-2 bg-garage-700 border border-garage-500 focus:border-spark-500 focus:outline-none focus:ring-1 focus:ring-spark-500/30 rounded-md text-sm text-garage-100 font-body placeholder-garage-500 transition-colors" />
                     </div>
                 </div>
                 <div className="overflow-x-auto flex-grow">
                     <table className="w-full text-left">
-                        <thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700">
-                            <tr>
-                                <th className="p-3">Name</th>
-                                <th className="p-3">Email</th>
-                                <th className="p-3">Joined On</th>
-                                <th className="p-3">Role</th>
-                                {/* Removed Loyalty Points column header */}
-                                <th className="p-3 text-center">Actions</th>
+                        <thead>
+                            <tr className="border-b border-garage-600 text-[10px] font-black font-display text-garage-500 uppercase tracking-widest bg-garage-900/40">
+                                <th className="py-3.5 px-4">Name</th>
+                                <th className="py-3.5 px-4">Email</th>
+                                <th className="py-3.5 px-4">Joined On</th>
+                                <th className="py-3.5 px-4">Role</th>
+                                <th className="py-3.5 px-4 text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {users.length > 0 ? users.map(user => (
-                                <tr key={user._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
-                                    <td className="p-3 font-medium text-gray-900 dark:text-white">{user.fullName}</td>
-                                    <td className="p-3 text-gray-600 dark:text-gray-300">{user.email}</td>
-                                    <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(user.createdAt).toLocaleDateString()}</td>
-                                    <td className="p-3 text-gray-600 dark:text-gray-300 capitalize">{user.role}</td>
-                                    {/* Removed Loyalty Points data cell */}
-                                    <td className="p-3 text-center">
-                                        <div className="flex justify-center items-center gap-2">
-                                            <button onClick={() => handleEdit(user)} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-1"><Edit size={18} /></button>
-                                            <button onClick={() => handleDeleteClick(user._id)} className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1"><Trash2 size={18} /></button>
+                                <tr key={user._id} className="border-b border-garage-600/40 hover:bg-garage-700/15 transition-colors duration-150">
+                                    <td className="py-3 px-4 font-bold text-sm text-chrome-500 font-display">{user.fullName}</td>
+                                    <td className="py-3 px-4 text-sm text-garage-300 font-body">{user.email}</td>
+                                    <td className="py-3 px-4 text-sm text-garage-400 font-mono">{new Date(user.createdAt).toLocaleDateString()}</td>
+                                    <td className="py-3 px-4">
+                                        <span className={`text-[10px] font-black font-display uppercase tracking-widest px-2 py-0.5 rounded border ${ user.role === 'admin' ? 'text-spark-400 border-spark-500/30 bg-spark-500/10' : 'text-garage-400 border-garage-600 bg-garage-700/50'}`}>{user.role}</span>
+                                    </td>
+                                    <td className="py-3 px-4 text-center">
+                                        <div className="flex justify-center items-center gap-1.5">
+                                            <button onClick={() => handleEdit(user)} className="p-1.5 rounded bg-garage-700 hover:bg-garage-600 text-garage-400 hover:text-spark-400 border border-garage-600 transition-colors" title="Edit User"><Edit size={14} /></button>
+                                            <button onClick={() => handleDeleteClick(user._id)} className="p-1.5 rounded bg-garage-700 hover:bg-signal-red/20 text-garage-400 hover:text-signal-red border border-garage-600 transition-colors" title="Delete User"><Trash2 size={14} /></button>
                                         </div>
                                     </td>
                                 </tr>
-                            )) : (<tr><td colSpan="5" className="text-center py-10 text-gray-500">No users found.</td></tr>)}
+                            )) : (<tr><td colSpan="5" className="text-center py-12 text-sm text-garage-600 font-body">No users found.</td></tr>)}
                         </tbody>
                     </table>
                 </div>
-                <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+                <div className="p-4 border-t border-garage-600 bg-garage-900/20">
+                    <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+                </div>
             </Card>
             <UserFormModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSave} user={editingUser} />
             <ConfirmationModal isOpen={isConfirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={confirmDelete} title="Delete User" message="Are you sure you want to delete this user? This will permanently remove their data." />
@@ -852,62 +989,88 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
     const handleImageError = (e) => { e.target.onerror = null; e.target.src = `https://placehold.co/128x128/e2e8f0/4a5568?text=A`; }
     const profilePictureSrc = profile.profilePictureUrl || (profile.profilePicture ? `http://localhost:5050/${profile.profilePicture}` : `https://placehold.co/128x128/e2e8f0/4a5568?text=A`);
     return (
-        <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Workshop Profile</h1>
-            <Card><div className="p-6"><div className="flex flex-col sm:flex-row sm:justify-between sm:items-start"><h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">Profile Information</h2>{!isEditing && (<Button onClick={() => setIsEditing(true)}><Edit size={16} />Edit Profile</Button>)}</div><div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-4">
-                <div className="lg:col-span-1 flex flex-col items-center"><img key={profilePictureSrc} src={profilePictureSrc} alt="Profile" className="w-32 h-32 rounded-full object-cover mb-4 ring-4 ring-blue-500/50" onError={handleImageError} /><input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />{isEditing && (<Button variant="secondary" className="w-full" onClick={handleUploadClick}><Camera size={16} /> Change Picture</Button>)}</div>
-                <div className="lg:col-span-2 space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <Input id="workshopName" label="Workshop Name" name="workshopName" value={profile.workshopName || ''} onChange={handleChange} disabled={!isEditing} />
-                        <Input id="ownerName" label="Owner Name" name="ownerName" value={profile.ownerName || ''} onChange={handleChange} disabled={!isEditing} />
-                        <Input id="email" label="Email Address" name="email" type="email" value={profile.email || ''} onChange={handleChange} disabled={!isEditing} />
-                        <Input id="phone" label="Phone Number" name="phone" value={profile.phone || ''} onChange={handleChange} disabled={!isEditing} />
-                    </div>
-                    <div>
-                        <div className="flex justify-between items-center mb-1">
-                            <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Address</label>
-                            {isEditing && (<Button variant="secondary" onClick={handleFetchLocation} disabled={isFetchingLocation} className="text-xs py-1 px-2 !gap-1.5">{isFetchingLocation ? 'Fetching...' : <><MapPin size={14} /> Fetch Location</>}</Button>)}
+        <div className="space-y-6 max-w-4xl mx-auto">
+            <div className="border-b border-garage-600 pb-5">
+                <h1 className="text-3xl md:text-4xl font-black font-display text-chrome-500 uppercase tracking-wider">// Workshop Profile</h1>
+                <p className="text-xs text-garage-400 font-body mt-1">Manage workshop identity, contact details, and service configurations.</p>
+            </div>
+            <Card className="relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-spark-500 via-spark-400 to-transparent" />
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-6">
+                    <h2 className="text-[11px] font-black font-display text-garage-500 uppercase tracking-widest mb-4 sm:mb-0">// Profile Information</h2>
+                    {!isEditing && (<Button onClick={() => setIsEditing(true)} variant="secondary"><Edit size={14} />Edit Profile</Button>)}
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="lg:col-span-1 flex flex-col items-center">
+                        <div className="relative mb-4">
+                            <img key={profilePictureSrc} src={profilePictureSrc} alt="Profile" className="w-28 h-28 rounded-full object-cover ring-2 ring-spark-500/40 ring-offset-2 ring-offset-garage-800" onError={handleImageError} />
+                            {isEditing && <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center"><Camera size={20} className="text-white" /></div>}
                         </div>
-                        <textarea id="address" name="address" rows="3" value={profile.address || ''} onChange={handleChange} disabled={!isEditing} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-200 dark:disabled:bg-gray-700/50 dark:text-white" placeholder="Enter workshop address or fetch current location"></textarea>
+                        <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+                        {isEditing && (<Button variant="secondary" className="w-full !text-xs" onClick={handleUploadClick}><Camera size={13} />Change Picture</Button>)}
+                        {!isEditing && profile.workshopName && (
+                            <div className="mt-4 text-center">
+                                <p className="font-black font-display text-chrome-500 uppercase tracking-wider text-sm">{profile.workshopName}</p>
+                                <p className="text-[10px] text-spark-400 font-mono tracking-widest mt-0.5">// WORKSHOP</p>
+                            </div>
+                        )}
                     </div>
+                    <div className="lg:col-span-2 space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Input id="workshopName" label="Workshop Name" name="workshopName" value={profile.workshopName || ''} onChange={handleChange} disabled={!isEditing} />
+                            <Input id="ownerName" label="Owner Name" name="ownerName" value={profile.ownerName || ''} onChange={handleChange} disabled={!isEditing} />
+                            <Input id="email" label="Email Address" name="email" type="email" value={profile.email || ''} onChange={handleChange} disabled={!isEditing} />
+                            <Input id="phone" label="Phone Number" name="phone" value={profile.phone || ''} onChange={handleChange} disabled={!isEditing} />
+                        </div>
+                        <div>
+                            <div className="flex justify-between items-center mb-1.5">
+                                <label htmlFor="address" className="block text-[11px] font-black font-display text-garage-400 uppercase tracking-widest">Address</label>
+                                {isEditing && (<Button variant="secondary" onClick={handleFetchLocation} disabled={isFetchingLocation} className="!text-[10px] !py-1 !px-2.5 !gap-1">{isFetchingLocation ? 'Fetching...' : <><MapPin size={11} /> Fetch Location</>}</Button>)}
+                            </div>
+                            <textarea id="address" name="address" rows="3" value={profile.address || ''} onChange={handleChange} disabled={!isEditing} className="w-full px-4 py-2.5 bg-garage-700 border border-garage-500 focus:border-spark-500 focus:outline-none focus:ring-1 focus:ring-spark-500/30 text-garage-100 font-body text-sm rounded-lg placeholder-garage-500 transition-colors disabled:bg-garage-800/50 disabled:text-garage-500 disabled:cursor-not-allowed" placeholder="Enter workshop address or fetch current location"></textarea>
+                        </div>
 
-                    {/* NEW FIELDS FOR PICKUP/DROPOFF SERVICE */}
-                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">Pick-up & Drop-off Service</h3>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        name="offerPickupDropoff"
-                                        checked={profile.offerPickupDropoff || false}
+                        <div className="border-t border-garage-600 pt-5 mt-2">
+                            <h3 className="text-[11px] font-black font-display text-garage-400 uppercase tracking-widest mb-4">// Pick-up & Drop-off Service</h3>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                        <input
+                                            type="checkbox"
+                                            name="offerPickupDropoff"
+                                            checked={profile.offerPickupDropoff || false}
+                                            onChange={handleChange}
+                                            disabled={!isEditing}
+                                            className="form-checkbox h-4 w-4 rounded border-garage-500 bg-garage-700 text-spark-500 focus:ring-spark-500/20 accent-spark-500 cursor-pointer"
+                                        />
+                                        <span className="text-sm text-garage-300 font-body group-hover:text-garage-100 transition-colors">Offer Pick-up/Drop-off Service to Customers</span>
+                                    </label>
+                                </div>
+                                {profile.offerPickupDropoff && (
+                                    <Input
+                                        id="pickupDropoffChargePerKm"
+                                        label="Charge per KM (\u0930\u0941)"
+                                        name="pickupDropoffChargePerKm"
+                                        type="number"
+                                        value={profile.pickupDropoffChargePerKm || ''}
                                         onChange={handleChange}
                                         disabled={!isEditing}
-                                        className="form-checkbox h-5 w-5 text-blue-600 rounded-md focus:ring-blue-500"
+                                        step="0.01"
+                                        placeholder="e.g., 50.00"
                                     />
-                                    <span>Offer Pick-up/Drop-off Service to Customers</span>
-                                </label>
+                                )}
                             </div>
-                            {profile.offerPickupDropoff && (
-                                <Input
-                                    id="pickupDropoffChargePerKm"
-                                    label="Charge per KM (रु)"
-                                    name="pickupDropoffChargePerKm"
-                                    type="number"
-                                    value={profile.pickupDropoffChargePerKm || ''}
-                                    onChange={handleChange}
-                                    disabled={!isEditing}
-                                    step="0.01"
-                                    placeholder="e.g., 50.00"
-                                />
-                            )}
                         </div>
-                    </div>
-                    {/* END NEW FIELDS */}
 
-                    {isEditing && (<div className="flex justify-end gap-3 pt-4"><Button variant="secondary" onClick={handleCancel}>Cancel</Button><Button onClick={handleSave}>Save Changes</Button></div>)}
+                        {isEditing && (
+                            <div className="flex justify-end gap-3 pt-4 border-t border-garage-600">
+                                <Button variant="secondary" onClick={handleCancel}>Cancel</Button>
+                                <Button onClick={handleSave}>Save Changes</Button>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </div></div></Card>
+            </Card>
         </div>
     );
 };
@@ -1035,39 +1198,50 @@ const ServicesPage = () => {
     
     return (
         <div className="space-y-6 flex flex-col flex-grow">
-            <div className="flex justify-between items-center"><h1 className="text-3xl font-bold text-gray-800 dark:text-white">Services Management</h1><Button onClick={handleAddNew}><Plus size={20} />Add New Service</Button></div>
-            <Card className="flex flex-col flex-grow">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-grow">
-                    {services.length > 0 ? services.map(service => (
-                        <div key={service._id} className="flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
-                            <img src={`http://localhost:5050/${service.image}`} alt={service.name} onError={handleImageError} className="w-full h-48 object-cover" />
-                            <div className="p-4 flex-grow flex flex-col">
-                                <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400">{service.name}</h3>
-                                <div className="flex items-center gap-2 my-1 text-sm text-gray-500">
-                                    <StarRating rating={service.rating} />
-                                    <span>({service.numReviews} reviews)</span>
+            <div className="pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-[#111118] tracking-tight">Services Management</h1>
+                    <p className="text-sm text-[#4A4A65] mt-1">Configure workshop service offerings, pricing, and availability.</p>
+                </div>
+                <Button onClick={handleAddNew}><Plus size={16} />Add New Service</Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-grow">
+                {services.length > 0 ? services.map(service => (
+                    <div key={service._id} className="flex flex-col bg-garage-800 border border-garage-600 hover:border-spark-500/40 rounded-2xl overflow-hidden shadow-md shadow-black/30 group transition-all duration-200">
+                        <div className="relative overflow-hidden h-44">
+                            <img src={`http://localhost:5050/${service.image}`} alt={service.name} onError={handleImageError} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                            <div className="absolute top-0 left-0 h-0.5 w-12 bg-spark-500 group-hover:w-24 transition-all duration-300" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-garage-900/60 via-transparent to-transparent" />
+                        </div>
+                        <div className="p-5 flex-grow flex flex-col">
+                            <div className="flex items-center gap-2 mb-1">
+                                <h3 className="text-base font-black font-display text-chrome-500 uppercase tracking-wide">{service.name}</h3>
+                            </div>
+                            <div className="flex items-center gap-2 mb-3">
+                                <StarRating rating={service.rating} />
+                                <span className="text-[10px] text-garage-500 font-mono">({service.numReviews} reviews)</span>
+                            </div>
+                            <p className="text-xs text-garage-300 font-body flex-grow mb-4 leading-relaxed">{service.description}</p>
+                            <div className="mt-auto pt-4 border-t border-garage-600 flex justify-between items-center">
+                                <div>
+                                    <p className="text-xl font-black font-mono text-spark-500">रु{service.price}</p>
+                                    <p className="text-[10px] text-garage-500 font-body">{service.duration}</p>
                                 </div>
-                                <p className="text-gray-600 dark:text-gray-300 mt-2 mb-4 flex-grow">{service.description}</p>
-                                <div className="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                                    <div><p className="text-lg font-semibold text-gray-800 dark:text-white">रु{service.price}</p><p className="text-sm text-gray-500 dark:text-gray-400">{service.duration}</p></div>
-                                    <div className="flex gap-1">
-                                        {/* NEW "VIEW REVIEWS" BUTTON */}
-                                        <button onClick={() => handleViewReviews(service._id)} className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600" title="View Reviews">
-                                            <ReviewIcon size={18} />
-                                        </button>
-                                        <button onClick={() => handleEdit(service)} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600" title="Edit Service"><Edit size={18} /></button>
-                                        <button onClick={() => handleDeleteClick(service._id)} className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600" title="Delete Service"><Trash2 size={18} /></button>
-                                    </div>
+                                <div className="flex gap-1.5">
+                                    <button onClick={() => handleViewReviews(service._id)} className="p-2 rounded-lg bg-garage-700 hover:bg-emerald-500/10 text-garage-400 hover:text-emerald-400 border border-garage-600 hover:border-emerald-500/30 transition-all" title="View Reviews"><ReviewIcon size={15} /></button>
+                                    <button onClick={() => handleEdit(service)} className="p-2 rounded-lg bg-garage-700 hover:bg-spark-500/10 text-garage-400 hover:text-spark-400 border border-garage-600 hover:border-spark-500/30 transition-all" title="Edit Service"><Edit size={15} /></button>
+                                    <button onClick={() => handleDeleteClick(service._id)} className="p-2 rounded-lg bg-garage-700 hover:bg-signal-red/10 text-garage-400 hover:text-signal-red border border-garage-600 hover:border-signal-red/30 transition-all" title="Delete Service"><Trash2 size={15} /></button>
                                 </div>
                             </div>
                         </div>
-                    )) : (<div className="col-span-full text-center py-10 text-gray-500">No services found.</div>)}
-                </div>
+                    </div>
+                )) : (<div className="col-span-full text-center py-16 text-garage-600 font-body">No services found. Add your first service to get started.</div>)}
+            </div>
+            <div className="flex justify-center">
                 <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
-            </Card>
+            </div>
             <ServiceFormModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSave} service={editingService} />
             <ConfirmationModal isOpen={isConfirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={confirmDelete} title="Delete Service" message="Are you sure you want to delete this service? This action is permanent." />
-            {/* RENDER THE NEW REVIEWS MODAL */}
             <ReviewsModal isOpen={isReviewModalOpen} onClose={() => setReviewModalOpen(false)} serviceId={selectedServiceId} />
         </div>
     );
@@ -1076,13 +1250,68 @@ const ServicesPage = () => {
 
 const NavLink = ({ page, icon: Icon, children, activePage, onLinkClick, badgeCount }) => {
     const isActive = activePage === page;
-    return (<a href={`#/admin/${page}`} onClick={onLinkClick} className={`relative flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-200 ${isActive ? 'bg-blue-600 text-white font-semibold shadow-lg' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}><Icon size={22} /><span className="text-md">{children}</span>{badgeCount > 0 && (<span className="absolute right-3 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">{badgeCount}</span>)}</a>);
+    return (
+        <a
+            href={`#/admin/${page}`}
+            onClick={onLinkClick}
+            className={`sidebar-link ${isActive ? 'active' : ''}`}
+        >
+            <Icon size={17} />
+            <span className="flex-1">{children}</span>
+            {badgeCount > 0 && (
+                <span className="bg-[#F5C000] text-[#0D0D14] text-[10px] font-black rounded-full h-5 w-5 flex items-center justify-center flex-shrink-0">
+                    {badgeCount}
+                </span>
+            )}
+        </a>
+    );
 };
 const SidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClose, totalUnreadCount }) => (
     <>
-        <div className="p-4 flex items-center justify-between"><a href="#/admin/dashboard" onClick={onLinkClick} className="flex items-center gap-3 cursor-pointer"><img src="/motofix-removebg-preview.png" alt="MotoFix Logo" className="h-20 w-auto" /></a>{onMenuClose && (<button onClick={onMenuClose} className="lg:hidden text-gray-500 dark:text-gray-400"><X size={24} /></button>)}</div>
-        <nav className="flex-1 px-4 py-6 space-y-2"><NavLink page="dashboard" icon={BarChart} activePage={activePage} onLinkClick={onLinkClick}>Dashboard</NavLink><NavLink page="bookings" icon={List} activePage={activePage} onLinkClick={onLinkClick}>Bookings</NavLink><NavLink page="users" icon={Users} activePage={activePage} onLinkClick={onLinkClick}>Users</NavLink><NavLink page="services" icon={Wrench} activePage={activePage} onLinkClick={onLinkClick}>Services</NavLink><NavLink page="profile" icon={User} activePage={activePage} onLinkClick={onLinkClick}>Profile</NavLink><NavLink page="chat" icon={MessageSquare} activePage={activePage} onLinkClick={onLinkClick} badgeCount={totalUnreadCount}>Chat</NavLink></nav>
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700"><button onClick={onLogoutClick} className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-800"><LogOut size={22} /><span className="text-md">Logout</span></button></div>
+        {/* Logo */}
+        <div className="px-5 py-5 flex items-center justify-between border-b border-white/07">
+            <a href="#/admin/dashboard" onClick={onLinkClick} className="flex items-center gap-2.5 cursor-pointer">
+                <div className="w-8 h-8">
+                    <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                        <polygon points="18,2 33,10 33,26 18,34 3,26 3,10" fill="#F5C000" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+                        <text x="50%" y="55%" dominantBaseline="middle" textAnchor="middle" fontSize="13" fontWeight="900" fontFamily="Inter,sans-serif" fill="#0D0D14">M</text>
+                    </svg>
+                </div>
+                <div>
+                    <span className="text-lg font-black text-white">Moto</span>
+                    <span className="text-lg font-black text-[#F5C000]">Fix</span>
+                    <span className="text-[10px] font-semibold text-white/30 uppercase tracking-widest block -mt-0.5">Admin Panel</span>
+                </div>
+            </a>
+            {onMenuClose && (
+                <button onClick={onMenuClose} className="lg:hidden text-white/30 hover:text-white transition-colors">
+                    <X size={18} />
+                </button>
+            )}
+        </div>
+        {/* Nav */}
+        <nav className="flex-1 px-3 py-5 space-y-0.5 overflow-y-auto">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-white/20 px-3 mb-3">Main</p>
+            <NavLink page="dashboard" icon={BarChart} activePage={activePage} onLinkClick={onLinkClick}>Dashboard</NavLink>
+            <NavLink page="bookings" icon={List} activePage={activePage} onLinkClick={onLinkClick}>Bookings</NavLink>
+            <NavLink page="users" icon={Users} activePage={activePage} onLinkClick={onLinkClick}>Users</NavLink>
+            <NavLink page="services" icon={Wrench} activePage={activePage} onLinkClick={onLinkClick}>Services</NavLink>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-white/20 px-3 mb-3 mt-5">Account</p>
+            <NavLink page="profile" icon={User} activePage={activePage} onLinkClick={onLinkClick}>Profile</NavLink>
+            <NavLink page="chat" icon={MessageSquare} activePage={activePage} onLinkClick={onLinkClick} badgeCount={totalUnreadCount}>Chat</NavLink>
+        </nav>
+        {/* Logout */}
+        <div className="p-3 border-t border-white/07">
+            <button
+                onClick={onLogoutClick}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold
+                           text-[rgba(220,38,38,0.8)] hover:text-[#DC2626] hover:bg-[rgba(220,38,38,0.08)]
+                           transition-all duration-200 cursor-pointer"
+            >
+                <LogOut size={17} />
+                <span>Logout</span>
+            </button>
+        </div>
     </>
 );
 
@@ -1177,54 +1406,70 @@ const AdminDashboard = () => {
     const handleImageError = (e) => { e.target.onerror = null; e.target.src = `https://placehold.co/40x40/e2e8f0/4a5568?text=A`; }
     const profilePictureSrc = currentUser.profilePicture ? `http://localhost:5050/${currentUser.profilePicture}` : `https://placehold.co/40x40/e2e8f0/4a5568?text=A`;
     return (
-        <div className={`flex h-screen bg-gray-100 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100`}>
-            <div className={`fixed inset-0 z-40 flex lg:hidden transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}><div className="w-72 bg-white dark:bg-gray-800 shadow-lg flex flex-col"><SidebarContent activePage={activePage} onLinkClick={() => setIsSidebarOpen(false)} onLogoutClick={() => { setIsSidebarOpen(false); setLogoutConfirmOpen(true); }} onMenuClose={() => setIsSidebarOpen(false)} totalUnreadCount={totalUnreadCount} /></div><div className="flex-1 bg-black bg-opacity-50" onClick={() => setIsSidebarOpen(false)}></div></div>
-            <aside className="w-72 bg-white dark:bg-gray-800 shadow-md hidden lg:flex flex-col flex-shrink-0"><SidebarContent activePage={activePage} onLinkClick={() => { }} onLogoutClick={() => setLogoutConfirmOpen(true)} totalUnreadCount={totalUnreadCount} /></aside>
+        <div className="flex h-screen font-sans" style={{ background: '#FAFAF5' }}>
+            {/* Mobile Sidebar */}
+            <div className={`fixed inset-0 z-40 flex lg:hidden transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                <div className="w-64 bg-[#0D0D14] shadow-2xl flex flex-col">
+                    <SidebarContent activePage={activePage} onLinkClick={() => setIsSidebarOpen(false)} onLogoutClick={() => { setIsSidebarOpen(false); setLogoutConfirmOpen(true); }} onMenuClose={() => setIsSidebarOpen(false)} totalUnreadCount={totalUnreadCount} />
+                </div>
+                <div className="flex-1 bg-black/60 backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)}></div>
+            </div>
+            {/* Desktop Sidebar */}
+            <aside className="w-64 bg-[#0D0D14] hidden lg:flex flex-col flex-shrink-0 shadow-[2px_0_20px_rgba(0,0,0,0.15)]">
+                <SidebarContent activePage={activePage} onLinkClick={() => {}} onLogoutClick={() => setLogoutConfirmOpen(true)} totalUnreadCount={totalUnreadCount} />
+            </aside>
+            {/* Main */}
             <div className="flex-1 flex flex-col overflow-hidden">
-                <header className="bg-white dark:bg-gray-800 shadow-sm p-4 flex justify-between items-center">
-                    <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-gray-600 dark:text-gray-300">
-                        <Menu size={28} />
-                    </button>
-                    <div className="hidden lg:block" />
-                    <div className="flex items-center gap-4">
-                        <button onClick={() => setIsDarkMode(!isDarkMode)} className="text-gray-600 dark:text-gray-300 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+                {/* Top Header */}
+                <header className="bg-white border-b border-[rgba(0,0,0,0.07)] shadow-[0_1px_8px_rgba(0,0,0,0.05)] px-6 py-3.5 flex justify-between items-center flex-shrink-0 z-10">
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-[#4A4A65] hover:text-[#111118] transition-colors">
+                            <Menu size={22} />
                         </button>
+                        <div className="hidden lg:flex items-center gap-2">
+                            <span className="text-xs font-medium text-[#8A8AA8] capitalize">
+                                {activePage.charAt(0).toUpperCase() + activePage.slice(1)}
+                            </span>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
                         {/* Profile Dropdown */}
                         <div className="relative" ref={dropdownRef}>
                             <button
                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                className="flex items-center gap-2 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                className="flex items-center gap-2.5 px-3 py-2 rounded-xl border border-[rgba(0,0,0,0.08)] hover:bg-[#F5F3E7] transition-all duration-150 cursor-pointer"
                             >
-                                <img key={profilePictureSrc} src={profilePictureSrc} alt="Admin" className="w-10 h-10 rounded-full object-cover" onError={handleImageError} />
-                                <span className="font-semibold text-sm hidden md:block">{currentUser.ownerName}</span>
-                                <ChevronDown size={16} className={`transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                                <img key={profilePictureSrc} src={profilePictureSrc} alt="Admin" className="w-8 h-8 rounded-lg object-cover ring-2 ring-[rgba(245,192,0,0.3)]" onError={handleImageError} />
+                                <div className="hidden md:block">
+                                    <p className="font-semibold text-sm text-[#111118] leading-tight">{currentUser.ownerName}</p>
+                                    <p className="text-[10px] text-[#8A8AA8] mt-0.5">Administrator</p>
+                                </div>
+                                <ChevronDown size={13} className={`text-[#8A8AA8] transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                             </button>
                             {isDropdownOpen && (
-                                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg py-1 z-50">
+                                <div className="absolute right-0 mt-2 w-44 bg-white border border-[rgba(0,0,0,0.08)] rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] py-1.5 z-50">
                                     <a
                                         href="#/admin/profile"
                                         onClick={() => handleDropdownNavigation('profile')}
-                                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
+                                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-[#4A4A65] hover:bg-[#F5F3E7] hover:text-[#111118] transition-colors"
                                     >
-                                        <User size={18} /> Profile
+                                        <User size={15} className="text-[#8A8AA8]" /> Profile
                                     </a>
                                     <button
                                         onClick={() => { setIsDropdownOpen(false); setLogoutConfirmOpen(true); }}
-                                        className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-800"
+                                        className="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-sm text-[#DC2626] hover:bg-[rgba(220,38,38,0.06)] transition-colors"
                                     >
-                                        <LogOut size={18} /> Logout
+                                        <LogOut size={15} /> Logout
                                     </button>
                                 </div>
                             )}
                         </div>
                     </div>
                 </header>
-                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 md:p-8 flex flex-col">{renderPage()}</main>
+                {/* Page Content */}
+                <main className="flex-1 overflow-x-hidden overflow-y-auto p-6 md:p-8 flex flex-col" style={{ background: '#FAFAF5' }}>{renderPage()}</main>
             </div>
             <ConfirmationModal isOpen={isLogoutConfirmOpen} onClose={() => setLogoutConfirmOpen(false)} onConfirm={handleLogoutConfirm} title="Confirm Logout" message="Are you sure you want to logout?" confirmText="Logout" confirmButtonVariant="danger" Icon={LogOut} />
-            {/* --- AI CHATBOT INTEGRATION --- */}
-            {/* The GeminiChatbot is placed here to be available on all admin pages */}
             <GeminiChatbot />
         </div>
     );

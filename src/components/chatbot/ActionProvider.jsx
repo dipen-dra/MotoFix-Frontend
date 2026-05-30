@@ -31,7 +31,7 @@ const createActionProvider = (user) => {
                 return guestOptions;
             }
 
-            if (this.user.data.role === 'admin') {
+            if (this.user.role === 'admin') {
                 return [
                     { text: 'My Profile', handler: this.handleProfileInquiry, id: 4 },
                     { text: 'Total Bookings', handler: this.handleAdminTotalBookings, id: 5 },
@@ -183,7 +183,7 @@ const createActionProvider = (user) => {
                 const profileData = response.data.data;
                 let profileMessage;
 
-                if (this.user.data.role === 'admin') {
+                if (this.user.role === 'admin') {
                     profileMessage = this.createChatBotMessage(<><strong>Admin Profile:</strong><p><strong>Workshop:</strong> {profileData.workshopName || 'N/A'}</p><p><strong>Owner:</strong> {profileData.ownerName || 'N/A'}</p><p><strong>Email:</strong> {profileData.email || 'N/A'}</p><p><strong>Phone:</strong> {profileData.phone || 'N/A'}</p><p><strong>Address:</strong> {profileData.address || 'N/A'}</p></>);
                 } else {
                      profileMessage = this.createChatBotMessage(<><strong>Your Profile:</strong><p><strong>Name:</strong> {profileData.fullName || 'N/A'}</p><p><strong>Email:</strong> {profileData.email || 'N/A'}</p><p><strong>Phone:</strong> {profileData.phone || 'N/A'}</p><p><strong>Address:</strong> {profileData.address || 'N/A'}</p></>);
@@ -198,7 +198,7 @@ const createActionProvider = (user) => {
         
         // --- Admin-Specific Actions ---
         handleAdminTotalBookings = async () => {
-            if (this.user?.data?.role !== 'admin') return this.handleUnknown();
+            if (this.user?.role !== 'admin') return this.handleUnknown();
             try {
                 const response = await chatbotApi.get('/chatbot/admin-dashboard');
                 const { totalBookings } = response.data.data;
@@ -208,7 +208,7 @@ const createActionProvider = (user) => {
             }
         }
         handleAdminPendingBookings = async () => {
-            if (this.user?.data?.role !== 'admin') return this.handleUnknown();
+            if (this.user?.role !== 'admin') return this.handleUnknown();
             try {
                 const response = await chatbotApi.get('/chatbot/admin-dashboard');
                 const { pendingBookings, inProgressBookings } = response.data.data;
@@ -219,7 +219,7 @@ const createActionProvider = (user) => {
         }
 
         handleAdminRevenue = async () => {
-            if (this.user?.data?.role !== 'admin') return this.handleUnknown();
+            if (this.user?.role !== 'admin') return this.handleUnknown();
             try {
                 const response = await chatbotApi.get('/chatbot/admin-dashboard');
                 const { totalRevenue } = response.data.data;
@@ -231,7 +231,7 @@ const createActionProvider = (user) => {
 
         // --- User-Specific Actions ---
         handleUserBookings = async () => {
-             if (!this.user || this.user.data.role === 'admin') return this.handleUnknown();
+             if (!this.user || this.user.role === 'admin') return this.handleUnknown();
             try {
                 const response = await chatbotApi.get('/chatbot/user-dashboard');
                 const { totalBookings } = response.data.data;
@@ -242,7 +242,7 @@ const createActionProvider = (user) => {
         }
         
         handleUserUpcomingServices = async () => {
-             if (!this.user || this.user.data.role === 'admin') return this.handleUnknown();
+             if (!this.user || this.user.role === 'admin') return this.handleUnknown();
             try {
                 const response = await chatbotApi.get('/chatbot/user-dashboard');
                 const { upcomingServices } = response.data.data;
@@ -253,7 +253,7 @@ const createActionProvider = (user) => {
         }
         
         handleUserCompletedServices = async () => {
-             if (!this.user || this.user.data.role === 'admin') return this.handleUnknown();
+             if (!this.user || this.user.role === 'admin') return this.handleUnknown();
             try {
                 const response = await chatbotApi.get('/chatbot/user-dashboard');
                 const { completedServices } = response.data.data;
@@ -264,7 +264,7 @@ const createActionProvider = (user) => {
         }
 
         handleUserLoyaltyPoints = async () => {
-             if (!this.user || this.user.data.role === 'admin') return this.handleUnknown();
+             if (!this.user || this.user.role === 'admin') return this.handleUnknown();
             try {
                 const response = await chatbotApi.get('/chatbot/user-dashboard');
                 const { loyaltyPoints } = response.data.data;

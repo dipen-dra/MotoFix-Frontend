@@ -1,228 +1,378 @@
 import React from 'react';
-// Make sure to import the new icons
-import { FeatureIcon, WrenchIcon, PriceTagIcon, TruckIcon, QuoteIcon, StarIcon, HalfStarIcon, EmptyStarIcon } from '../assets/icons';
+import { Link } from 'react-router-dom';
+
+const services = [
+  { title: 'General Service',      description: 'From oil changes to brake inspections, our general service covers every essential aspect to keep your bike in optimal condition.', imageUrl: 'https://pplx-res.cloudinary.com/image/upload/v1749554608/gpt4o_images/iqiqmts2nwcfackizvjy.png' },
+  { title: 'Engine Repair',        description: 'Facing unusual noise or performance drops? Our engine experts diagnose and fix problems efficiently using high-quality parts.', imageUrl: 'https://pplx-res.cloudinary.com/image/upload/v1749554990/gpt4o_images/iwycnvpey4wfffv7q0dt.png' },
+  { title: 'Denting & Painting',   description: 'Give your bike a makeover! We remove dents and provide precision paintwork to restore that brand-new shine.', imageUrl: 'https://pplx-res.cloudinary.com/image/upload/v1749555492/gpt4o_images/am0n8x501uzraegjm0ly.png' },
+  { title: 'Insurance Claims',     description: 'We simplify the insurance process — paperwork, damage evaluation, and claim processing, quick and worry-free.', imageUrl: 'https://pplx-res.cloudinary.com/image/upload/v1749555695/gpt4o_images/bdogajkde4cpf1bde5fc.png' },
+  { title: 'Tire Care',            description: 'Professional tire inspection, puncture repair, and replacement services to ensure your safety and a smooth ride.', imageUrl: 'https://pplx-res.cloudinary.com/image/upload/v1749870126/gpt4o_images/rdzir9c1zjxzacax23a3.png' },
+  { title: 'Brake System',         description: "Complete inspection and servicing of your bike's brake system, including fluid change and pad replacement.", imageUrl: 'https://pplx-res.cloudinary.com/image/upload/v1749742141/gpt4o_images/qyploqur4ivlgfzjlx5u.png' },
+  { title: 'Suspension Tuning',    description: 'Optimize ride comfort and handling with expert suspension tuning, tailored to your riding style.', imageUrl: 'https://pplx-res.cloudinary.com/image/upload/v1749870248/gpt4o_images/tc4cstuz8iefxbn4mhlh.png' },
+  { title: 'Full Body Detailing',  description: "A comprehensive cleaning and polishing service that restores your bike's showroom shine.", imageUrl: 'https://pplx-res.cloudinary.com/image/upload/v1749478483/gpt4o_images/oziuai3wafnxufaqcfei.png' },
+];
+
+const marqueeServices = [...services, ...services];
+
+const stats = [
+  { value: '4.9/5', label: 'Rider Rating' },
+  { value: '12K+',  label: 'Bikes Serviced' },
+  { value: '45min', label: 'Avg. Pickup' },
+  { value: '100%',  label: 'Transparent Pricing' },
+];
+
+const whyUs = [
+  {
+    title: 'Master Mechanics',
+    desc: 'Certified mechanics bring precision instruments and diagnostic tools straight to your location.',
+    imageUrl: 'https://pplx-res.cloudinary.com/image/upload/v1749555876/gpt4o_images/bybdnjs6xsay9lvrwxd1.png',
+    icon: '🔧',
+  },
+  {
+    title: 'Fixed Estimates',
+    desc: 'Zero-surprises guarantee. Review and approve digital invoice breakdowns before we touch a single wrench.',
+    imageUrl: 'https://www.pmrgo.com/wp-content/uploads/2025/05/transparent-pricing-packers-and-movers.webp',
+    icon: '📋',
+  },
+  {
+    title: 'Doorstep Pickup',
+    desc: 'Full pickup and drop tracking. We safely tow, restore, and return your machine on schedule.',
+    imageUrl: 'https://pplx-res.cloudinary.com/image/upload/v1749741326/gpt4o_images/nxpnscz8nwbgx1o3aqkg.png',
+    icon: '🚚',
+  },
+];
+
+const steps = [
+  { step: '01', title: 'Book a Slot',   desc: 'Choose your service, schedule a pickup time, and confirm your details in minutes.' },
+  { step: '02', title: 'We Pickup',     desc: 'Our driver arrives at your location with full tracking visibility on your end.' },
+  { step: '03', title: 'We Fix It',     desc: 'Expert technicians service your bike in our bay with a strict quality checklist.' },
+  { step: '04', title: 'We Deliver',    desc: 'Your bike is returned fully cleaned, tested, and ready to ride.' },
+];
+
+const testimonials = [
+  { name: 'Aman Chaudhary', bike: 'KTM Duke 390', quote: 'The best service I\'ve ever had. Pickup was timely and the technician explained every step. Highly recommended!', initial: 'A' },
+  { name: 'Prajwol Neupane', bike: 'Pulsar NS200', quote: 'MotoFix fixed a complicated engine issue without me visiting a workshop. Diagnosis to delivery was flawless!', initial: 'P' },
+  { name: 'Sydney Sweeney', bike: 'Vespa VXL150', quote: 'They handled everything smoothly and the repair was perfect. My bike looks brand new. Amazing quality and speed!', initial: 'S' },
+];
+
+const StarRow = () => (
+  <div className="flex gap-0.5">
+    {[1,2,3,4,5].map(i => (
+      <svg key={i} className="w-3.5 h-3.5 text-[#F5C000] fill-current" viewBox="0 0 20 20">
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+      </svg>
+    ))}
+  </div>
+);
 
 export const HomePage = () => {
-    const backgroundImageUrl = 'https://pplx-res.cloudinary.com/image/upload/v1749469010/gpt4o_images/pjh8vcy6nwxlipmugg1p.png';
+  return (
+    <>
+      {/* ── Hero ─────────────────────────────────────────── */}
+      <section
+        id="home"
+        className="relative min-h-[calc(100vh-72px)] flex items-center overflow-hidden bg-[#FDFDF8]"
+      >
+        {/* Subtle pattern */}
+        <div className="absolute inset-0 pattern-bg opacity-60 pointer-events-none" />
 
-    const services = [
-        {
-            title: 'General Service',
-            description: 'From oil changes to brake inspections, our general service covers every essential aspect to keep your bike in optimal condition.',
-            imageUrl: 'https://pplx-res.cloudinary.com/image/upload/v1749554608/gpt4o_images/iqiqmts2nwcfackizvjy.png'
-        },
-        {
-            title: 'Engine Repair',
-            description: 'Facing unusual noise or performance drops? Our engine experts diagnose and fix problems efficiently using high-quality parts.',
-            imageUrl: 'https://pplx-res.cloudinary.com/image/upload/v1749554990/gpt4o_images/iwycnvpey4wfffv7q0dt.png'
-        },
-        {
-            title: 'Denting & Painting',
-            description: 'Give your bike a makeover! We remove dents and provide precision paintwork to restore that brand-new shine.',
-            imageUrl: 'https://pplx-res.cloudinary.com/image/upload/v1749555492/gpt4o_images/am0n8x501uzraegjm0ly.png'
-        },
-        {
-            title: 'Insurance Claims',
-            description: 'We simplify the insurance process by assisting you with paperwork, damage evaluation, and claim processing—quick, easy, and worry-free.',
-            imageUrl: 'https://pplx-res.cloudinary.com/image/upload/v1749555695/gpt4o_images/bdogajkde4cpf1bde5fc.png'
-        },
-        {
-            title: 'Tire Care & Replacement',
-            description: 'We offer professional tire inspection, puncture repair, and replacement services to ensure your safety and a smooth ride.',
-            imageUrl: 'https://pplx-res.cloudinary.com/image/upload/v1749870126/gpt4o_images/rdzir9c1zjxzacax23a3.png'
-        },
-        {
-            title: 'Brake System Service',
-            description: 'Complete inspection and servicing of your bike’s brake system, including fluid change and pad replacement for maximum safety.',
-            imageUrl: 'https://pplx-res.cloudinary.com/image/upload/v1749742141/gpt4o_images/qyploqur4ivlgfzjlx5u.png'
-        },
-        {
-            title: 'Suspension Tuning',
-            description: 'Optimize your ride comfort and handling with our expert suspension tuning service, tailored to your riding style.',
-            imageUrl: 'https://pplx-res.cloudinary.com/image/upload/v1749870248/gpt4o_images/tc4cstuz8iefxbn4mhlh.png'
-        },
-        {
-            title: 'Full Body Detailing',
-            description: 'A comprehensive cleaning and polishing service that restores your bike’s showroom shine and protects it from the elements.',
-            imageUrl: 'https://pplx-res.cloudinary.com/image/upload/v1749478483/gpt4o_images/oziuai3wafnxufaqcfei.png'
-        }
-    ];
+        {/* Yellow orb top-right */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] orb orb-yellow opacity-50 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] orb orb-yellow opacity-30 pointer-events-none" />
 
-    // Duplicate the services array for a seamless, infinite scrolling effect
-    const marqueeServices = [...services, ...services];
-
-    return (
-        <>
-            {/* Add CSS for the marquee animation */}
-            <style>
-                {`
-                .marquee {
-                    display: flex;
-                    width: max-content;
-                    animation: marquee-scroll 40s linear infinite;
-                }
-                
-                .marquee-container:hover .marquee {
-                    animation-play-state: paused;
-                }
-
-                @keyframes marquee-scroll {
-                    from {
-                        transform: translateX(0%);
-                    }
-                    to {
-                        transform: translateX(-50%);
-                    }
-                }
-                `}
-            </style>
-
-            <div id='home'
-                className="relative bg-cover bg-center h-[calc(100vh-5rem)] flex items-center justify-center"
-                style={{ backgroundImage: `url(${backgroundImageUrl})` }}
-            >
-                <div className="absolute inset-0 bg-black bg-opacity-60"></div>
-                <div className="relative text-center text-white p-4">
-                    <h1 className="text-5xl md:text-7xl font-extrabold mb-4">Reliable Bike Service,</h1>
-                    <h2 className="text-5xl md:text-7xl font-extrabold text-blue-400 mb-6">Delivered to Your Door.</h2>
-                    <p className="text-xl text-gray-200 max-w-3xl mx-auto mb-10">
-                        MotoFix is your trusted two-wheeler partner offering hassle-free, high-quality servicing right from the comfort of your home. Schedule, track, and relax—your bike is in expert hands.
-                    </p>
-                    <a href="/login" className="bg-blue-600 text-white font-bold py-4 px-8 rounded-lg text-lg hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105 inline-block">Book a Service</a>
-                </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 py-24 w-full">
+          <div className="max-w-3xl">
+            {/* Eyebrow */}
+            <div className="inline-flex items-center gap-2.5 mb-8 animate-fade-in-down">
+              <span className="section-label">
+                Nepal's #1 Doorstep Service
+              </span>
             </div>
 
-            <section id="why-choose-us" className="py-20 bg-white">
-                <div className="container mx-auto px-4">
-                    <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">Why Choose MotoFix?</h2>
-                    <div className="grid md:grid-cols-3 gap-8 text-center">
-                        <div
-                            className="group relative rounded-lg shadow-lg h-64 transform transition-transform duration-300 hover:scale-105 bg-cover bg-center overflow-hidden"
-                            style={{ backgroundImage: `url('https://pplx-res.cloudinary.com/image/upload/v1749555876/gpt4o_images/bybdnjs6xsay9lvrwxd1.png')` }}
-                        >
-                            <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-70 transition-all duration-300"></div>
-                            <div className="relative z-10 flex h-full flex-col items-center justify-center p-6 text-center">
-                                <h3 className="text-xl font-bold text-white">Expert Technicians</h3>
-                                <p className="text-gray-200 text-base transition-all duration-300 ease-in-out opacity-0 max-h-0 group-hover:max-h-40 group-hover:opacity-100 group-hover:mt-2">
-                                    Our certified technicians bring dealership-level care to your doorstep, ensuring your ride is always road-ready.
-                                </p>
-                            </div>
-                        </div>
-                        <div
-                            className="group relative rounded-lg shadow-lg h-64 transform transition-transform duration-300 hover:scale-105 bg-cover bg-center overflow-hidden"
-                            style={{ backgroundImage: `url('https://www.pmrgo.com/wp-content/uploads/2025/05/transparent-pricing-packers-and-movers.webp')` }}
-                        >
-                            <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-70 transition-all duration-300"></div>
-                            <div className="relative z-10 flex h-full flex-col items-center justify-center p-6 text-center">
-                                <h3 className="text-xl font-bold text-white">Transparent Pricing</h3>
-                                <p className="text-gray-200 text-base transition-all duration-300 ease-in-out opacity-0 max-h-0 group-hover:max-h-40 group-hover:opacity-100 group-hover:mt-2">
-                                    Get detailed upfront estimates with no surprises. Our commitment to clear pricing ensures complete trust.
-                                </p>
-                            </div>
-                        </div>
-                        <div
-                            className="group relative rounded-lg shadow-lg h-64 transform transition-transform duration-300 hover:scale-105 bg-cover bg-center overflow-hidden"
-                            style={{ backgroundImage: `url('https://pplx-res.cloudinary.com/image/upload/v1749741326/gpt4o_images/nxpnscz8nwbgx1o3aqkg.png')` }}
-                        >
-                            <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-70 transition-all duration-300"></div>
-                            <div className="relative z-10 flex h-full flex-col items-center justify-center p-6 text-center">
-                                <h3 className="text-xl font-bold text-white">Pick-up & Drop</h3>
-                                <p className="text-gray-200 text-base transition-all duration-300 ease-in-out opacity-0 max-h-0 group-hover:max-h-40 group-hover:opacity-100 group-hover:mt-2">
-                                    Book your service online and we’ll take care of the rest with maximum convenience and safety.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            {/* Headline */}
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight text-[#111118] leading-[1.05] mb-6 animate-fade-in-up">
+              Your Bike,<br />
+              <span className="relative inline-block">
+                <span className="gradient-text">Fixed Fast.</span>
+                <svg className="absolute -bottom-3 left-0 w-full" viewBox="0 0 400 12" fill="none">
+                  <path d="M2 10 Q200 2 398 10" stroke="#F5C000" strokeWidth="3" strokeLinecap="round" fill="none"/>
+                </svg>
+              </span>
+            </h1>
 
-            {/* UPDATED SERVICES SECTION */}
-            <section id="service" className="py-20 bg-white overflow-hidden">
-                <div className="container mx-auto px-4">
-                    <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">Our Services</h2>
-                </div>
-                {/* This container acts as the viewport for the marquee.
-                  - `max-w-[1408px]` sets the width to show exactly 4 cards (4 * (320px width + 32px margin)).
-                  - `mx-auto` centers the viewport within the page layout.
-                  - `overflow-hidden` is now on this container to clip the scrolling content inside it.
-                */}
-                <div className="marquee-container max-w-[1408px] mx-auto overflow-hidden">
-                    <div className="marquee">
-                        {marqueeServices.map((service, index) => (
-                            // Each card has a fixed width (w-80 = 320px) and margin (mx-4 = 32px total)
-                            <div key={index} className="mx-4 flex-shrink-0 w-80">
-                                <div
-                                    className="group relative rounded-lg shadow-lg h-64 transform transition-transform duration-300 hover:scale-105 bg-cover bg-center overflow-hidden"
-                                    style={{ backgroundImage: `url('${service.imageUrl}')` }}
-                                >
-                                    <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-70 transition-all duration-300"></div>
-                                    <div className="relative z-10 flex h-full flex-col items-center justify-center p-6 text-center">
-                                        <h3 className="text-xl font-bold text-white">{service.title}</h3>
-                                        <p className="text-gray-200 text-base transition-all duration-300 ease-in-out opacity-0 max-h-0 group-hover:max-h-40 group-hover:opacity-100 group-hover:mt-2">
-                                            {service.description}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
+            <p className="text-lg md:text-xl text-[#4A4A65] max-w-xl leading-relaxed mb-10 animate-fade-in" style={{ animationDelay: '0.15s' }}>
+              MotoFix delivers dealership-grade mechanics to your doorstep. Transparent quotes, real-time tracking, zero hassle.
+            </p>
 
-            <section id="about" className="py-20 bg-white">
-                <div className="container mx-auto px-4 text-center">
-                    <h1 className="text-3xl md:text-4xl font-semibold text-gray-800">What Our Customers Say</h1>
-                    <div className="flex flex-wrap justify-center gap-5 mt-16 text-left">
-                        <div className="w-96 flex flex-col items-start bg-white rounded-lg shadow-lg p-6 transform hover:scale-105 transition-transform duration-300 hover:ring-2 hover:ring-blue-500">
-                            <QuoteIcon />
-                            <div className="flex items-center justify-center mt-3 gap-1">
-                                <StarIcon /><StarIcon /><StarIcon /><StarIcon /><EmptyStarIcon />
-                            </div>
-                            <p className="text-base mt-3 text-black">
-                                "The best service I've ever had for my bike. Pick-up was timely, and the technician explained every detail before proceeding. Highly recommended!"
-                            </p>
-                            <div className="flex items-center gap-3 mt-4">
-                                <img className="h-12 w-12 rounded-full object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&h=100&auto=format&fit=crop" alt="userImage1" />
-                                <div>
-                                    <h2 className="text-base text-black font-medium">Aman Chaudhary</h2>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="w-96 flex flex-col items-start bg-white rounded-lg shadow-lg p-6 transform hover:scale-105 transition-transform duration-300 hover:ring-2 hover:ring-blue-500">
-                            <QuoteIcon />
-                            <div className="flex items-center justify-center mt-3 gap-1">
-                                <StarIcon /><StarIcon /><StarIcon /><StarIcon /><HalfStarIcon />
-                            </div>
-                            <p className="text-base mt-3 text-black">
-                                "MotoFix took care of a complicated engine issue without me needing to visit a workshop. Great experience, from diagnosis to delivery!"
-                            </p>
-                            <div className="flex items-center gap-3 mt-4">
-                                <img className="h-12 w-12 rounded-full object-cover" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=100&h=100&auto=format&fit=crop" alt="userImage2" />
-                                <div>
-                                    <h2 className="text-base text-black font-medium">Prajwol Neupane</h2>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="w-96 flex flex-col items-start bg-white rounded-lg shadow-lg p-6 transform hover:scale-105 transition-transform duration-300 hover:ring-2 hover:ring-blue-500">
-                            <QuoteIcon />
-                            <div className="flex items-center justify-center mt-3 gap-1">
-                                <StarIcon /><StarIcon /><StarIcon /><StarIcon /><StarIcon />
-                            </div>
-                            <p className="text-base mt-3 text-black">
-                                "They handled everything smoothly and the repair work was flawless. My bike looks brand new. Highly appreciate the quality and speed!"
-                            </p>
-                            <div className="flex items-center gap-3 mt-4">
-                                <img className="h-12 w-12 rounded-full object-cover" src="https://www.mytalk1071.com/wp-content/uploads/2024/11/CMG0f2c85f7-b2a7-4ff7-99ca-0a3f9d6b00c0-1.jpg" alt="userImage3" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/100x100/374151/ffffff?text=S'; }} />
-                                <div>
-                                    <h2 className="text-base text-black font-medium">Sydney Sweeney</h2>
-                                </div>
-                            </div>
-                        </div>
+            {/* CTA buttons */}
+            <div className="flex flex-wrap gap-4 animate-fade-in" style={{ animationDelay: '0.25s' }}>
+              <Link
+                to="/login"
+                className="btn btn-primary text-base px-8 py-4"
+                style={{ borderRadius: '14px' }}
+              >
+                Book a Service
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
+              <a
+                href="#service"
+                className="btn btn-secondary text-base px-8 py-4"
+                style={{ borderRadius: '14px' }}
+              >
+                Explore Services
+              </a>
+            </div>
+
+            {/* Trust pills */}
+            <div className="flex flex-wrap gap-3 mt-10 animate-fade-in" style={{ animationDelay: '0.35s' }}>
+              {['✓ Free Pickup & Drop', '✓ Certified Mechanics', '✓ Fixed Pricing'].map((t) => (
+                <span key={t} className="text-xs font-semibold text-[#4A4A65] bg-black/05 border border-black/08 px-3 py-1.5 rounded-pill">
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Stats Strip ──────────────────────────────────── */}
+      <section className="bg-[#F5F3E7] py-10 border-y border-black/06">
+        <div className="max-w-7xl mx-auto px-6 md:px-8 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          {stats.map((s) => (
+            <div key={s.label} className="group">
+              <p className="text-4xl md:text-5xl font-black text-[#F5C000] tracking-tight drop-shadow-sm">
+                {s.value}
+              </p>
+              <p className="text-xs font-semibold text-[#6B6B88] uppercase tracking-widest mt-2">
+                {s.label}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Why Choose Us ────────────────────────────────── */}
+      <section id="why-choose-us" className="py-24 bg-[#FDFDF8]">
+        <div className="max-w-7xl mx-auto px-6 md:px-8">
+          {/* Header */}
+          <div className="text-center mb-16">
+            <div className="flex justify-center mb-4">
+              <span className="section-label">Why MotoFix?</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black text-[#111118] tracking-tight">
+              Professional Care,<br/>
+              <span className="gradient-text">At Your Doorstep</span>
+            </h2>
+            <p className="text-[#4A4A65] mt-4 max-w-xl mx-auto">
+              Experience garage-grade service without leaving your driveway.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {whyUs.map((item, idx) => (
+              <div
+                key={idx}
+                className="group relative rounded-2xl overflow-hidden cursor-pointer"
+                style={{ height: '340px' }}
+              >
+                {/* Background image */}
+                <img
+                  src={item.imageUrl}
+                  alt={item.title}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#111118] via-[rgba(17,17,24,0.6)] to-transparent" />
+                {/* Yellow hover border */}
+                <div className="absolute inset-0 border-2 border-transparent group-hover:border-[rgba(245,192,0,0.5)] rounded-2xl transition-all duration-300" />
+
+                {/* Content */}
+                <div className="absolute bottom-0 left-0 right-0 p-7">
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-[#F5C000] flex items-center justify-center text-lg">
+                      {item.icon}
                     </div>
+                    <div className="h-0.5 flex-1 bg-[#F5C000] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-full" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
+                  <p className="text-sm text-white/60 leading-relaxed max-h-0 overflow-hidden group-hover:max-h-20 transition-all duration-300">
+                    {item.desc}
+                  </p>
                 </div>
-            </section>
-        </>
-    );
-}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── How It Works ─────────────────────────────────── */}
+      <section className="py-24 bg-[#F5F3E7]">
+        <div className="max-w-7xl mx-auto px-6 md:px-8">
+          <div className="text-center mb-16">
+            <div className="flex justify-center mb-4">
+              <span className="section-label">Simple Process</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black text-[#111118] tracking-tight">
+              How It <span className="gradient-text">Works</span>
+            </h2>
+          </div>
+
+          <div className="relative grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* Connecting line */}
+            <div className="absolute top-12 left-[12.5%] right-[12.5%] h-px hidden md:block"
+                 style={{ background: 'repeating-linear-gradient(90deg, #F5C000, #F5C000 6px, transparent 6px, transparent 14px)', opacity: 0.5 }} />
+
+            {steps.map((item, idx) => (
+              <div key={idx} className="relative z-10 flex flex-col items-center text-center group">
+                {/* Number circle */}
+                <div className="w-24 h-24 rounded-2xl bg-white shadow-[0_4px_20px_rgba(0,0,0,0.08)]
+                                border-2 border-[#EDE9D5] group-hover:border-[#F5C000]
+                                flex items-center justify-center mb-5 transition-all duration-300
+                                group-hover:shadow-[0_8px_30px_rgba(245,192,0,0.25)]">
+                  <span className="text-3xl font-black text-[#F5C000]">{item.step}</span>
+                </div>
+                <h4 className="text-base font-bold text-[#111118] mb-2">{item.title}</h4>
+                <p className="text-sm text-[#4A4A65] leading-relaxed max-w-[200px]">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div className="text-center mt-16">
+            <Link to="/login" className="btn btn-primary text-base px-10 py-4" style={{ borderRadius: '14px' }}>
+              Get Started Now
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Services Marquee ─────────────────────────────── */}
+      <section id="service" className="py-24 bg-[#FDFDF8] overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 md:px-8 mb-12">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+            <div>
+              <div className="mb-4">
+                <span className="section-label">What We Do</span>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black text-[#111118] tracking-tight">
+                Our <span className="gradient-text">Services</span>
+              </h2>
+            </div>
+            <p className="text-[#4A4A65] max-w-xs text-sm leading-relaxed">
+              Hover any card to learn more. We cover everything your bike needs.
+            </p>
+          </div>
+        </div>
+
+        <div className="marquee-container relative overflow-hidden">
+          {/* Fade edges */}
+          <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-[#FDFDF8] to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-[#FDFDF8] to-transparent z-10 pointer-events-none" />
+
+          <div className="marquee py-4 gap-5">
+            {marqueeServices.map((service, idx) => (
+              <div key={idx} className="flex-shrink-0 w-72 mx-3">
+                <div
+                  className="relative rounded-2xl overflow-hidden group cursor-pointer"
+                  style={{ height: '280px' }}
+                >
+                  <img
+                    src={service.imageUrl}
+                    alt={service.title}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#111118] via-[rgba(17,17,24,0.5)] to-transparent" />
+                  <div className="absolute inset-0 border-2 border-transparent group-hover:border-[rgba(245,192,0,0.4)] rounded-2xl transition-all duration-300" />
+
+                  <div className="absolute bottom-0 left-0 right-0 p-5">
+                    <div className="h-0.5 w-8 bg-[#F5C000] mb-3 group-hover:w-16 transition-all duration-300 rounded-full" />
+                    <h3 className="text-lg font-bold text-white mb-1">{service.title}</h3>
+                    <p className="text-xs text-white/60 leading-relaxed opacity-0 max-h-0 group-hover:opacity-100 group-hover:max-h-20 transition-all duration-300">
+                      {service.description}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Testimonials ─────────────────────────────────── */}
+      <section id="about" className="py-24 bg-[#F5F3E7]">
+        <div className="max-w-7xl mx-auto px-6 md:px-8">
+          <div className="text-center mb-16">
+            <div className="flex justify-center mb-4">
+              <span className="section-label">Reviews</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black text-[#111118] tracking-tight">
+              What Riders <span className="gradient-text">Say</span>
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {testimonials.map((t, idx) => (
+              <div
+                key={idx}
+                className="bg-white border border-black/08 rounded-2xl p-7
+                           hover:border-[rgba(245,192,0,0.4)] hover:shadow-[0_8px_32px_rgba(245,192,0,0.12)]
+                           transition-all duration-300 hover:-translate-y-1"
+              >
+                {/* Stars */}
+                <StarRow />
+
+                {/* Quote */}
+                <p className="text-sm text-[#4A4A65] leading-relaxed mt-5 italic">
+                  "{t.quote}"
+                </p>
+
+                {/* Author */}
+                <div className="flex items-center gap-3.5 mt-7 pt-5 border-t border-black/07">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F5C000] to-[#E6B000]
+                                  flex items-center justify-center font-black text-[#111118] text-base flex-shrink-0">
+                    {t.initial}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#111118]">{t.name}</p>
+                    <p className="text-xs text-[#8A8AA8] mt-0.5">{t.bike}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA Banner ───────────────────────────────────── */}
+      <section className="bg-[#FDFDF8] py-20">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <div className="bg-gradient-to-br from-[#F5C000] to-[#E6B000] rounded-3xl p-12
+                          shadow-[0_8px_48px_rgba(245,192,0,0.35)]">
+            <h2 className="text-4xl md:text-5xl font-black text-[#111118] tracking-tight mb-4">
+              Ready to Ride Again?
+            </h2>
+            <p className="text-[#111118]/60 text-lg mb-8 max-w-md mx-auto">
+              Book your service in under 2 minutes. Our team will do the rest.
+            </p>
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-2.5 bg-white text-[#111118] font-bold text-base
+                         px-10 py-4 rounded-xl hover:bg-[#FDFDF8] transition-all duration-200
+                         shadow-[0_4px_20px_rgba(0,0,0,0.15)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.2)]
+                         hover:-translate-y-0.5"
+            >
+              Book Now — It's Free
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+};
 
 export default HomePage;

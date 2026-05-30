@@ -21,7 +21,7 @@
 //     const MessageParser = useMemo(() => createMessageParser(user), [user]);
     
 //     // Key the chatbot component to force a re-mount when the user logs in or out
-//     const chatbotKey = user ? user.data._id : 'guest';
+//     const chatbotKey = user ? user._id : 'guest';
 
 //     return (
 //         <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 1000 }}>

@@ -1,9 +1,25 @@
 import React from 'react';
 
-const Input = React.forwardRef(({ id, label, ...props }, ref) => (
-    <div>
-        <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
-        <input id={id} {...props} ref={ref} className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-600" />
+const Input = React.forwardRef(({ id, label, className = '', ...props }, ref) => (
+    <div className="flex flex-col gap-1.5 w-full">
+        {label && (
+            <label 
+                htmlFor={id} 
+                className="text-xs font-semibold uppercase tracking-widest text-[#4A4A65]"
+            >
+                {label}
+            </label>
+        )}
+        <input 
+            id={id} 
+            {...props} 
+            ref={ref} 
+            className={`block w-full bg-[#FDFDF8] border border-[rgba(0,0,0,0.1)]
+                       focus:border-[#F5C000] focus:shadow-[0_0_0_3px_rgba(245,192,0,0.12)]
+                       outline-none text-[#111118] text-sm rounded-xl px-4 py-3
+                       placeholder:text-[#8A8AA8] transition-all duration-200
+                       hover:border-[rgba(0,0,0,0.18)] disabled:opacity-50 disabled:cursor-not-allowed ${className}`} 
+        />
     </div>
 ));
 

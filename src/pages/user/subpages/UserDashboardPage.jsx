@@ -33,77 +33,111 @@ const UserDashboardPage = () => {
     }, []);
 
     if (isLoading) {
-        return <div className="text-center p-12">Loading Dashboard...</div>;
+        return (
+            <div className="flex justify-center items-center h-64">
+                <div className="w-10 h-10 border-4 border-[rgba(245,192,0,0.2)] border-t-[#F5C000] rounded-full animate-spin"></div>
+            </div>
+        );
     }
 
     return (
-        <div className="space-y-8">
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">My Dashboard</h1>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card className="hover:border-blue-500 border-2 border-transparent">
+        <div className="space-y-8 max-w-7xl mx-auto">
+            <div>
+                <h1 className="text-3xl font-black text-[#111118] tracking-tight">My Dashboard</h1>
+                <p className="text-sm text-[#4A4A65] mt-1">Get a quick overview of your bike services, payments, and rewards.</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Metric Cards */}
+                <Card className="border border-black/07 bg-white hover:border-[#F5C000]/40 shadow-sm transition-all duration-200">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full"><CalendarDays className="text-blue-600 dark:text-blue-300" size={28} /></div>
+                        <div className="p-3 bg-[rgba(245,192,0,0.15)] border border-[rgba(245,192,0,0.25)] rounded-2xl">
+                            <CalendarDays className="text-[#B8860B]" size={24} />
+                        </div>
                         <div>
-                            <p className="text-gray-500 dark:text-gray-400 text-sm">Upcoming Bookings</p>
-                            <p className="text-2xl font-bold text-gray-800 dark:text-white">{stats.upcomingBookings}</p>
+                            <p className="text-[#8A8AA8] text-xs font-bold uppercase tracking-wider">Upcoming Bookings</p>
+                            <p className="text-2xl font-black text-[#111118] mt-0.5">{stats.upcomingBookings}</p>
                         </div>
                     </div>
                 </Card>
-                <Card className="hover:border-green-500 border-2 border-transparent">
+
+                <Card className="border border-black/07 bg-white hover:border-[#F5C000]/40 shadow-sm transition-all duration-200">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full"><Wrench className="text-green-600 dark:text-green-300" size={28} /></div>
+                        <div className="p-3 bg-[rgba(34,197,94,0.12)] border border-[rgba(34,197,94,0.2)] rounded-2xl">
+                            <Wrench className="text-green-600" size={24} />
+                        </div>
                         <div>
-                            <p className="text-gray-500 dark:text-gray-400 text-sm">Completed Services</p>
-                            <p className="text-2xl font-bold text-gray-800 dark:text-white">{stats.completedServices}</p>
+                            <p className="text-[#8A8AA8] text-xs font-bold uppercase tracking-wider">Completed Services</p>
+                            <p className="text-2xl font-black text-[#111118] mt-0.5">{stats.completedServices}</p>
                         </div>
                     </div>
                 </Card>
-                <Card className="hover:border-purple-500 border-2 border-transparent">
+
+                <Card className="border border-black/07 bg-white hover:border-[#F5C000]/40 shadow-sm transition-all duration-200">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-full"><Gift className="text-purple-600 dark:text-purple-300" size={28} /></div>
+                        <div className="p-3 bg-[rgba(168,85,247,0.12)] border border-[rgba(168,85,247,0.2)] rounded-2xl">
+                            <Gift className="text-purple-600" size={24} />
+                        </div>
                         <div>
-                            <p className="text-gray-500 dark:text-gray-400 text-sm">Loyalty Points</p>
-                            <p className="text-2xl font-bold text-gray-800 dark:text-white">{stats.loyaltyPoints}</p>
+                            <p className="text-[#8A8AA8] text-xs font-bold uppercase tracking-wider">Loyalty Points</p>
+                            <p className="text-2xl font-black text-[#111118] mt-0.5">{stats.loyaltyPoints}</p>
                         </div>
                     </div>
                 </Card>
-                <a href="#/user/new-booking" className="md:col-span-1">
-                    <Card className="h-full flex flex-col items-center justify-center text-center bg-blue-50 dark:bg-blue-900/50 hover:bg-blue-100 dark:hover:bg-blue-900 border-2 border-dashed border-blue-400 hover:border-blue-600">
-                        <PlusCircle className="text-blue-600 dark:text-blue-400 mb-2" size={32} />
-                        <h3 className="text-xl font-semibold text-blue-800 dark:text-blue-300">Book a New Service</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Get your bike checked</p>
+
+                {/* Quick CTA booking card */}
+                <a href="#/user/new-booking" className="block">
+                    <Card className="h-full flex items-center justify-center text-center p-5 bg-gradient-to-br from-[#FFFCEE] to-[#FFF7D1] hover:from-[#FFFAD6] hover:to-[#FFF2BD] border border-dashed border-[#F5C000]/50 hover:border-[#F5C000] rounded-2xl shadow-sm transition-all duration-200">
+                        <div className="flex items-center gap-3">
+                            <PlusCircle className="text-[#B8860B]" size={24} />
+                            <div className="text-left">
+                                <h3 className="text-sm font-black text-[#111118]">Book a New Service</h3>
+                                <p className="text-xs text-[#4A4A65]">Get your two-wheeler fixed</p>
+                            </div>
+                        </div>
                     </Card>
                 </a>
             </div>
 
-            <Card>
-                <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Recent Activity</h2>
+            {/* Recent Activity Table */}
+            <Card className="border border-black/08 bg-white rounded-2xl shadow-sm overflow-hidden">
+                <div className="px-6 py-5 border-b border-black/07">
+                    <h2 className="text-lg font-black text-[#111118]">Recent Activity</h2>
+                    <p className="text-xs text-[#8A8AA8] mt-0.5">Your most recent service and booking updates.</p>
+                </div>
+                
                 <div className="overflow-x-auto">
                     {recentBookings.length > 0 ? (
-                        <table className="w-full text-left">
-                            <thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700">
-                                <tr>
-                                    <th className="p-3">Service</th><th className="p-3">Bike Model</th><th className="p-3">Date</th><th className="p-3">Status</th><th className="p-3 text-right">Cost</th>
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-[#FDFDF8] border-b border-black/07">
+                                    <th className="p-4 text-xs font-bold uppercase tracking-wider text-[#8A8AA8]">Service</th>
+                                    <th className="p-4 text-xs font-bold uppercase tracking-wider text-[#8A8AA8]">Bike Model</th>
+                                    <th className="p-4 text-xs font-bold uppercase tracking-wider text-[#8A8AA8]">Date</th>
+                                    <th className="p-4 text-xs font-bold uppercase tracking-wider text-[#8A8AA8]">Status</th>
+                                    <th className="p-4 text-xs font-bold uppercase tracking-wider text-[#8A8AA8] text-right">Cost</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody className="divide-y divide-black/05">
                                 {recentBookings.map(booking => (
-                                    <tr key={booking._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
-                                        <td className="p-3 font-medium text-gray-900 dark:text-white">{booking.serviceType}</td>
-                                        <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel}</td>
-                                        <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
-                                        <td className="p-3"><StatusBadge status={booking.status} /></td>
-                                        <td className="p-3 text-right font-medium text-gray-900 dark:text-white">रु{booking.finalAmount ?? booking.totalCost}</td>
+                                    <tr key={booking._id} className="hover:bg-[#FDFDF8] transition-colors">
+                                        <td className="p-4 font-semibold text-sm text-[#111118]">{booking.serviceType}</td>
+                                        <td className="p-4 text-sm text-[#4A4A65]">{booking.bikeModel}</td>
+                                        <td className="p-4 text-sm text-[#4A4A65]">{new Date(booking.date).toLocaleDateString()}</td>
+                                        <td className="p-4 text-sm"><StatusBadge status={booking.status} /></td>
+                                        <td className="p-4 text-sm text-right font-bold text-[#111118]">रु{booking.finalAmount ?? booking.totalCost}</td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     ) : (
-                        <div className="text-center py-10">
-                            <p className="text-gray-500 dark:text-gray-400">You have no recent bookings.</p>
-                            <Button className="mt-4" onClick={() => window.location.hash = '#/user/new-booking'}>
-                                Book Your First Service
-                            </Button>
+                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                            <p className="text-sm text-[#8A8AA8]">You have no recent bookings.</p>
+                            <a href="#/user/new-booking" className="mt-4">
+                                <Button className="h-10 !px-5 text-xs font-semibold text-[#0D0D14] bg-gradient-to-r from-[#F5C000] to-[#E6B000]">
+                                    Book Your First Service
+                                </Button>
+                            </a>
                         </div>
                     )}
                 </div>

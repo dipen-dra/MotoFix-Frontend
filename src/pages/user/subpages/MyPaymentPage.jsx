@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-// import KhaltiCheckout from "khalti-checkout-web";
-import { Gift, CreditCard } from 'lucide-react';
+import { Gift, CreditCard, Sparkles, CheckCircle2 } from 'lucide-react';
 import { apiFetchUser } from '../../../services/api';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
@@ -17,7 +16,6 @@ const MyPaymentsPage = ({ loyaltyPoints, onDiscountApplied }) => {
     const fetchData = async () => {
         setIsLoading(true);
         try {
-            // Fetch pending and historical bookings concurrently
             const [pendingRes, historyRes] = await Promise.all([
                 apiFetchUser('/bookings/pending'),
                 apiFetchUser('/bookings/history')
@@ -36,7 +34,6 @@ const MyPaymentsPage = ({ loyaltyPoints, onDiscountApplied }) => {
     useEffect(() => {
         fetchData();
 
-        // Check for payment status from URL params (e.g., after redirect from eSewa)
         const params = new URLSearchParams(window.location.search);
         const status = params.get('status');
         const message = params.get('message');
@@ -47,20 +44,25 @@ const MyPaymentsPage = ({ loyaltyPoints, onDiscountApplied }) => {
             } else {
                 toast.error(message);
             }
-            // Clean the URL
             window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
         }
     }, []);
 
     const handleSuccessfulPayment = async () => {
-        await fetchData(); // Refresh payment lists
-        onDiscountApplied(); // Notify parent to refresh user points
+        await fetchData();
+        onDiscountApplied();
     };
 
     const handleApplyDiscount = async (bookingId) => {
         try {
-            await apiFetchUser(`/bookings/${bookingId}/apply-discount`, { method: 'PUT' });
-            toast.success('Discount applied successfully!');
+            const response = await apiFetchUser(`/bookings/${bookingId}/apply-discount`, { method: 'PUT' });
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.message || "Failed to apply discount.");
+            }
+            
+            toast.success(data.message || 'Discount applied successfully!');
             handleSuccessfulPayment();
         } catch (error) {
             toast.error(error.message || "Failed to apply discount.");
@@ -72,10 +74,16 @@ const MyPaymentsPage = ({ loyaltyPoints, onDiscountApplied }) => {
 
         if (method === 'COD') {
             try {
-                await apiFetchUser(`/bookings/${booking._id}/pay`, {
+                const response = await apiFetchUser(`/bookings/${booking._id}/pay`, {
                     method: 'PUT',
                     body: JSON.stringify({ paymentMethod: 'COD' })
                 });
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || "COD confirmation failed.");
+                }
+                
                 toast.success("COD Payment Confirmed! Your booking is being processed.");
                 handleSuccessfulPayment();
             } catch (error) {
@@ -121,14 +129,14 @@ const MyPaymentsPage = ({ loyaltyPoints, onDiscountApplied }) => {
 
         if (method === 'Khalti') {
             const khaltiConfig = {
-                publicKey: "test_public_key_dc74e0fd57cb46cd93832aee0a390234", // Replace with your Public Key
+                publicKey: "test_public_key_dc74e0fd57cb46cd93832aee0a390234",
                 productIdentity: booking._id,
                 productName: booking.serviceType,
                 productUrl: window.location.href,
                 eventHandler: {
                     async onSuccess(payload) {
                         try {
-                            await apiFetchUser('/bookings/verify-khalti', {
+                            const response = await apiFetchUser('/bookings/verify-khalti', {
                                 method: 'POST',
                                 body: JSON.stringify({
                                     token: payload.token,
@@ -136,6 +144,12 @@ const MyPaymentsPage = ({ loyaltyPoints, onDiscountApplied }) => {
                                     booking_id: booking._id
                                 })
                             });
+                            
+                            if (!response.ok) {
+                                const errData = await response.json();
+                                throw new Error(errData.message || 'Khalti payment verification failed.');
+                            }
+                            
                             toast.success('Khalti Payment Successful & Verified!');
                             handleSuccessfulPayment();
                         } catch (error) {
@@ -147,105 +161,233 @@ const MyPaymentsPage = ({ loyaltyPoints, onDiscountApplied }) => {
                 },
                 paymentPreference: ["KHALTI", "EBANKING", "MOBILE_BANKING", "CONNECT_IPS", "SCT"],
             };
-            const checkout = new KhaltiCheckout(khaltiConfig);
-            checkout.show({ amount: amountToPay * 100 }); // Amount in paisa
+            const checkout = new window.KhaltiCheckout(khaltiConfig);
+            checkout.show({ amount: amountToPay * 100 });
         }
     };
 
     const displayedHistory = showAllHistory ? paidBookings : paidBookings.slice(0, 10);
 
     return (
-        <div className="space-y-8">
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">My Payments</h1>
+        <div className="space-y-8 max-w-7xl mx-auto w-full text-[#111118]">
+            {/* Header section */}
+            <div className="border-b border-black/08 pb-5">
+                <h1 className="text-3xl font-black tracking-tight">
+                    Payments
+                </h1>
+                <p className="text-sm text-[#4A4A65] mt-1.5 max-w-xl">
+                    Manage pending invoices, apply loyalty program points for 20% discounts, and view transaction history.
+                </p>
+            </div>
 
-            <Card>
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Pending Payments</h2>
-                    <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400">
-                        <Gift size={20} />
-                        <span className="font-semibold">{loyaltyPoints} Points</span>
-                    </div>
-                </div>
-                {isLoading && unpaidBookings.length === 0 ? (<div className="text-center p-12">Loading...</div>) :
-                    unpaidBookings.length > 0 ? (
-                        <div className="space-y-4">
-                            {unpaidBookings.map(booking => (
-                                <div key={booking._id} className="p-4 border rounded-lg dark:border-gray-700 flex flex-wrap justify-between items-center gap-4">
-                                    <div>
-                                        <p className="font-bold">{booking.serviceType} for {booking.bikeModel}</p>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">Date: {new Date(booking.date).toLocaleDateString()}</p>
-                                        <div className="text-lg font-semibold mt-1">
-                                            {booking.discountApplied ? (
-                                                <>
-                                                    <span className="text-base text-gray-500 line-through mr-2">रु{booking.totalCost}</span>
-                                                    <span className="text-green-600">रु{booking.finalAmount}</span>
-                                                </>
-                                            ) : (
-                                                <span>Total: रु{booking.totalCost}</span>
-                                            )}
+            {/* Main grid section */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                {/* Left Side: Pending list */}
+                <div className="lg:col-span-2 space-y-6">
+                    <Card className="bg-white border border-black/08 rounded-2xl p-6 relative overflow-hidden shadow-sm">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-[#F5C000]" />
+
+                        <div className="flex justify-between items-center border-b border-black/07 pb-4 mb-6">
+                            <h2 className="text-base font-bold text-[#111118] uppercase tracking-wider flex items-center gap-2">
+                                <CreditCard size={18} className="text-[#B8860B]" />
+                                Unsettled Invoices
+                            </h2>
+                            <span className="text-xs text-[#8A8AA8] font-semibold">
+                                Awaiting Payment ({unpaidBookings.length})
+                            </span>
+                        </div>
+
+                        {isLoading && unpaidBookings.length === 0 ? (
+                            <div className="flex flex-col justify-center items-center py-20 space-y-3">
+                                <div className="w-8 h-8 border-4 border-[rgba(245,192,0,0.2)] border-t-[#F5C000] rounded-full animate-spin"></div>
+                                <p className="text-xs text-[#8A8AA8] font-bold animate-pulse">Syncing Payment Ledger...</p>
+                            </div>
+                        ) : unpaidBookings.length > 0 ? (
+                            <div className="space-y-4">
+                                {unpaidBookings.map(booking => {
+                                    const rawPrice = booking.totalCost;
+                                    const logisticsPrice = booking.requestedPickupDropoff ? (booking.pickupDropoffCost || 350) : 0;
+                                    const displayedTotal = booking.finalAmount ?? (rawPrice + logisticsPrice);
+                                    
+                                    return (
+                                        <div 
+                                            key={booking._id} 
+                                            className="p-5 border border-black/08 hover:border-[#F5C000]/30 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-5 bg-[#FDFDF8] transition-all duration-205"
+                                        >
+                                            <div className="space-y-1">
+                                                <h4 className="font-bold text-sm text-[#111118]">
+                                                    {booking.serviceType}
+                                                </h4>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5 text-xs text-[#4A4A65]">
+                                                    <p>Bike: <span className="font-semibold text-[#111118]">{booking.bikeModel}</span></p>
+                                                    <p>Date: <span className="font-semibold">{new Date(booking.date).toLocaleDateString()}</span></p>
+                                                </div>
+                                                
+                                                <div className="pt-2 flex items-baseline gap-2">
+                                                    <span className="text-[10px] text-[#8A8AA8] font-bold uppercase tracking-wider">Total Invoice:</span>
+                                                    {booking.discountApplied ? (
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xs text-[#8A8AA8] line-through">रु{booking.totalCost + logisticsPrice}</span>
+                                                            <span className="text-sm font-bold text-green-600">रु{displayedTotal}</span>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-sm font-bold text-[#B8860B]">रु{displayedTotal}</span>
+                                                    )}
+                                                </div>
+                                                {booking.discountApplied && (
+                                                    <p className="text-[10px] font-bold text-green-600 uppercase tracking-wider flex items-center gap-1 mt-1">
+                                                        <CheckCircle2 size={12} /> 20% Loyalty Deduction Applied (-रु{booking.discountAmount || 0})
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                {loyaltyPoints >= 100 && !booking.discountApplied && (
+                                                    <Button 
+                                                        variant="special" 
+                                                        onClick={() => handleApplyDiscount(booking._id)} 
+                                                        className="!py-2 !px-4 text-xs font-semibold shrink-0 !bg-[#FDF2F8] hover:!bg-[#FCE7F3] !text-[#DB2777] border border-[#FBCFE8]"
+                                                    >
+                                                        Apply 20% Discount
+                                                    </Button>
+                                                )}
+                                                <Button 
+                                                    onClick={() => handlePayment(booking, 'COD')} 
+                                                    className="!py-2 !px-4 text-xs font-semibold shrink-0 !bg-[#F5F3E7] hover:!bg-[#E6B000] text-[#111118]"
+                                                >
+                                                    Cash On Delivery
+                                                </Button>
+                                                
+                                                <button 
+                                                    onClick={() => handlePayment(booking, 'Khalti')} 
+                                                    className="bg-[#FDFDF8] hover:bg-[#F5F3E7] border border-black/10 hover:border-[#F5C000]/40 p-2 rounded-xl flex items-center justify-center h-10 w-24 transition-colors shrink-0 cursor-pointer"
+                                                    title="Pay with Khalti Wallet"
+                                                >
+                                                    <img src="/khaltilogo.png" alt="Khalti" className="h-5 object-contain" onError={(e) => { e.target.style.display = 'none'; e.target.parentNode.innerHTML = '<span className="text-xs font-bold text-[#4C1D95]">KHALTI</span>'; }} />
+                                                </button>
+                                                <button 
+                                                    onClick={() => handlePayment(booking, 'eSewa')} 
+                                                    className="bg-[#FDFDF8] hover:bg-[#F5F3E7] border border-black/10 hover:border-[#F5C000]/40 p-2 rounded-xl flex items-center justify-center h-10 w-24 transition-colors shrink-0 cursor-pointer"
+                                                    title="Pay with eSewa Wallet"
+                                                >
+                                                    <img src="/esewa_logo.png" alt="eSewa" className="h-5 object-contain" onError={(e) => { e.target.style.display = 'none'; e.target.parentNode.innerHTML = '<span className="text-xs font-bold text-[#15803D]">ESEWA</span>'; }} />
+                                                </button>
+                                            </div>
                                         </div>
-                                        {booking.discountApplied && <p className="text-sm font-bold text-green-500">Discount: -रु{booking.discountAmount}</p>}
-                                    </div>
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        {loyaltyPoints >= 100 && !booking.discountApplied && (
-                                            <Button variant="special" onClick={() => handleApplyDiscount(booking._id)}>
-                                                <Gift size={16} /> Apply 20% Discount
-                                            </Button>
-                                        )}
-                                        <Button onClick={() => handlePayment(booking, 'COD')}>Pay with COD</Button>
-                                        <Button variant="secondary" onClick={() => handlePayment(booking, 'Khalti')} className="bg-white"><img src="/khaltilogo.png" alt="Khalti" style={{ height: '24px' }} /></Button>
-                                        <Button variant="secondary" onClick={() => handlePayment(booking, 'eSewa')} className="bg-white hover:bg-gray-100"><img src="/esewa_logo.png" alt="eSewa" style={{ height: '24px' }} /></Button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-12">
-                            <CreditCard size={48} className="mx-auto text-gray-400" />
-                            <h3 className="mt-2 text-xl font-semibold">No Pending Payments</h3>
-                            <p className="mt-1 text-sm text-gray-500">All your payments are up to date!</p>
-                        </div>
-                    )}
-            </Card>
-
-            <Card className="flex flex-col flex-grow">
-                <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Payment History</h2>
-                <div className="overflow-x-auto flex-grow">
-                    {isLoading && paidBookings.length === 0 ? (<div className="text-center p-12">Loading history...</div>) :
-                        displayedHistory.length > 0 ? (
-                            <table className="w-full text-left">
-                                <thead className="text-sm text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700">
-                                    <tr>
-                                        <th className="p-3">Service</th><th className="p-3">Bike</th>
-                                        <th className="p-3">Date</th><th className="p-3">Amount Paid</th><th className="p-3">Method</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {displayedHistory.map(booking => (
-                                        <tr key={booking._id} className="border-b dark:border-gray-700">
-                                            <td className="p-3 font-medium text-gray-900 dark:text-white">{booking.serviceType}</td>
-                                            <td className="p-3 text-gray-600 dark:text-gray-300">{booking.bikeModel}</td>
-                                            <td className="p-3 text-gray-600 dark:text-gray-300">{new Date(booking.date).toLocaleDateString()}</td>
-                                            <td className="p-3 font-semibold">
-                                                {booking.discountApplied && (<span className="text-xs text-red-500 line-through mr-1">रु{booking.totalCost}</span>)}
-                                                रु{booking.finalAmount ?? booking.totalCost}
-                                            </td>
-                                            <td className="p-3"><StatusBadge status={booking.paymentMethod} /></td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    );
+                                })}
+                            </div>
                         ) : (
-                            <div className="text-center py-12">
-                                <p className="text-gray-500 dark:text-gray-400">No payment history found.</p>
+                            <div className="text-center py-16 space-y-3">
+                                <CheckCircle2 size={44} className="mx-auto text-green-500/20" />
+                                <h3 className="text-lg font-black text-[#111118]">All Settled</h3>
+                                <p className="text-sm text-[#4A4A65] max-w-[240px] mx-auto leading-relaxed">
+                                    No pending invoices found. All service tickets are fully cleared.
+                                </p>
                             </div>
                         )}
+                    </Card>
                 </div>
-                <LoadMoreControl
-                    onToggle={() => setShowAllHistory(!showAllHistory)}
-                    isExpanded={showAllHistory}
-                    hasMore={paidBookings.length > 10}
-                />
+
+                {/* Right Side: Loyalty board */}
+                <div className="lg:col-span-1 space-y-6">
+                    <Card className="bg-white border border-black/08 rounded-2xl p-5 relative overflow-hidden text-left shadow-sm">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-[#F5C000]" />
+
+                        <p className="text-[10px] text-[#8A8AA8] uppercase tracking-wider font-bold flex items-center gap-1.5 mb-2">
+                            <Gift size={14} className="text-[#B8860B]" />
+                            Loyalty Engine Metrics
+                        </p>
+                        
+                        <div className="p-4 bg-[#FDFDF8] border border-black/08 rounded-xl text-center space-y-1 relative">
+                            <p className="font-bold text-4xl text-[#111118]">
+                                {loyaltyPoints}
+                            </p>
+                            <p className="text-[10px] text-[#B8860B] font-bold uppercase tracking-wider">
+                                Fuel Points Balance
+                            </p>
+                        </div>
+
+                        <div className="mt-4 p-4 bg-[#FFFCEE] rounded-xl border border-[#F5C000]/20 text-xs text-[#4A4A65] space-y-2">
+                            <p className="font-bold text-[#B8860B] uppercase tracking-wider flex items-center gap-1.5 text-[10px]">
+                                <Sparkles size={12} />
+                                HOW DO REWARDS WORK?
+                            </p>
+                            <p className="leading-relaxed">
+                                Earn loyalty fuel points with every completed payment checkout. Once you reach <span className="font-bold text-[#B8860B]">100 points</span>, redeem them here to claim an instant <span className="font-bold text-green-600">20% discount</span> on your next service package.
+                            </p>
+                        </div>
+                    </Card>
+                </div>
+            </div>
+
+            {/* Historical transaction archives */}
+            <Card className="flex flex-col flex-grow bg-white border border-black/08 rounded-2xl p-0 overflow-hidden relative shadow-sm">
+                <div className="absolute top-0 left-0 w-full h-1 bg-[#F5C000]" />
+
+                <div className="p-6 border-b border-black/08">
+                    <h2 className="text-lg font-black text-[#111118]">
+                        Invoice Archives
+                    </h2>
+                    <p className="text-xs text-[#8A8AA8] mt-0.5">Audit log of your completed workshop payments, payments methods, and invoices.</p>
+                </div>
+
+                <div className="overflow-x-auto flex-grow">
+                    {isLoading && paidBookings.length === 0 ? (
+                        <div className="flex flex-col justify-center items-center py-20 space-y-3">
+                            <div className="w-8 h-8 border-4 border-[rgba(245,192,0,0.2)] border-t-[#F5C000] rounded-full animate-spin"></div>
+                            <p className="text-xs text-[#8A8AA8] font-bold animate-pulse">Syncing Payment Archives...</p>
+                        </div>
+                    ) : displayedHistory.length > 0 ? (
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="text-xs font-bold text-[#8A8AA8] uppercase bg-[#FDFDF8] border-b border-black/08">
+                                    <th className="py-4 px-5">Service Tier Package</th>
+                                    <th className="py-4 px-5">Bike Configuration</th>
+                                    <th className="py-4 px-5">Completion Date</th>
+                                    <th className="py-4 px-5">Settled Amount</th>
+                                    <th className="py-4 px-5">Settlement Method</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-black/05">
+                                {displayedHistory.map(booking => {
+                                    const logisticsPrice = booking.requestedPickupDropoff ? (booking.pickupDropoffCost || 350) : 0;
+                                    const actualFinalAmount = booking.finalAmount ?? (booking.totalCost + logisticsPrice);
+                                    
+                                    return (
+                                        <tr key={booking._id} className="hover:bg-[#FDFDF8] transition-colors">
+                                            <td className="py-4 px-5 font-bold text-sm text-[#111118]">{booking.serviceType}</td>
+                                            <td className="py-4 px-5 text-[#4A4A65] text-sm">{booking.bikeModel}</td>
+                                            <td className="py-4 px-5 text-[#4A4A65] text-sm">{new Date(booking.date).toLocaleDateString()}</td>
+                                            <td className="py-4 px-5 font-bold text-sm text-[#111118]">
+                                                {booking.discountApplied && (
+                                                    <span className="text-xs text-red-500 line-through mr-1.5">रु{booking.totalCost + logisticsPrice}</span>
+                                                )}
+                                                रु{actualFinalAmount}
+                                            </td>
+                                            <td className="py-4 px-5 text-sm">
+                                                <StatusBadge status={booking.paymentMethod === 'Not Selected' ? 'COD' : booking.paymentMethod} />
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <div className="text-center py-16 text-[#8A8AA8] text-sm">
+                            No transaction history found on this account.
+                        </div>
+                    )}
+                </div>
+                
+                <div className="p-4 border-t border-black/08 bg-[#FDFDF8] flex justify-center">
+                    <LoadMoreControl
+                        onToggle={() => setShowAllHistory(!showAllHistory)}
+                        isExpanded={showAllHistory}
+                        hasMore={paidBookings.length > 10}
+                    />
+                </div>
             </Card>
         </div>
     );
