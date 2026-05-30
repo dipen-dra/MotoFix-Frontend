@@ -6,12 +6,14 @@ import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 import LoadMoreControl from '../../../components/ui/LoadMoreControl';
 import StatusBadge from '../../../components/ui/Statusbadge';
+import ConfirmationModal from '../../../components/ui/ConfirmationModal';
 
 const MyPaymentsPage = ({ loyaltyPoints, onDiscountApplied }) => {
     const [unpaidBookings, setUnpaidBookings] = useState([]);
     const [paidBookings, setPaidBookings] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showAllHistory, setShowAllHistory] = useState(false);
+    const [pendingPaymentConfirm, setPendingPaymentConfirm] = useState(null);
 
     const fetchData = async () => {
         setIsLoading(true);
@@ -67,6 +69,13 @@ const MyPaymentsPage = ({ loyaltyPoints, onDiscountApplied }) => {
         } catch (error) {
             toast.error(error.message || "Failed to apply discount.");
         }
+    };
+
+    const confirmPaymentAction = () => {
+        if (!pendingPaymentConfirm) return;
+        const { booking, method } = pendingPaymentConfirm;
+        setPendingPaymentConfirm(null);
+        handlePayment(booking, method);
     };
 
     const handlePayment = async (booking, method) => {
@@ -253,21 +262,21 @@ const MyPaymentsPage = ({ loyaltyPoints, onDiscountApplied }) => {
                                                     </Button>
                                                 )}
                                                 <Button 
-                                                    onClick={() => handlePayment(booking, 'COD')} 
+                                                    onClick={() => setPendingPaymentConfirm({ booking, method: 'COD' })} 
                                                     className="!py-2 !px-4 text-xs font-semibold shrink-0 !bg-[#F5F3E7] hover:!bg-[#E6B000] text-[#111118]"
                                                 >
                                                     Cash On Delivery
                                                 </Button>
                                                 
                                                 <button 
-                                                    onClick={() => handlePayment(booking, 'Khalti')} 
+                                                    onClick={() => setPendingPaymentConfirm({ booking, method: 'Khalti' })} 
                                                     className="bg-[#FDFDF8] hover:bg-[#F5F3E7] border border-black/10 hover:border-[#F5C000]/40 p-2 rounded-xl flex items-center justify-center h-10 w-24 transition-colors shrink-0 cursor-pointer"
                                                     title="Pay with Khalti Wallet"
                                                 >
                                                     <img src="/khaltilogo.png" alt="Khalti" className="h-5 object-contain" onError={(e) => { e.target.style.display = 'none'; e.target.parentNode.innerHTML = '<span className="text-xs font-bold text-[#4C1D95]">KHALTI</span>'; }} />
                                                 </button>
                                                 <button 
-                                                    onClick={() => handlePayment(booking, 'eSewa')} 
+                                                    onClick={() => setPendingPaymentConfirm({ booking, method: 'eSewa' })} 
                                                     className="bg-[#FDFDF8] hover:bg-[#F5F3E7] border border-black/10 hover:border-[#F5C000]/40 p-2 rounded-xl flex items-center justify-center h-10 w-24 transition-colors shrink-0 cursor-pointer"
                                                     title="Pay with eSewa Wallet"
                                                 >
@@ -389,6 +398,19 @@ const MyPaymentsPage = ({ loyaltyPoints, onDiscountApplied }) => {
                     />
                 </div>
             </Card>
+
+            <ConfirmationModal
+                isOpen={!!pendingPaymentConfirm}
+                onClose={() => setPendingPaymentConfirm(null)}
+                onConfirm={confirmPaymentAction}
+                title="Confirm Checkout Route"
+                message={`Are you sure you want to proceed with payment via ${pendingPaymentConfirm?.method} for this service booking (${pendingPaymentConfirm?.booking?.serviceType || 'Service'})?`}
+                confirmText="Yes, Proceed"
+                confirmButtonVariant="primary"
+                Icon={CreditCard}
+                iconColor="text-[#F5C000]"
+                iconBgColor="bg-[#FFFCEE]"
+            />
         </div>
     );
 };
