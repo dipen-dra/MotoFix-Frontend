@@ -219,7 +219,7 @@ const LoadingFallback = () => (
 );
 
 const UserDashboard = () => {
-    const { user } = useContext(AuthContext);
+    const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -298,7 +298,8 @@ const UserDashboard = () => {
     };
 
     const handleLogoutConfirm = () => {
-        localStorage.clear();
+        logout();
+        toast.success("Logged out successfully!");
         navigate('/login');
     };
 
