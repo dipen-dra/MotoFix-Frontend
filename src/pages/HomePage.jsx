@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 const services = [
@@ -12,7 +12,8 @@ const services = [
   { title: 'Full Body Detailing',  description: "A comprehensive cleaning and polishing service that restores your bike's showroom shine.", imageUrl: 'https://pplx-res.cloudinary.com/image/upload/v1749478483/gpt4o_images/oziuai3wafnxufaqcfei.png' },
 ];
 
-const marqueeServices = [...services, ...services];
+// Static marquee services fallback
+const marqueeServicesStatic = [...services, ...services];
 
 const stats = [
   { value: '4.9/5', label: 'Rider Rating' },
@@ -66,6 +67,26 @@ const StarRow = () => (
 );
 
 export const HomePage = () => {
+  const [backendServices, setBackendServices] = useState([]);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await fetch('http://localhost:5050/api/public/services');
+        const data = await response.json();
+        if (data.success && data.data) {
+          setBackendServices(data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch public services:", error);
+      }
+    };
+    fetchServices();
+  }, []);
+
+  const displayServices = backendServices.length > 0 ? backendServices : services;
+  const marqueeServices = [...displayServices, ...displayServices];
+
   return (
     <>
       {/* ── Hero ─────────────────────────────────────────── */}
@@ -279,16 +300,17 @@ export const HomePage = () => {
                   style={{ height: '280px' }}
                 >
                   <img
-                    src={service.imageUrl}
-                    alt={service.title}
+                    src={service.image ? `http://localhost:5050/${service.image}` : service.imageUrl}
+                    alt={service.name || service.title}
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/600x400/f5f3e7/111118?text=${encodeURIComponent(service.name || service.title)}`; }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#111118] via-[rgba(17,17,24,0.5)] to-transparent" />
                   <div className="absolute inset-0 border-2 border-transparent group-hover:border-[rgba(245,192,0,0.4)] rounded-2xl transition-all duration-300" />
 
                   <div className="absolute bottom-0 left-0 right-0 p-5">
                     <div className="h-0.5 w-8 bg-[#F5C000] mb-3 group-hover:w-16 transition-all duration-300 rounded-full" />
-                    <h3 className="text-lg font-bold text-white mb-1">{service.title}</h3>
+                    <h3 className="text-lg font-bold text-white mb-1">{service.name || service.title}</h3>
                     <p className="text-xs text-white/60 leading-relaxed opacity-0 max-h-0 group-hover:opacity-100 group-hover:max-h-20 transition-all duration-300">
                       {service.description}
                     </p>
