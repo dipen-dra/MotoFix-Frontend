@@ -10,28 +10,64 @@ const TermsModal = ({ onClose }) => {
     ];
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4 transition-opacity duration-300">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-11/12 max-w-2xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all duration-300 scale-95 animate-modal-pop">
-                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex justify-center items-center z-50 p-4 transition-opacity duration-300 animate-fade-in">
+            {/* Ambient Background Glows */}
+            <div className="absolute top-1/4 left-1/4 w-72 h-72 rounded-full bg-[#F5C000]/10 blur-[80px] pointer-events-none" />
+            <div className="absolute bottom-1/4 right-1/4 w-72 h-72 rounded-full bg-[#F5C000]/5 blur-[80px] pointer-events-none" />
+
+            <div className="bg-[#FDFDF8] border border-[rgba(0,0,0,0.08)] rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.12)] w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden transform transition-all duration-300 scale-95 animate-modal-pop">
+                {/* Header */}
+                <div className="px-6 py-5 border-b border-[rgba(0,0,0,0.06)] bg-white">
                     <div className="flex justify-between items-center">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">MotoFix - Terms & Conditions</h2>
-                        <button onClick={onClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-white rounded-full p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" aria-label="Close">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8">
+                                <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                                    <polygon points="18,2 33,10 33,26 18,34 3,26 3,10" fill="#F5C000" stroke="#0D0D14" strokeWidth="1.5" />
+                                    <text x="50%" y="55%" dominantBaseline="middle" textAnchor="middle" fontSize="14" fontWeight="900" fontFamily="Inter,sans-serif" fill="#0D0D14">M</text>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-black text-[#111118] tracking-tight">MotoFix - Terms & Conditions</h2>
+                                <p className="text-xs text-[#8A8AA8] font-medium">Please review our authorization policies before proceeding</p>
+                            </div>
+                        </div>
+                        <button 
+                            onClick={onClose} 
+                            className="text-[#8A8AA8] hover:text-[#111118] rounded-full p-2 hover:bg-[#F5F3E7] transition-all duration-200 cursor-pointer" 
+                            aria-label="Close"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
                         </button>
                     </div>
                 </div>
-                <div className="p-6 overflow-y-auto">
-                    <ol className="space-y-5 text-gray-600 dark:text-gray-300 list-decimal list-inside text-base">
-                        {terms.map((term, index) => (
-                            <li key={index} className="pl-2 leading-relaxed">
-                                <span className="font-bold text-gray-800 dark:text-white">{term.title}:</span>{' '}
-                                {term.content}
-                            </li>
-                        ))}
-                    </ol>
+
+                {/* Content */}
+                <div className="p-6 overflow-y-auto space-y-4 bg-[#FDFDF8] custom-scrollbar">
+                    {terms.map((term, index) => (
+                        <div 
+                            key={index} 
+                            className="flex items-start gap-4 p-4 rounded-xl border border-[rgba(0,0,0,0.04)] bg-white hover:border-[rgba(245,192,0,0.2)] hover:shadow-[0_4px_16px_rgba(245,192,0,0.04)] hover:-translate-y-0.5 transition-all duration-200"
+                        >
+                            <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[rgba(245,192,0,0.12)] border border-[rgba(245,192,0,0.2)] flex items-center justify-center text-sm font-black text-[#B8860B]">
+                                {index + 1}
+                            </div>
+                            <div className="space-y-1">
+                                <h3 className="text-sm font-black text-[#111118] tracking-tight">{term.title}</h3>
+                                <p className="text-sm text-[#4A4A65] leading-relaxed font-medium">{term.content}</p>
+                            </div>
+                        </div>
+                    ))}
                 </div>
-                <div className="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 text-right">
-                    <button onClick={onClose} className="bg-blue-600 text-white font-bold rounded-lg px-6 py-2.5 text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-lg hover:shadow-xl">
+
+                {/* Footer */}
+                <div className="px-6 py-4 bg-[#F5F3E7]/40 border-t border-[rgba(0,0,0,0.06)] flex items-center justify-between">
+                    <p className="text-xs text-[#8A8AA8] font-semibold">By clicking "I Understand", you agree to our policies.</p>
+                    <button 
+                        onClick={onClose} 
+                        className="bg-gradient-to-r from-[#F5C000] to-[#E6B000] text-[#0D0D14] font-bold rounded-xl px-6 py-3 text-sm hover:shadow-[0_4px_16px_rgba(245,192,0,0.35)] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer"
+                    >
                         I Understand
                     </button>
                 </div>
