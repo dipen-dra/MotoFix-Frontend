@@ -752,14 +752,14 @@ const BookingDetailsPage = ({ bookingId }) => {
 
     return (
         <div className="space-y-6 w-full">
-            <div className="flex justify-between items-center border-b border-garage-600 pb-5">
+            <div className="flex justify-between items-center border-b border-[rgba(0,0,0,0.06)] pb-5">
                 <div className="flex items-center gap-4">
-                    <a href="#/admin/bookings" className="p-2.5 rounded-lg bg-garage-800 hover:bg-garage-700 border border-garage-600 hover:border-spark-500/50 text-garage-300 hover:text-spark-500 transition-all duration-200">
+                    <a href="#/admin/bookings" className="p-2.5 rounded-xl bg-white hover:bg-[#F5F3E7] border border-[rgba(0,0,0,0.1)] text-[#4A4A65] hover:text-[#B8860B] transition-all duration-200">
                         <ArrowLeft size={16} />
                     </a>
                     <div>
-                        <h1 className="text-3xl font-black font-display text-chrome-500 uppercase tracking-wider">// Booking Details</h1>
-                        <p className="text-xs text-garage-400 font-body mt-0.5">Full record for booking ID: <span className="font-mono text-spark-500">{booking._id}</span></p>
+                        <h1 className="text-2xl font-bold text-[#111118] tracking-tight">Booking Details</h1>
+                        <p className="text-sm text-[#4A4A65] mt-1">Full record for booking ID: <span className="font-mono text-[#B8860B] bg-[rgba(245,192,0,0.08)] border border-[rgba(245,192,0,0.2)] px-2 py-0.5 rounded-lg text-xs font-semibold">{booking._id}</span></p>
                     </div>
                 </div>
                 {booking.isPaid && (
@@ -772,43 +772,43 @@ const BookingDetailsPage = ({ bookingId }) => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card className="relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-0.5 h-full bg-spark-500" />
-                    <h2 className="text-[11px] font-black font-display text-garage-500 uppercase tracking-widest mb-4 border-b border-garage-600 pb-3 pl-3">// Customer Info</h2>
+                    <div className="absolute top-0 left-0 w-1 h-full bg-[#F5C000]" />
+                    <h2 className="text-[11px] font-bold text-[#8A8AA8] uppercase tracking-wider mb-4 border-b border-[rgba(0,0,0,0.06)] pb-3 pl-3">Customer Info</h2>
                     <div className="space-y-3 pl-3">
                         {[['Name', booking.customerName || booking.customer?.fullName], ['Email', booking.customer?.email], ['Phone', booking.customer?.phone], ['Address', booking.customer?.address]].map(([label, val]) => (
                             <div key={label} className="flex justify-between items-start gap-4">
-                                <span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest flex-shrink-0">{label}</span>
-                                <span className="text-sm text-garage-200 font-body text-right">{val || 'N/A'}</span>
+                                <span className="text-[10px] font-bold text-[#8A8AA8] uppercase tracking-wider flex-shrink-0">{label}</span>
+                                <span className="text-sm text-[#111118] font-semibold text-right">{val || 'N/A'}</span>
                             </div>
                         ))}
                     </div>
                 </Card>
                 <Card className="relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-0.5 h-full bg-emerald-500" />
-                    <h2 className="text-[11px] font-black font-display text-garage-500 uppercase tracking-widest mb-4 border-b border-garage-600 pb-3 pl-3">// Booking Info</h2>
+                    <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500" />
+                    <h2 className="text-[11px] font-bold text-[#8A8AA8] uppercase tracking-wider mb-4 border-b border-[rgba(0,0,0,0.06)] pb-3 pl-3">Booking Info</h2>
                     <div className="space-y-3 pl-3">
-                        <div className="flex justify-between"><span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest">Service</span><span className="text-sm text-garage-200 font-body">{booking.serviceType}</span></div>
-                        <div className="flex justify-between"><span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest">Date</span><span className="text-sm font-mono text-garage-300">{new Date(booking.date).toLocaleDateString()}</span></div>
-                        <div className="flex justify-between items-center"><span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest">Status</span><StatusBadge status={booking.status} /></div>
-                        <div className="flex justify-between"><span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest">Final Amount</span><span className="text-sm font-black font-mono text-chrome-500">रु{booking.finalAmount}</span></div>
-                        <div className="flex justify-between"><span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest">Payment</span><span className="text-sm text-garage-200 font-body">{booking.isPaid ? `Paid via ${booking.paymentMethod}` : 'Pending'}</span></div>
-                        <div className="flex justify-between"><span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest">Pick-up/Drop-off</span><span className="text-sm text-garage-200 font-body">{booking.requestedPickupDropoff ? 'Yes' : 'No'}</span></div>
+                        <div className="flex justify-between"><span className="text-[10px] font-bold text-[#8A8AA8] uppercase tracking-wider">Service</span><span className="text-sm text-[#111118] font-semibold">{booking.serviceType}</span></div>
+                        <div className="flex justify-between"><span className="text-[10px] font-bold text-[#8A8AA8] uppercase tracking-wider">Date</span><span className="text-sm font-semibold text-[#111118] font-mono">{new Date(booking.date).toLocaleDateString()}</span></div>
+                        <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-[#8A8AA8] uppercase tracking-wider">Status</span><StatusBadge status={booking.status} /></div>
+                        <div className="flex justify-between"><span className="text-[10px] font-bold text-[#8A8AA8] uppercase tracking-wider">Final Amount</span><span className="text-sm font-extrabold text-[#B8860B] font-mono">रु{booking.finalAmount}</span></div>
+                        <div className="flex justify-between"><span className="text-[10px] font-bold text-[#8A8AA8] uppercase tracking-wider">Payment</span><span className="text-sm text-[#111118] font-semibold">{booking.isPaid ? `Paid via ${booking.paymentMethod}` : 'Pending'}</span></div>
+                        <div className="flex justify-between"><span className="text-[10px] font-bold text-[#8A8AA8] uppercase tracking-wider">Pick-up/Drop-off</span><span className="text-sm text-[#111118] font-semibold">{booking.requestedPickupDropoff ? 'Yes' : 'No'}</span></div>
                         {booking.requestedPickupDropoff && (
                             <>
-                                <div className="flex justify-between"><span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest">Pickup Addr</span><span className="text-xs text-garage-300 font-body text-right max-w-[60%]">{booking.pickupAddress || 'N/A'}</span></div>
-                                <div className="flex justify-between"><span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest">Distance</span><span className="text-sm font-mono text-garage-300">{booking.pickupDropoffDistance ? `${booking.pickupDropoffDistance.toFixed(2)} km` : 'N/A'}</span></div>
-                                <div className="flex justify-between"><span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest">P/D Cost</span><span className="text-sm font-black font-mono text-spark-400">रु{booking.pickupDropoffCost ? booking.pickupDropoffCost.toFixed(2) : '0.00'}</span></div>
+                                <div className="flex justify-between"><span className="text-[10px] font-bold text-[#8A8AA8] uppercase tracking-wider">Pickup Addr</span><span className="text-xs text-[#4A4A65] font-semibold text-right max-w-[60%]">{booking.pickupAddress || 'N/A'}</span></div>
+                                <div className="flex justify-between"><span className="text-[10px] font-bold text-[#8A8AA8] uppercase tracking-wider">Distance</span><span className="text-sm font-semibold text-[#111118] font-mono">{booking.pickupDropoffDistance ? `${booking.pickupDropoffDistance.toFixed(2)} km` : 'N/A'}</span></div>
+                                <div className="flex justify-between"><span className="text-[10px] font-bold text-[#8A8AA8] uppercase tracking-wider">P/D Cost</span><span className="text-sm font-extrabold text-[#B8860B] font-mono">रु{booking.pickupDropoffCost ? booking.pickupDropoffCost.toFixed(2) : '0.00'}</span></div>
                             </>
                         )}
                     </div>
                 </Card>
             </div>
             <Card className="relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-0.5 h-full bg-amber-500" />
-                <h2 className="text-[11px] font-black font-display text-garage-500 uppercase tracking-widest mb-4 border-b border-garage-600 pb-3 pl-3">// Vehicle & Problem Notes</h2>
+                <div className="absolute top-0 left-0 w-1 h-full bg-amber-500" />
+                <h2 className="text-[11px] font-bold text-[#8A8AA8] uppercase tracking-wider mb-4 border-b border-[rgba(0,0,0,0.06)] pb-3 pl-3">Vehicle & Problem Notes</h2>
                 <div className="space-y-3 pl-3">
-                    <div className="flex justify-between"><span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest">Vehicle</span><span className="text-sm text-garage-200 font-body">{booking.bikeModel || 'Not provided'}</span></div>
-                    <div className="pt-2"><p className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest mb-2">Problem Description</p><p className="text-sm text-garage-300 font-body bg-garage-900/40 rounded-lg p-3 border border-garage-600">{booking.notes || 'Not provided'}</p></div>
+                    <div className="flex justify-between"><span className="text-[10px] font-bold text-[#8A8AA8] uppercase tracking-wider">Vehicle</span><span className="text-sm text-[#111118] font-semibold">{booking.bikeModel || 'Not provided'}</span></div>
+                    <div className="pt-2"><p className="text-[10px] font-bold text-[#8A8AA8] uppercase tracking-wider mb-2">Problem Description</p><p className="text-sm text-[#4A4A65] bg-[#FAFAF5] rounded-xl p-4 border border-[rgba(0,0,0,0.08)] leading-relaxed">{booking.notes || 'Not provided'}</p></div>
                 </div>
             </Card>
         </div>
@@ -861,24 +861,24 @@ const UsersPage = ({ onSave: parentOnSave }) => {
     const closeModal = () => { setIsModalOpen(false); setEditingUser(null); };
     return (
         <div className="space-y-6 flex flex-col flex-grow">
-            <div className="border-b border-garage-600 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl md:text-4xl font-black font-display text-chrome-500 uppercase tracking-wider">// User Management</h1>
-                    <p className="text-xs text-garage-400 font-body mt-1">Manage customer accounts and admin access credentials.</p>
+                    <h1 className="text-2xl font-bold text-[#111118] tracking-tight">User Management</h1>
+                    <p className="text-sm text-[#4A4A65] mt-1">Manage customer accounts and admin access credentials.</p>
                 </div>
                 <Button onClick={handleAddNew}><Plus size={16} />Add New User</Button>
             </div>
             <Card className="flex flex-col flex-grow p-0 overflow-hidden">
-                <div className="p-4 border-b border-garage-600 bg-garage-900/30">
+                <div className="p-4 border-b border-[rgba(0,0,0,0.06)] bg-[#FAFAF5]">
                     <div className="relative w-full md:w-80">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-garage-500" size={16} />
-                        <input type="text" placeholder="Search users..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-full pl-9 pr-4 py-2 bg-garage-700 border border-garage-500 focus:border-spark-500 focus:outline-none focus:ring-1 focus:ring-spark-500/30 rounded-md text-sm text-garage-100 font-body placeholder-garage-500 transition-colors" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8A8AA8]" size={15} />
+                        <input type="text" placeholder="Search users..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-full pl-9 pr-4 py-2.5 bg-white border border-[rgba(0,0,0,0.1)] focus:border-[#F5C000] focus:shadow-[0_0_0_3px_rgba(245,192,0,0.12)] focus:outline-none rounded-xl text-sm text-[#111118] placeholder-[#8A8AA8] transition-all duration-200" />
                     </div>
                 </div>
                 <div className="overflow-x-auto flex-grow">
                     <table className="w-full text-left">
                         <thead>
-                            <tr className="border-b border-garage-600 text-[10px] font-black font-display text-garage-500 uppercase tracking-widest bg-garage-900/40">
+                            <tr className="border-b border-[rgba(0,0,0,0.06)] text-xs font-semibold text-[#8A8AA8] uppercase tracking-wider bg-[#FAFAF5]">
                                 <th className="py-3.5 px-4">Name</th>
                                 <th className="py-3.5 px-4">Email</th>
                                 <th className="py-3.5 px-4">Joined On</th>
@@ -888,25 +888,25 @@ const UsersPage = ({ onSave: parentOnSave }) => {
                         </thead>
                         <tbody>
                             {users.length > 0 ? users.map(user => (
-                                <tr key={user._id} className="border-b border-garage-600/40 hover:bg-garage-700/15 transition-colors duration-150">
-                                    <td className="py-3 px-4 font-bold text-sm text-chrome-500 font-display">{user.fullName}</td>
-                                    <td className="py-3 px-4 text-sm text-garage-300 font-body">{user.email}</td>
-                                    <td className="py-3 px-4 text-sm text-garage-400 font-mono">{new Date(user.createdAt).toLocaleDateString()}</td>
+                                <tr key={user._id} className="border-b border-[rgba(0,0,0,0.04)] hover:bg-[#FAFAF5] transition-colors duration-150">
+                                    <td className="py-3 px-4 font-semibold text-sm text-[#111118]">{user.fullName}</td>
+                                    <td className="py-3 px-4 text-sm text-[#4A4A65]">{user.email}</td>
+                                    <td className="py-3 px-4 text-sm text-[#8A8AA8] font-mono">{new Date(user.createdAt).toLocaleDateString()}</td>
                                     <td className="py-3 px-4">
-                                        <span className={`text-[10px] font-black font-display uppercase tracking-widest px-2 py-0.5 rounded border ${ user.role === 'admin' ? 'text-spark-400 border-spark-500/30 bg-spark-500/10' : 'text-garage-400 border-garage-600 bg-garage-700/50'}`}>{user.role}</span>
+                                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${ user.role === 'admin' ? 'text-amber-600 border-amber-500/20 bg-amber-500/10' : 'text-slate-600 border-slate-200 bg-slate-50'}`}>{user.role}</span>
                                     </td>
                                     <td className="py-3 px-4 text-center">
                                         <div className="flex justify-center items-center gap-1.5">
-                                            <button onClick={() => handleEdit(user)} className="p-1.5 rounded bg-garage-700 hover:bg-garage-600 text-garage-400 hover:text-spark-400 border border-garage-600 transition-colors" title="Edit User"><Edit size={14} /></button>
-                                            <button onClick={() => handleDeleteClick(user._id)} className="p-1.5 rounded bg-garage-700 hover:bg-signal-red/20 text-garage-400 hover:text-signal-red border border-garage-600 transition-colors" title="Delete User"><Trash2 size={14} /></button>
+                                            <button onClick={() => handleEdit(user)} className="p-1.5 rounded-lg bg-white hover:bg-[#F5F3E7] text-[#4A4A65] hover:text-[#B8860B] border border-[rgba(0,0,0,0.1)] hover:border-[#B8860B]/30 transition-colors cursor-pointer" title="Edit User"><Edit size={14} /></button>
+                                            <button onClick={() => handleDeleteClick(user._id)} className="p-1.5 rounded-lg bg-white hover:bg-red-50 text-[#DC2626] hover:text-[#B91C1C] border border-red-200/50 transition-colors cursor-pointer" title="Delete User"><Trash2 size={14} /></button>
                                         </div>
                                     </td>
                                 </tr>
-                            )) : (<tr><td colSpan="5" className="text-center py-12 text-sm text-garage-600 font-body">No users found.</td></tr>)}
+                            )) : (<tr><td colSpan="5" className="text-center py-12 text-sm text-[#8A8AA8]">No users found.</td></tr>)}
                         </tbody>
                     </table>
                 </div>
-                <div className="p-4 border-t border-garage-600 bg-garage-900/20">
+                <div className="p-4 border-t border-[rgba(0,0,0,0.06)] bg-[#FAFAF5]">
                     <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
                 </div>
             </Card>
@@ -1207,35 +1207,34 @@ const ServicesPage = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-grow">
                 {services.length > 0 ? services.map(service => (
-                    <div key={service._id} className="flex flex-col bg-garage-800 border border-garage-600 hover:border-spark-500/40 rounded-2xl overflow-hidden shadow-md shadow-black/30 group transition-all duration-200">
+                    <Card key={service._id} className="flex flex-col p-0 overflow-hidden group">
                         <div className="relative overflow-hidden h-44">
                             <img src={`http://localhost:5050/${service.image}`} alt={service.name} onError={handleImageError} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                            <div className="absolute top-0 left-0 h-0.5 w-12 bg-spark-500 group-hover:w-24 transition-all duration-300" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-garage-900/60 via-transparent to-transparent" />
+                            <div className="absolute top-0 left-0 h-0.5 w-12 bg-[#F5C000] group-hover:w-24 transition-all duration-300" />
                         </div>
                         <div className="p-5 flex-grow flex flex-col">
                             <div className="flex items-center gap-2 mb-1">
-                                <h3 className="text-base font-black font-display text-chrome-500 uppercase tracking-wide">{service.name}</h3>
+                                <h3 className="text-base font-bold text-[#111118] tracking-tight">{service.name}</h3>
                             </div>
                             <div className="flex items-center gap-2 mb-3">
                                 <StarRating rating={service.rating} />
-                                <span className="text-[10px] text-garage-500 font-mono">({service.numReviews} reviews)</span>
+                                <span className="text-[10px] text-[#8A8AA8]">({service.numReviews} reviews)</span>
                             </div>
-                            <p className="text-xs text-garage-300 font-body flex-grow mb-4 leading-relaxed">{service.description}</p>
-                            <div className="mt-auto pt-4 border-t border-garage-600 flex justify-between items-center">
+                            <p className="text-xs text-[#4A4A65] flex-grow mb-4 leading-relaxed">{service.description}</p>
+                            <div className="mt-auto pt-4 border-t border-[rgba(0,0,0,0.06)] flex justify-between items-center">
                                 <div>
-                                    <p className="text-xl font-black font-mono text-spark-500">रु{service.price}</p>
-                                    <p className="text-[10px] text-garage-500 font-body">{service.duration}</p>
+                                    <p className="text-xl font-extrabold text-[#B8860B]">रु{service.price}</p>
+                                    <p className="text-[10px] text-[#8A8AA8] mt-0.5">{service.duration}</p>
                                 </div>
                                 <div className="flex gap-1.5">
-                                    <button onClick={() => handleViewReviews(service._id)} className="p-2 rounded-lg bg-garage-700 hover:bg-emerald-500/10 text-garage-400 hover:text-emerald-400 border border-garage-600 hover:border-emerald-500/30 transition-all" title="View Reviews"><ReviewIcon size={15} /></button>
-                                    <button onClick={() => handleEdit(service)} className="p-2 rounded-lg bg-garage-700 hover:bg-spark-500/10 text-garage-400 hover:text-spark-400 border border-garage-600 hover:border-spark-500/30 transition-all" title="Edit Service"><Edit size={15} /></button>
-                                    <button onClick={() => handleDeleteClick(service._id)} className="p-2 rounded-lg bg-garage-700 hover:bg-signal-red/10 text-garage-400 hover:text-signal-red border border-garage-600 hover:border-signal-red/30 transition-all" title="Delete Service"><Trash2 size={15} /></button>
+                                    <button onClick={() => handleViewReviews(service._id)} className="p-2 rounded-lg bg-white hover:bg-emerald-50 text-[#4A4A65] hover:text-[#16A34A] border border-[rgba(0,0,0,0.1)] hover:border-emerald-200 transition-all cursor-pointer" title="View Reviews"><ReviewIcon size={15} /></button>
+                                    <button onClick={() => handleEdit(service)} className="p-2 rounded-lg bg-white hover:bg-[#F5F3E7] text-[#4A4A65] hover:text-[#B8860B] border border-[rgba(0,0,0,0.1)] hover:border-[#B8860B]/30 transition-all cursor-pointer" title="Edit Service"><Edit size={15} /></button>
+                                    <button onClick={() => handleDeleteClick(service._id)} className="p-2 rounded-lg bg-white hover:bg-red-50 text-[#DC2626] hover:text-[#B91C1C] border border-red-200/50 transition-all cursor-pointer" title="Delete Service"><Trash2 size={15} /></button>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                )) : (<div className="col-span-full text-center py-16 text-garage-600 font-body">No services found. Add your first service to get started.</div>)}
+                    </Card>
+                )) : (<div className="col-span-full text-center py-16 text-[#8A8AA8]">No services found. Add your first service to get started.</div>)}
             </div>
             <div className="flex justify-center">
                 <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
