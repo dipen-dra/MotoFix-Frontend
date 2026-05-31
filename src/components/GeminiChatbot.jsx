@@ -67,14 +67,14 @@ const GeminiChatbot = () => {
     return (
         <div className="gemini-chatbot-container">
             {isOpen && (
-                <div className="chat-window dark:bg-gray-800 dark:border-gray-700">
-                    <div className="chat-header bg-gradient-to-r from-blue-600 to-indigo-700">
-                        <h2 className="text-white font-bold">MotoFix AI Assistant</h2>
-                        <button onClick={toggleChat} className="text-white hover:opacity-80">
-                            <X size={24} />
+                <div className="chat-window border border-[rgba(0,0,0,0.08)] bg-white rounded-2xl shadow-[0_16px_48px_rgba(0,0,0,0.12)]">
+                    <div className="chat-header bg-gradient-to-r from-[#F5C000] to-[#E6B000] text-[#111118]">
+                        <h2 className="text-[#111118] font-bold">MotoFix AI Assistant</h2>
+                        <button onClick={toggleChat} className="text-[#111118] hover:opacity-70 transition-opacity">
+                            <X size={20} />
                         </button>
                     </div>
-                    <div className="chat-body dark:bg-gray-900/50" ref={chatBodyRef}>
+                    <div className="chat-body bg-[#FDFDF8]" ref={chatBodyRef}>
                         {messages.map((msg, index) => (
                             <div key={index} className={`chat-message ${msg.sender}`}>
                                 <p>{msg.text}</p>
@@ -88,18 +88,18 @@ const GeminiChatbot = () => {
                             </div>
                         )}
                     </div>
-                    <div className="chat-footer dark:bg-gray-800 dark:border-t dark:border-gray-700">
+                    <div className="chat-footer border-t border-[rgba(0,0,0,0.06)] bg-white">
                         <input
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                             placeholder="Ask me anything..."
-                            className="dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                            className="px-4 py-2.5 bg-[#FDFDF8] border border-[rgba(0,0,0,0.1)] rounded-full text-sm text-[#111118] placeholder-[#8A8AA8] focus:outline-none focus:border-[#F5C000] focus:shadow-[0_0_0_3px_rgba(245,192,0,0.12)] transition-all duration-200 hover:border-[rgba(0,0,0,0.18)]"
                             disabled={isLoading}
                         />
                         <button onClick={handleSend} disabled={isLoading || !input.trim()} className="send-button">
-                            {isLoading ? <Loader size={20} className="animate-spin" /> : <Send size={20} />}
+                            {isLoading ? <Loader size={18} className="animate-spin" /> : <Send size={18} />}
                         </button>
                     </div>
                 </div>
