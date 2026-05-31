@@ -1269,39 +1269,39 @@ const NavLink = ({ page, icon: Icon, children, activePage, onLinkClick, badgeCou
 const SidebarContent = ({ activePage, onLinkClick, onLogoutClick, onMenuClose, totalUnreadCount }) => (
     <>
         {/* Logo */}
-        <div className="px-5 py-5 flex items-center justify-between border-b border-white/07">
+        <div className="px-5 py-5 flex items-center justify-between border-b border-black/08">
             <a href="#/admin/dashboard" onClick={onLinkClick} className="flex items-center gap-2.5 cursor-pointer">
                 <div className="w-8 h-8">
                     <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-                        <polygon points="18,2 33,10 33,26 18,34 3,26 3,10" fill="#F5C000" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+                        <polygon points="18,2 33,10 33,26 18,34 3,26 3,10" fill="#F5C000" stroke="rgba(0,0,0,0.1)" strokeWidth="1" />
                         <text x="50%" y="55%" dominantBaseline="middle" textAnchor="middle" fontSize="13" fontWeight="900" fontFamily="Inter,sans-serif" fill="#0D0D14">M</text>
                     </svg>
                 </div>
                 <div>
-                    <span className="text-lg font-black text-white">Moto</span>
-                    <span className="text-lg font-black text-[#F5C000]">Fix</span>
-                    <span className="text-[10px] font-semibold text-white/30 uppercase tracking-widest block -mt-0.5">Admin Panel</span>
+                    <span className="text-lg font-black text-[#111118]">Moto</span>
+                    <span className="text-lg font-black text-[#B8860B]">Fix</span>
+                    <span className="text-[10px] font-semibold text-[#8A8AA8] uppercase tracking-widest block -mt-0.5">Admin Panel</span>
                 </div>
             </a>
             {onMenuClose && (
-                <button onClick={onMenuClose} className="lg:hidden text-white/30 hover:text-white transition-colors">
+                <button onClick={onMenuClose} className="lg:hidden text-[#8A8AA8] hover:text-[#111118] transition-colors">
                     <X size={18} />
                 </button>
             )}
         </div>
         {/* Nav */}
         <nav className="flex-1 px-3 py-5 space-y-0.5 overflow-y-auto">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-white/20 px-3 mb-3">Main</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#8A8AA8] px-3 mb-3">Main</p>
             <NavLink page="dashboard" icon={BarChart} activePage={activePage} onLinkClick={onLinkClick}>Dashboard</NavLink>
             <NavLink page="bookings" icon={List} activePage={activePage} onLinkClick={onLinkClick}>Bookings</NavLink>
             <NavLink page="users" icon={Users} activePage={activePage} onLinkClick={onLinkClick}>Users</NavLink>
             <NavLink page="services" icon={Wrench} activePage={activePage} onLinkClick={onLinkClick}>Services</NavLink>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-white/20 px-3 mb-3 mt-5">Account</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#8A8AA8] px-3 mb-3 mt-5">Account</p>
             <NavLink page="profile" icon={User} activePage={activePage} onLinkClick={onLinkClick}>Profile</NavLink>
             <NavLink page="chat" icon={MessageSquare} activePage={activePage} onLinkClick={onLinkClick} badgeCount={totalUnreadCount}>Chat</NavLink>
         </nav>
         {/* Logout */}
-        <div className="p-3 border-t border-white/07">
+        <div className="p-3 border-t border-black/08">
             <button
                 onClick={onLogoutClick}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold
@@ -1409,13 +1409,13 @@ const AdminDashboard = () => {
         <div className="flex h-screen font-sans" style={{ background: '#FAFAF5' }}>
             {/* Mobile Sidebar */}
             <div className={`fixed inset-0 z-40 flex lg:hidden transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                <div className="w-64 bg-[#0D0D14] shadow-2xl flex flex-col">
+                <div className="w-64 bg-[#F5F3E7] border-r border-black/08 shadow-2xl flex flex-col">
                     <SidebarContent activePage={activePage} onLinkClick={() => setIsSidebarOpen(false)} onLogoutClick={() => { setIsSidebarOpen(false); setLogoutConfirmOpen(true); }} onMenuClose={() => setIsSidebarOpen(false)} totalUnreadCount={totalUnreadCount} />
                 </div>
                 <div className="flex-1 bg-black/60 backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)}></div>
             </div>
             {/* Desktop Sidebar */}
-            <aside className="w-64 bg-[#0D0D14] hidden lg:flex flex-col flex-shrink-0 shadow-[2px_0_20px_rgba(0,0,0,0.15)]">
+            <aside className="w-64 bg-[#F5F3E7] hidden lg:flex flex-col flex-shrink-0 border-r border-black/08 shadow-[2px_0_8px_rgba(0,0,0,0.04)]">
                 <SidebarContent activePage={activePage} onLinkClick={() => {}} onLogoutClick={() => setLogoutConfirmOpen(true)} totalUnreadCount={totalUnreadCount} />
             </aside>
             {/* Main */}
