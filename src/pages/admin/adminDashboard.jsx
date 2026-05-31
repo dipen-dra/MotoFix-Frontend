@@ -1120,7 +1120,7 @@ const ServiceFormModal = ({ isOpen, onClose, onSave, service }) => {
         <Modal isOpen={isOpen} onClose={onClose} title={service ? 'Edit Service' : 'Add New Service'}>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <Input id="name" name="name" label="Service Name" value={formData.name || ''} onChange={handleChange} required />
-                <div><label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label><textarea id="description" name="description" value={formData.description || ''} onChange={handleChange} rows="3" className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white" required></textarea></div>
+                <div><label htmlFor="description" className="form-label">Description</label><textarea id="description" name="description" value={formData.description || ''} onChange={handleChange} rows="3" className="input-base mt-1" required></textarea></div>
                 <Input id="price" name="price" label="Price (रु)" type="number" value={formData.price || ''} onChange={handleChange} required />
                 <Input id="duration" name="duration" label="Estimated Duration (e.g., 2 hours)" value={formData.duration || ''} onChange={handleChange} />
                 <div>
