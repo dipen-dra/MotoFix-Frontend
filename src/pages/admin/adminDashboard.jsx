@@ -371,43 +371,43 @@ const AdminChatPage = () => {
 
     return (
         <div className="space-y-6">
-            <div className="border-b border-garage-600 pb-5">
-                <h1 className="text-3xl md:text-4xl font-black font-display text-chrome-500 uppercase tracking-wider">// CUSTOMER CHATS</h1>
-                <p className="text-xs text-garage-400 font-body mt-1">Real-time support thread management with all customers.</p>
+            <div className="border-b border-[rgba(0,0,0,0.06)] pb-5">
+                <h1 className="text-3xl md:text-4xl font-black font-display text-[#111118] uppercase tracking-wider">Customer Chats</h1>
+                <p className="text-xs text-[#8A8AA8] font-body mt-1">Real-time support thread management with all customers.</p>
             </div>
-            <Card className="p-0 flex overflow-hidden" style={{ height: 'calc(80vh - 2rem)' }}>
+            <Card className="p-0 flex overflow-hidden border border-[rgba(0,0,0,0.08)] bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)]" style={{ height: 'calc(80vh - 2rem)' }}>
                 {/* Conversation List */}
-                <div className="w-80 flex-shrink-0 border-r border-garage-600 flex flex-col bg-garage-900">
-                    <div className="p-4 border-b border-garage-600">
-                        <h2 className="text-[10px] font-black font-display text-garage-400 uppercase tracking-widest">// Conversations</h2>
+                <div className="w-80 flex-shrink-0 border-r border-[rgba(0,0,0,0.08)] flex flex-col bg-[#F5F3E7]">
+                    <div className="p-4 border-b border-[rgba(0,0,0,0.06)]">
+                        <h2 className="text-xs font-semibold uppercase tracking-widest text-[#4A4A65]">Conversations</h2>
                     </div>
-                    <ul className="divide-y divide-garage-700/50 overflow-y-auto flex-1">
+                    <ul className="divide-y divide-[rgba(0,0,0,0.05)] overflow-y-auto flex-1">
                         {conversations.map(user => (
-                            <li key={user._id} className={`flex items-center gap-3 relative transition-colors group ${activeConversation?._id === user._id ? 'bg-spark-500/10 border-l-2 border-spark-500' : 'border-l-2 border-transparent hover:bg-garage-800/60'}`}>
+                            <li key={user._id} className={`flex items-center gap-3 relative transition-colors group ${activeConversation?._id === user._id ? 'bg-[rgba(245,192,0,0.08)] border-l-2 border-[#F5C000]' : 'border-l-2 border-transparent hover:bg-[rgba(0,0,0,0.02)]'}`}>
                                 <div onClick={() => handleSelectConversation(user)} className="p-4 flex-grow flex items-center gap-3 cursor-pointer">
-                                    <img src={user.profilePicture ? `http://localhost:5050/${user.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || 'U')}&background=FF6B00&color=fff&size=40`} alt={user.fullName} className="w-9 h-9 rounded-full object-cover ring-2 ring-garage-600" data-name={user.fullName} onError={handleImageError} />
+                                    <img src={user.profilePicture ? `http://localhost:5050/${user.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || 'U')}&background=F5C000&color=111118&size=40`} alt={user.fullName} className="w-9 h-9 rounded-full object-cover ring-2 ring-[rgba(0,0,0,0.05)]" data-name={user.fullName} onError={handleImageError} />
                                     <div className="flex-grow overflow-hidden">
-                                        <p className={`truncate text-sm font-display ${user.unreadCount > 0 ? 'font-black text-chrome-500' : 'font-bold text-garage-200'}`}>{user.fullName}</p>
-                                        <p className="text-[10px] text-garage-500 truncate font-body mt-0.5">{user.lastMessage}</p>
+                                        <p className={`truncate text-sm font-display ${user.unreadCount > 0 ? 'font-black text-[#F5C000]' : 'font-semibold text-[#111118]'}`}>{user.fullName}</p>
+                                        <p className="text-[11px] text-[#8A8AA8] truncate font-body mt-0.5">{user.lastMessage}</p>
                                     </div>
-                                    {user.unreadCount > 0 && <span className="bg-spark-500 text-white text-[10px] font-black rounded-full h-5 w-5 flex items-center justify-center flex-shrink-0">{user.unreadCount}</span>}
+                                    {user.unreadCount > 0 && <span className="bg-[#F5C000] text-[#111118] text-[10px] font-black rounded-full h-5 w-5 flex items-center justify-center flex-shrink-0">{user.unreadCount}</span>}
                                 </div>
                                 <div className="pr-2">
-                                    <button onClick={() => handleClearClick(user)} className="p-1.5 rounded text-garage-500 hover:bg-signal-red/10 hover:text-signal-red opacity-0 group-hover:opacity-100 transition-all" title={`Clear chat with ${user.fullName}`}><Trash2 size={14} /></button>
+                                    <button onClick={() => handleClearClick(user)} className="p-1.5 rounded text-[#8A8AA8] hover:bg-[rgba(220,38,38,0.1)] hover:text-[#DC2626] opacity-0 group-hover:opacity-100 transition-all" title={`Clear chat with ${user.fullName}`}><Trash2 size={14} /></button>
                                 </div>
                             </li>
                         ))}
                     </ul>
                 </div>
                 {/* Chat Window */}
-                <div className="flex-1 flex flex-col bg-garage-950">
+                <div className="flex-1 flex flex-col bg-[#FDFDF8]">
                     {activeConversation ? (
                         <>
-                            <div className="p-4 border-b border-garage-600 flex items-center gap-3 bg-garage-900/80 flex-shrink-0">
-                                <img src={activeConversation.profilePicture ? `http://localhost:5050/${activeConversation.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(activeConversation.fullName || 'U')}&background=FF6B00&color=fff&size=40`} alt={activeConversation.fullName} className="w-9 h-9 rounded-full object-cover ring-2 ring-spark-500/30" data-name={activeConversation.fullName} onError={handleImageError} />
-                                <div><h3 className="font-bold text-chrome-500 text-sm font-display">{activeConversation.fullName}</h3><p className="text-[10px] text-garage-500 font-mono">{activeConversation.email}</p></div>
+                            <div className="p-4 border-b border-[rgba(0,0,0,0.06)] flex items-center gap-3 bg-white/80 backdrop-blur-sm flex-shrink-0">
+                                <img src={activeConversation.profilePicture ? `http://localhost:5050/${activeConversation.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(activeConversation.fullName || 'U')}&background=F5C000&color=111118&size=40`} alt={activeConversation.fullName} className="w-9 h-9 rounded-full object-cover ring-2 ring-[#F5C000]/30" data-name={activeConversation.fullName} onError={handleImageError} />
+                                <div><h3 className="font-bold text-[#111118] text-sm font-display">{activeConversation.fullName}</h3><p className="text-[10px] text-[#8A8AA8] font-mono">{activeConversation.email}</p></div>
                             </div>
-                            <div className="flex-grow overflow-y-auto p-4 space-y-1" ref={chatBodyRef}>
+                            <div className="flex-grow overflow-y-auto p-4 space-y-1.5" ref={chatBodyRef}>
                                 {messages.map((msg, index) => {
                                     const isAdmin = msg.authorId === 'admin_user';
                                     const prevMsg = messages[index - 1]; const nextMsg = messages[index + 1];
@@ -416,30 +416,30 @@ const AdminChatPage = () => {
                                     return (
                                         <div key={msg._id || index} className={`flex items-end gap-2 ${isAdmin ? 'justify-end' : 'justify-start'}`}>
                                             {!isAdmin && (<div className="w-8 flex-shrink-0 self-end">{isLastInGroup && <img src={activeConversation.profilePicture ? `http://localhost:5050/${activeConversation.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(activeConversation.fullName || 'U')}&background=e2e8f0&color=4a5568&size=40`} alt="p" className="w-7 h-7 rounded-full object-cover" />}</div>)}
-                                            <div className={`py-2.5 px-3.5 max-w-md ${isAdmin ? 'bg-spark-500 text-white' : 'bg-garage-800 border border-garage-600 text-garage-100'} ${isFirstInGroup && isLastInGroup ? 'rounded-2xl' : ''} ${isAdmin ? `${isFirstInGroup ? 'rounded-t-2xl rounded-bl-2xl' : 'rounded-l-2xl'} ${isLastInGroup ? 'rounded-b-2xl' : ''} ${!isFirstInGroup && !isLastInGroup ? 'rounded-l-2xl rounded-r-md' : ''} ${isFirstInGroup && !isLastInGroup ? 'rounded-tr-md' : ''} ${!isFirstInGroup && isLastInGroup ? 'rounded-br-md' : ''}` : `${isFirstInGroup ? 'rounded-t-2xl rounded-br-2xl' : 'rounded-r-2xl'} ${isLastInGroup ? 'rounded-b-2xl' : ''} ${!isFirstInGroup && !isLastInGroup ? 'rounded-r-2xl rounded-l-md' : ''} ${isFirstInGroup && !isLastInGroup ? 'rounded-tl-md' : ''} ${!isFirstInGroup && isLastInGroup ? 'rounded-bl-md' : ''}`}`}>
+                                            <div className={`py-2.5 px-3.5 max-w-md ${isAdmin ? 'bg-gradient-to-r from-[#F5C000] to-[#E6B000] text-[#111118]' : 'bg-[#F5F3E7] border border-[rgba(0,0,0,0.05)] text-[#111118]'} ${isFirstInGroup && isLastInGroup ? 'rounded-2xl' : ''} ${isAdmin ? `${isFirstInGroup ? 'rounded-t-2xl rounded-bl-2xl' : 'rounded-l-2xl'} ${isLastInGroup ? 'rounded-b-2xl' : ''} ${!isFirstInGroup && !isLastInGroup ? 'rounded-l-2xl rounded-r-md' : ''} ${isFirstInGroup && !isLastInGroup ? 'rounded-tr-md' : ''} ${!isFirstInGroup && isLastInGroup ? 'rounded-br-md' : ''}` : `${isFirstInGroup ? 'rounded-t-2xl rounded-br-2xl' : 'rounded-r-2xl'} ${isLastInGroup ? 'rounded-b-2xl' : ''} ${!isFirstInGroup && !isLastInGroup ? 'rounded-r-2xl rounded-l-md' : ''} ${isFirstInGroup && !isLastInGroup ? 'rounded-tl-md' : ''} ${!isFirstInGroup && isLastInGroup ? 'rounded-bl-md' : ''}`}`}>
                                                 {msg.fileUrl && renderFileContent(msg)}
                                                 {msg.message && <p className="text-sm font-body" style={{ overflowWrap: 'break-word' }}>{msg.message}</p>}
-                                                <p className={`text-[10px] text-right mt-1 ${isAdmin ? 'text-white/60' : 'text-garage-500'}`}>{new Date(msg.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                                <p className={`text-[9px] text-right mt-1 ${isAdmin ? 'text-[#111118]/60' : 'text-[#8A8AA8]'}`}>{new Date(msg.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                                             </div>
                                         </div>
                                     );
                                 })}
                             </div>
-                            <div className="p-3 border-t border-garage-600 bg-garage-900/50 flex-shrink-0">
-                                {(previewUrl || selectedFile) && (<div className="mb-2 p-2 bg-garage-800 border border-garage-600 rounded-lg flex items-center justify-between">{previewUrl ? <img src={previewUrl} alt="Preview" className="h-14 w-14 object-cover rounded border border-garage-600" /> : <div className="flex items-center gap-2 text-garage-400 text-xs font-body"><FileText size={16} /><span>{selectedFile.name}</span></div>}<button onClick={handleRemovePreview} className="text-garage-500 hover:text-signal-red transition-colors"><XCircle size={18} /></button></div>)}
+                            <div className="p-3 border-t border-[rgba(0,0,0,0.06)] bg-white flex-shrink-0">
+                                {(previewUrl || selectedFile) && (<div className="mb-2 p-2 bg-[#F5F3E7] border border-[rgba(0,0,0,0.08)] rounded-lg flex items-center justify-between">{previewUrl ? <img src={previewUrl} alt="Preview" className="h-14 w-14 object-cover rounded border border-[rgba(0,0,0,0.08)]" /> : <div className="flex items-center gap-2 text-[#4A4A65] text-xs font-body"><FileText size={16} /><span>{selectedFile.name}</span></div>}<button onClick={handleRemovePreview} className="text-[#8A8AA8] hover:text-[#DC2626] transition-colors"><XCircle size={18} /></button></div>)}
                                 <div className="flex items-center gap-2">
                                     <div className="flex">
                                         <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" /><input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" />
-                                        <button onClick={() => fileInputRef.current.click()} className="p-2 text-garage-500 hover:text-spark-500 transition-colors"><Paperclip size={20} /></button><button onClick={() => cameraInputRef.current.click()} className="p-2 text-garage-500 hover:text-spark-500 transition-colors"><Camera size={20} /></button>
+                                        <button onClick={() => fileInputRef.current.click()} className="p-2 text-[#8A8AA8] hover:text-[#F5C000] transition-colors"><Paperclip size={20} /></button><button onClick={() => cameraInputRef.current.click()} className="p-2 text-[#8A8AA8] hover:text-[#F5C000] transition-colors"><Camera size={20} /></button>
                                     </div>
-                                    <input type="text" value={currentMessage} onChange={(e) => setCurrentMessage(e.target.value)} onKeyPress={(e) => e.key === "Enter" && !isUploading && handleSendMessage()} placeholder="Message..." className="flex-1 px-4 py-2.5 bg-garage-800 border border-garage-600 focus:border-spark-500 focus:outline-none focus:ring-1 focus:ring-spark-500/30 rounded-lg text-sm text-garage-100 font-body placeholder-garage-500 transition-colors" disabled={isUploading} />
+                                    <input type="text" value={currentMessage} onChange={(e) => setCurrentMessage(e.target.value)} onKeyPress={(e) => e.key === "Enter" && !isUploading && handleSendMessage()} placeholder="Message..." className="flex-1 px-4 py-2.5 bg-[#FDFDF8] border border-[rgba(0,0,0,0.1)] focus:border-[#F5C000] focus:outline-none focus:ring-2 focus:ring-[#F5C000]/14 rounded-lg text-sm text-[#111118] font-body placeholder-[#8A8AA8] transition-colors" disabled={isUploading} />
                                     <Button onClick={handleSendMessage} disabled={isUploading || (!currentMessage.trim() && !selectedFile)} className="!rounded-full !w-10 !h-10 !p-0 flex-shrink-0">{isUploading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Send size={16} />}</Button>
                                 </div>
                             </div>
                         </>
-                    ) : (<div className="flex flex-col items-center justify-center h-full text-garage-600">
+                    ) : (<div className="flex flex-col items-center justify-center h-full text-[#8A8AA8]">
                         <Inbox size={52} />
-                        <p className="mt-4 text-sm text-garage-500 font-body">Select a conversation to start chatting</p>
+                        <p className="mt-4 text-sm text-[#8A8AA8] font-body font-semibold">Select a conversation to start chatting</p>
                     </div>)}
                 </div>
             </Card>
@@ -991,13 +991,13 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
     return (
         <div className="space-y-6 w-full">
             <div className="border-b border-[rgba(0,0,0,0.06)] pb-5">
-                <h1 className="text-3xl md:text-4xl font-black font-display text-[#111118] uppercase tracking-wider">// Workshop Profile</h1>
+                <h1 className="text-3xl md:text-4xl font-black font-display text-[#111118] uppercase tracking-wider">Workshop Profile</h1>
                 <p className="text-xs text-[#8A8AA8] font-body mt-1">Manage workshop identity, contact details, and service configurations.</p>
             </div>
             <Card className="relative overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#F5C000] via-[#E6B000] to-transparent" />
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-6">
-                    <h2 className="text-[11px] font-black font-display text-[#4A4A65] uppercase tracking-widest mb-4 sm:mb-0">// Profile Information</h2>
+                    <h2 className="text-[11px] font-black font-display text-[#4A4A65] uppercase tracking-widest mb-4 sm:mb-0">Profile Information</h2>
                     {!isEditing && (<Button onClick={() => setIsEditing(true)} variant="secondary"><Edit size={14} />Edit Profile</Button>)}
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -1011,7 +1011,7 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
                         {!isEditing && profile.workshopName && (
                             <div className="mt-4 text-center">
                                 <p className="font-black font-display text-[#111118] uppercase tracking-wider text-sm">{profile.workshopName}</p>
-                                <p className="text-[10px] text-[#B8860B] font-mono tracking-widest mt-0.5">// WORKSHOP</p>
+                                <p className="text-[10px] text-[#B8860B] font-mono tracking-widest mt-0.5">WORKSHOP</p>
                             </div>
                         )}
                     </div>
@@ -1031,7 +1031,7 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
                         </div>
 
                         <div className="border-t border-[rgba(0,0,0,0.06)] pt-5 mt-2">
-                            <h3 className="text-[11px] font-black font-display text-[#4A4A65] uppercase tracking-widest mb-4">// Pick-up & Drop-off Service</h3>
+                            <h3 className="text-[11px] font-black font-display text-[#4A4A65] uppercase tracking-widest mb-4">Pick-up & Drop-off Service</h3>
                             <div className="space-y-4">
                                 <div>
                                     <label className="flex items-center gap-3 cursor-pointer group">
