@@ -8,7 +8,8 @@ const chatbotApi = axios.create({
     baseURL: API_URL,
     headers: {
         'Content-Type': 'application/json',
-    }
+    },
+    withCredentials: true
 });
 
 // It also uses the same logic to add the authentication token if the user is logged in.

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import DOMPurify from 'dompurify';
 import { MessageSquare, Send, X, Loader } from 'lucide-react'; // Using lucide-react icons
 import './GeminiChatbot.css'; // We will create this CSS file next
 
@@ -77,7 +78,11 @@ const GeminiChatbot = () => {
                     <div className="chat-body bg-[#FDFDF8]" ref={chatBodyRef}>
                         {messages.map((msg, index) => (
                             <div key={index} className={`chat-message ${msg.sender}`}>
-                                <p>{msg.text}</p>
+                                <p className="text-sm whitespace-pre-wrap" 
+                                   dangerouslySetInnerHTML={{ 
+                                       __html: DOMPurify.sanitize(msg.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')) 
+                                   }}>
+                                </p>
                             </div>
                         ))}
                         {isLoading && (

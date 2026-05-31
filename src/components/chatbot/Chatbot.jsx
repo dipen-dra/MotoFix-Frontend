@@ -55,6 +55,7 @@
 import React, { useState } from 'react';
 import './Chatbot.css';
 import axios from 'axios';
+import DOMPurify from 'dompurify';
 
 const Chatbot = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -105,7 +106,11 @@ const Chatbot = () => {
                     <div className="chat-body">
                         {messages.map((msg, index) => (
                             <div key={index} className={`chat-message ${msg.sender}`}>
-                                {msg.text}
+                                <p className="text-sm whitespace-pre-wrap" 
+                                   dangerouslySetInnerHTML={{ 
+                                       __html: DOMPurify.sanitize(msg.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')) 
+                                   }}>
+                                </p>
                             </div>
                         ))}
                     </div>

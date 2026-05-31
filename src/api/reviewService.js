@@ -5,7 +5,8 @@ const reviewApi = axios.create({
     baseURL: "http://localhost:5050", // Note: NO /api or /api/auth here
     headers: {
         'Content-Type': 'application/json',
-    }
+    },
+    withCredentials: true
 });
 
 // We still need to add the authentication token to requests for this API.
