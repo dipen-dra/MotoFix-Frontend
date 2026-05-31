@@ -990,28 +990,28 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
     const profilePictureSrc = profile.profilePictureUrl || (profile.profilePicture ? `http://localhost:5050/${profile.profilePicture}` : `https://placehold.co/128x128/e2e8f0/4a5568?text=A`);
     return (
         <div className="space-y-6 w-full">
-            <div className="border-b border-garage-600 pb-5">
-                <h1 className="text-3xl md:text-4xl font-black font-display text-chrome-500 uppercase tracking-wider">// Workshop Profile</h1>
-                <p className="text-xs text-garage-400 font-body mt-1">Manage workshop identity, contact details, and service configurations.</p>
+            <div className="border-b border-[rgba(0,0,0,0.06)] pb-5">
+                <h1 className="text-3xl md:text-4xl font-black font-display text-[#111118] uppercase tracking-wider">// Workshop Profile</h1>
+                <p className="text-xs text-[#8A8AA8] font-body mt-1">Manage workshop identity, contact details, and service configurations.</p>
             </div>
             <Card className="relative overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-spark-500 via-spark-400 to-transparent" />
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#F5C000] via-[#E6B000] to-transparent" />
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-6">
-                    <h2 className="text-[11px] font-black font-display text-garage-500 uppercase tracking-widest mb-4 sm:mb-0">// Profile Information</h2>
+                    <h2 className="text-[11px] font-black font-display text-[#4A4A65] uppercase tracking-widest mb-4 sm:mb-0">// Profile Information</h2>
                     {!isEditing && (<Button onClick={() => setIsEditing(true)} variant="secondary"><Edit size={14} />Edit Profile</Button>)}
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-1 flex flex-col items-center">
                         <div className="relative mb-4">
-                            <img key={profilePictureSrc} src={profilePictureSrc} alt="Profile" className="w-28 h-28 rounded-full object-cover ring-2 ring-spark-500/40 ring-offset-2 ring-offset-garage-800" onError={handleImageError} />
+                            <img key={profilePictureSrc} src={profilePictureSrc} alt="Profile" className="w-28 h-28 rounded-full object-cover ring-2 ring-[#F5C000]/40 ring-offset-2 ring-offset-white" onError={handleImageError} />
                             {isEditing && <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center"><Camera size={20} className="text-white" /></div>}
                         </div>
                         <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
                         {isEditing && (<Button variant="secondary" className="w-full !text-xs" onClick={handleUploadClick}><Camera size={13} />Change Picture</Button>)}
                         {!isEditing && profile.workshopName && (
                             <div className="mt-4 text-center">
-                                <p className="font-black font-display text-chrome-500 uppercase tracking-wider text-sm">{profile.workshopName}</p>
-                                <p className="text-[10px] text-spark-400 font-mono tracking-widest mt-0.5">// WORKSHOP</p>
+                                <p className="font-black font-display text-[#111118] uppercase tracking-wider text-sm">{profile.workshopName}</p>
+                                <p className="text-[10px] text-[#B8860B] font-mono tracking-widest mt-0.5">// WORKSHOP</p>
                             </div>
                         )}
                     </div>
@@ -1024,14 +1024,14 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
                         </div>
                         <div>
                             <div className="flex justify-between items-center mb-1.5">
-                                <label htmlFor="address" className="block text-[11px] font-black font-display text-garage-400 uppercase tracking-widest">Address</label>
+                                <label htmlFor="address" className="block text-xs font-semibold uppercase tracking-widest text-[#4A4A65]">Address</label>
                                 {isEditing && (<Button variant="secondary" onClick={handleFetchLocation} disabled={isFetchingLocation} className="!text-[10px] !py-1 !px-2.5 !gap-1">{isFetchingLocation ? 'Fetching...' : <><MapPin size={11} /> Fetch Location</>}</Button>)}
                             </div>
-                            <textarea id="address" name="address" rows="3" value={profile.address || ''} onChange={handleChange} disabled={!isEditing} className="w-full px-4 py-2.5 bg-garage-700 border border-garage-500 focus:border-spark-500 focus:outline-none focus:ring-1 focus:ring-spark-500/30 text-garage-100 font-body text-sm rounded-lg placeholder-garage-500 transition-colors disabled:bg-garage-800/50 disabled:text-garage-500 disabled:cursor-not-allowed" placeholder="Enter workshop address or fetch current location"></textarea>
+                            <textarea id="address" name="address" rows="3" value={profile.address || ''} onChange={handleChange} disabled={!isEditing} className="w-full px-4 py-2.5 bg-[#FDFDF8] border border-[rgba(0,0,0,0.1)] rounded-xl text-sm text-[#111118] placeholder-[#8A8AA8] focus:outline-none focus:border-[#F5C000] focus:shadow-[0_0_0_3px_rgba(245,192,0,0.12)] disabled:bg-[#F5F3E7] disabled:text-[#8A8AA8] disabled:cursor-not-allowed transition-all duration-200 hover:border-[rgba(0,0,0,0.18)]" placeholder="Enter workshop address or fetch current location"></textarea>
                         </div>
 
-                        <div className="border-t border-garage-600 pt-5 mt-2">
-                            <h3 className="text-[11px] font-black font-display text-garage-400 uppercase tracking-widest mb-4">// Pick-up & Drop-off Service</h3>
+                        <div className="border-t border-[rgba(0,0,0,0.06)] pt-5 mt-2">
+                            <h3 className="text-[11px] font-black font-display text-[#4A4A65] uppercase tracking-widest mb-4">// Pick-up & Drop-off Service</h3>
                             <div className="space-y-4">
                                 <div>
                                     <label className="flex items-center gap-3 cursor-pointer group">
@@ -1041,15 +1041,15 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
                                             checked={profile.offerPickupDropoff || false}
                                             onChange={handleChange}
                                             disabled={!isEditing}
-                                            className="form-checkbox h-4 w-4 rounded border-garage-500 bg-garage-700 text-spark-500 focus:ring-spark-500/20 accent-spark-500 cursor-pointer"
+                                            className="form-checkbox h-4 w-4 rounded border-[rgba(0,0,0,0.15)] bg-white text-[#F5C000] focus:ring-[#F5C000]/20 accent-[#F5C000] cursor-pointer transition-colors"
                                         />
-                                        <span className="text-sm text-garage-300 font-body group-hover:text-garage-100 transition-colors">Offer Pick-up/Drop-off Service to Customers</span>
+                                        <span className="text-sm text-[#4A4A65] font-body group-hover:text-[#111118] transition-colors">Offer Pick-up/Drop-off Service to Customers</span>
                                     </label>
                                 </div>
                                 {profile.offerPickupDropoff && (
                                     <Input
                                         id="pickupDropoffChargePerKm"
-                                        label="Charge per KM (\u0930\u0941)"
+                                        label="Charge per KM (रु)"
                                         name="pickupDropoffChargePerKm"
                                         type="number"
                                         value={profile.pickupDropoffChargePerKm || ''}
@@ -1063,7 +1063,7 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
                         </div>
 
                         {isEditing && (
-                            <div className="flex justify-end gap-3 pt-4 border-t border-garage-600">
+                            <div className="flex justify-end gap-3 pt-4 border-t border-[rgba(0,0,0,0.06)]">
                                 <Button variant="secondary" onClick={handleCancel}>Cancel</Button>
                                 <Button onClick={handleSave}>Save Changes</Button>
                             </div>
