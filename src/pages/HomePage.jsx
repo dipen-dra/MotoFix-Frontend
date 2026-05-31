@@ -101,17 +101,18 @@ export const HomePage = () => {
         <div className="absolute top-0 right-0 w-[600px] h-[600px] orb orb-yellow opacity-50 pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] orb orb-yellow opacity-30 pointer-events-none" />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 py-24 w-full">
-          <div className="max-w-3xl">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 py-16 lg:py-24 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center animate-fade-in">
+          {/* Left Column: Text Content */}
+          <div className="lg:col-span-7 flex flex-col justify-center">
             {/* Eyebrow */}
-            <div className="inline-flex items-center gap-2.5 mb-8 animate-fade-in-down">
+            <div className="inline-flex items-center gap-2.5 mb-6 animate-fade-in-down">
               <span className="section-label">
                 Nepal's #1 Doorstep Service
               </span>
             </div>
 
             {/* Headline */}
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight text-[#111118] leading-[1.05] mb-6 animate-fade-in-up">
+            <h1 className="text-5xl md:text-7xl lg:text-7xl xl:text-8xl font-black tracking-tight text-[#111118] leading-[1.05] mb-6 animate-fade-in-up">
               Your Bike,<br />
               <span className="relative inline-block">
                 <span className="gradient-text">Fixed Fast.</span>
@@ -121,7 +122,7 @@ export const HomePage = () => {
               </span>
             </h1>
 
-            <p className="text-lg md:text-xl text-[#4A4A65] max-w-xl leading-relaxed mb-10 animate-fade-in" style={{ animationDelay: '0.15s' }}>
+            <p className="text-lg md:text-xl text-[#4A4A65] max-w-xl leading-relaxed mb-8 animate-fade-in" style={{ animationDelay: '0.15s' }}>
               MotoFix delivers dealership-grade mechanics to your doorstep. Transparent quotes, real-time tracking, zero hassle.
             </p>
 
@@ -153,6 +154,23 @@ export const HomePage = () => {
                   {t}
                 </span>
               ))}
+            </div>
+          </div>
+
+          {/* Right Column: Hero Image Asset */}
+          <div className="lg:col-span-5 relative flex justify-center items-center animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            {/* Soft gold glowing ambient backdrop orb */}
+            <div className="absolute w-72 h-72 bg-[#F5C000]/10 blur-[80px] rounded-full -z-10 animate-pulse" style={{ animationDuration: '4s' }} />
+            <div className="relative p-2 bg-[#F5F3E7]/40 border border-black/05 rounded-[32px] shadow-[0_24px_64px_rgba(0,0,0,0.06)] hover:shadow-[0_32px_80px_rgba(245,192,0,0.15)] transition-all duration-500 hover:scale-[1.01] group">
+              <img
+                src="http://localhost:5050/uploads/hero_motorcycle.png"
+                alt="MotoFix Premium Motorcycle Service"
+                className="w-full h-auto max-w-md lg:max-w-none rounded-[24px] object-cover aspect-[4/3] sm:aspect-square lg:aspect-auto shadow-sm"
+              />
+              {/* Subtle brand highlights */}
+              <div className="absolute top-4 left-4 section-label !py-1 !px-2.5 !text-[9px] !gap-1.5 shadow-sm bg-white/95 backdrop-blur border-none text-[#111118] font-bold">
+                Premium Towing Included
+              </div>
             </div>
           </div>
         </div>
