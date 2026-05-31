@@ -27,8 +27,18 @@ const ResetPasswordPage = () => {
         setError('');
         setSuccessMessage('');
 
-        if (password.length < 6) {
-            setError("Password must be at least 6 characters long.");
+        const validateStrongPassword = (pwd) => {
+            if (pwd.length < 8) return "Password must be at least 8 characters long.";
+            if (!/[A-Z]/.test(pwd)) return "Password must contain at least one uppercase letter.";
+            if (!/[a-z]/.test(pwd)) return "Password must contain at least one lowercase letter.";
+            if (!/[0-9]/.test(pwd)) return "Password must contain at least one number.";
+            if (!/[!@#$%^&*(),.?":{}|<>]/.test(pwd)) return "Password must contain at least one special character.";
+            return null;
+        };
+
+        const pwdErr = validateStrongPassword(password);
+        if (pwdErr) {
+            setError(pwdErr);
             return;
         }
         if (password !== confirmPassword) {
