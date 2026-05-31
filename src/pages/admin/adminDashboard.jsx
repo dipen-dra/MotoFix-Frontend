@@ -466,7 +466,7 @@ const DashboardPage = () => {
         fetchDashboardData();
     }, []);
     return (
-        <div className="space-y-8 max-w-7xl mx-auto">
+        <div className="space-y-8 w-full">
             <div className="pb-5">
                 <h1 className="text-2xl font-bold text-[#111118] tracking-tight">Analytics Overview</h1>
                 <p className="text-sm text-[#4A4A65] mt-1">Live operational reporting, revenue tracking, and technician resource utilization.</p>
@@ -560,7 +560,7 @@ const DashboardPage = () => {
                                 <tr key={booking._id} className="border-b border-[rgba(0,0,0,0.04)] hover:bg-[#FAFAF5] transition-colors duration-150">
                                     <td className="py-3.5 px-5 font-semibold text-sm text-[#111118]">
                                         <a href={`#/admin/bookings/${booking._id}`} className="hover:text-[#B8860B] transition-colors">
-                                            {booking.customer?.fullName || 'N/A'}
+                                            {booking.customerName || booking.customer?.fullName || 'N/A'}
                                         </a>
                                     </td>
                                     <td className="py-3.5 px-5 text-sm text-[#4A4A65]">{booking.serviceType || 'N/A'}</td>
@@ -645,7 +645,7 @@ const BookingsPage = () => {
                         <tbody>
                             {bookings.length > 0 ? bookings.map(booking => (
                                 <tr key={booking._id} className="border-b border-[rgba(0,0,0,0.04)] hover:bg-[#FAFAF5] transition-colors duration-150">
-                                    <td className="py-3 px-4 font-semibold text-sm text-[#111118]">{booking.customer?.fullName || 'N/A'}</td>
+                                    <td className="py-3 px-4 font-semibold text-sm text-[#111118]">{booking.customerName || booking.customer?.fullName || 'N/A'}</td>
                                     <td className="py-3 px-4 text-sm text-[#4A4A65]">{booking.bikeModel || 'N/A'}</td>
                                     <td className="py-3 px-4 text-sm text-[#4A4A65]">{booking.serviceType || 'N/A'}</td>
                                     <td className="py-3 px-4 text-sm text-[#8A8AA8]">{new Date(booking.date).toLocaleDateString()}</td>
@@ -751,7 +751,7 @@ const BookingDetailsPage = ({ bookingId }) => {
     if (!booking) return <div className="text-center py-10 text-garage-500 font-body">Booking not found.</div>;
 
     return (
-        <div className="space-y-6 max-w-5xl mx-auto">
+        <div className="space-y-6 w-full">
             <div className="flex justify-between items-center border-b border-garage-600 pb-5">
                 <div className="flex items-center gap-4">
                     <a href="#/admin/bookings" className="p-2.5 rounded-lg bg-garage-800 hover:bg-garage-700 border border-garage-600 hover:border-spark-500/50 text-garage-300 hover:text-spark-500 transition-all duration-200">
@@ -775,7 +775,7 @@ const BookingDetailsPage = ({ bookingId }) => {
                     <div className="absolute top-0 left-0 w-0.5 h-full bg-spark-500" />
                     <h2 className="text-[11px] font-black font-display text-garage-500 uppercase tracking-widest mb-4 border-b border-garage-600 pb-3 pl-3">// Customer Info</h2>
                     <div className="space-y-3 pl-3">
-                        {[['Name', booking.customer?.fullName], ['Email', booking.customer?.email], ['Phone', booking.customer?.phone], ['Address', booking.customer?.address]].map(([label, val]) => (
+                        {[['Name', booking.customerName || booking.customer?.fullName], ['Email', booking.customer?.email], ['Phone', booking.customer?.phone], ['Address', booking.customer?.address]].map(([label, val]) => (
                             <div key={label} className="flex justify-between items-start gap-4">
                                 <span className="text-[10px] font-black font-display text-garage-500 uppercase tracking-widest flex-shrink-0">{label}</span>
                                 <span className="text-sm text-garage-200 font-body text-right">{val || 'N/A'}</span>
@@ -989,7 +989,7 @@ const ProfilePage = ({ currentUser, setCurrentUser }) => {
     const handleImageError = (e) => { e.target.onerror = null; e.target.src = `https://placehold.co/128x128/e2e8f0/4a5568?text=A`; }
     const profilePictureSrc = profile.profilePictureUrl || (profile.profilePicture ? `http://localhost:5050/${profile.profilePicture}` : `https://placehold.co/128x128/e2e8f0/4a5568?text=A`);
     return (
-        <div className="space-y-6 max-w-4xl mx-auto">
+        <div className="space-y-6 w-full">
             <div className="border-b border-garage-600 pb-5">
                 <h1 className="text-3xl md:text-4xl font-black font-display text-chrome-500 uppercase tracking-wider">// Workshop Profile</h1>
                 <p className="text-xs text-garage-400 font-body mt-1">Manage workshop identity, contact details, and service configurations.</p>
@@ -1079,7 +1079,7 @@ const BookingFormModal = ({ isOpen, onClose, booking, onSave }) => {
     useEffect(() => { if (booking) { setFormData({ status: booking.status, totalCost: booking.totalCost }); } }, [booking, isOpen]);
     const handleChange = (e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); };
     const handleSubmit = (e) => { e.preventDefault(); onSave(formData); };
-    return (<Modal isOpen={isOpen} onClose={onClose} title={`Edit Booking`}><form onSubmit={handleSubmit} className="space-y-4">{booking && <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50"><p className="text-sm"><strong className="dark:text-gray-300">Customer:</strong> {booking.customer?.fullName}</p><p className="text-sm"><strong className="dark:text-gray-300">Service:</strong> {booking.serviceType}</p><p className="text-sm"><strong className="dark:text-gray-300">Bike:</strong> {booking.bikeModel}</p></div>}<div><label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label><select id="status" name="status" value={formData.status || ''} onChange={handleChange} className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg dark:text-white"><option value="Pending">Pending</option><option value="In Progress">In Progress</option><option value="Completed">Completed</option><option value="Cancelled">Cancelled</option></select></div><Input id="totalCost" label="Total Cost (रु)" name="totalCost" type="number" value={formData.totalCost || ''} onChange={handleChange} /><div className="flex justify-end gap-3 pt-4"><Button type="button" variant="secondary" onClick={onClose}>Cancel</Button><Button type="submit" variant="primary">Save Changes</Button></div></form></Modal>);
+    return (<Modal isOpen={isOpen} onClose={onClose} title={`Edit Booking`}><form onSubmit={handleSubmit} className="space-y-4">{booking && <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50"><p className="text-sm"><strong className="dark:text-gray-300">Customer:</strong> {booking.customerName || booking.customer?.fullName}</p><p className="text-sm"><strong className="dark:text-gray-300">Service:</strong> {booking.serviceType}</p><p className="text-sm"><strong className="dark:text-gray-300">Bike:</strong> {booking.bikeModel}</p></div>}<div><label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label><select id="status" name="status" value={formData.status || ''} onChange={handleChange} className="w-full mt-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg dark:text-white"><option value="Pending">Pending</option><option value="In Progress">In Progress</option><option value="Completed">Completed</option><option value="Cancelled">Cancelled</option></select></div><Input id="totalCost" label="Total Cost (रु)" name="totalCost" type="number" value={formData.totalCost || ''} onChange={handleChange} /><div className="flex justify-end gap-3 pt-4"><Button type="button" variant="secondary" onClick={onClose}>Cancel</Button><Button type="submit" variant="primary">Save Changes</Button></div></form></Modal>);
 };
 const UserFormModal = ({ isOpen, onClose, onSave, user }) => {
     const [formData, setFormData] = useState({ fullName: '', email: '', password: '', role: 'user' });
